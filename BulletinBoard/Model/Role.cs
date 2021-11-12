@@ -19,13 +19,12 @@ namespace BulletinBoard.Model
     public class Role : IdentityRole<ulong>
     {
         public RoleValue RoleValue { get; set; }
-        public Role()
-        {
-        }
 
-        public Role(string name, RoleValue roleValue) : base(name)
+        public Role(string name) : base(name)
         {
-            RoleValue = roleValue;
+            if(Enum.TryParse(name, out RoleValue roleValue))
+                RoleValue = roleValue;
+
         }
     }
 }
