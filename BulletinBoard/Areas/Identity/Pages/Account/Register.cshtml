@@ -16,6 +16,13 @@
                             <div class="form-left h-100 py-5 px-5">
                                 <form id="account" method="post" class="row g-4">
                                     <div class="col-12">
+                                        <label>User Name<span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input asp-for="Input.UserName" type="text" class="form-control" placeholder="Enter User Name">
+                                            <div class="input-group-text"><i class="fas fa-user fa-fw"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
                                         <label>Email<span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <input asp-for="Input.Email" type="text" class="form-control" placeholder="Enter Email">
