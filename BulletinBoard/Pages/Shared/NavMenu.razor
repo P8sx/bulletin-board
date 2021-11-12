@@ -1,27 +1,72 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<div class="top-row ps-1 navbar bg-light text-black ">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">BulletinBoard</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
+        <div -moz-box-shadow="col-2">
+        <i class="fas fa-b fa-border fa-2x fa-fw" style="border-color:black; width:50px"></i>
+        </div>
+        <div class="col-8 ms-2">
+            <span class="mb-0 fs-3">B-Board</span>
+        </div>
+        <button title="Navigation menu" class="navbar-toggler bg-secondary" @onclick="ToggleNavMenu">
+            <i class="fas fa-bars" style="color:white;"></i>
         </button>
     </div>
 </div>
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+    <div class="text-center mt-3">
+        <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+    </div>
+     <AuthorizeView>
+        <Authorized>
+            <h4 class="text-white text-center mt-4">Hello<br /> <span class="text-warning">@context.User.Identity?.Name!</span></h4>
+        </Authorized>
+        <NotAuthorized>
+            <h4 class="text-white text-center mt-4">
+                <a href="Identity/Account/Login" class="btn btn-secondary btn shadow" role="button">Login</a> 
+                or
+                <a href="Identity/Account/Register" class="btn btn-success btn shadow" role="button">Register</a> 
+            </h4>
+        </NotAuthorized>
+    </AuthorizeView>
+
+    <nav class="flex-column text-white">
+        <h3 class="ms-3 mt-4">Bullietins</h3>
+        <hr class="bg-light mx-3" />
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="" Match="NavLinkMatch.All">
+                <span class="fas fa-home fa-fw me-2 fa-lg" aria-hidden="true"></span> Bulletins
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="bulletin/add">
+                <span class="fas fa-plus fa-fw me-2 fa-lg" aria-hidden="true"></span> Add
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="counter2">
+                <span class="fas fa-search fa-fw me-2 fa-lg" aria-hidden="true"></span> Search
+            </NavLink>
+        </div>
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="counter3">
+                <span class="fas fa-bookmark fa-fw me-2 fa-lg" aria-hidden="true"></span> Saved
+            </NavLink>
+        </div>
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="counter4">
+                <span class="fas fa-book-open fa-fw me-2 fa-lg" aria-hidden="true"></span> My Bulletins
+            </NavLink>
+        </div>
+        <h3 class="ms-3 mt-2">Groups</h3>
+        <hr class="bg-light mx-3" />
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="counter">
+                <span class="fas fa-users fa-fw me-2 fa-lg" aria-hidden="true"></span> Groups
+            </NavLink>
+        </div>
+        <div class="nav-item mx-3">
+            <NavLink class="nav-link shadow" href="counter7">
+                <span class="fas fa-users-cog fa-fw me-2 fa-lg" aria-hidden="true"></span> Create Group
             </NavLink>
         </div>
     </nav>
