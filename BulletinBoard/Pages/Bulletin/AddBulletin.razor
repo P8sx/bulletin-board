@@ -1,0 +1,31 @@
+﻿@using BulletinBoard.Model
+<EditForm Model="bulletin" OnValidSubmit="ValidFormSubmitted">
+    <div class="row mt-5">
+        <div class="col-6 col-centered">
+            <form>
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <InputText id="title" class="form-control" @bind-Value="bulletin.Title"></InputText>
+                        <small class="form-text text-danger">Please enter a correct email address.</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label for="title">Description</label>
+                        <InputTextArea id="title" class="form-control" @bind-Value="bulletin.Description" rows="9"></InputTextArea>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    Bulletin bulletin = new();
+
+    private void ValidFormSubmitted()
+    {
+
+    }
+}

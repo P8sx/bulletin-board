@@ -9,6 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Pages\Bulletin\AddBulletin.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Pages\Bulletin\AddBulletin.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Areas\Identity\Pages\Account\Login.cshtml" />
     <None Include="Areas\Identity\Pages\Account\LogOut.cshtml" />
     <None Include="Areas\Identity\Pages\Account\Register.cshtml" />
