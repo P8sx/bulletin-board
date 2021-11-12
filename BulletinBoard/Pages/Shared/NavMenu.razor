@@ -1,10 +1,10 @@
 ﻿<div class="top-row ps-1 navbar bg-light text-black ">
     <div class="container-fluid">
         <div -moz-box-shadow="col-2">
-        <i class="fas fa-b fa-border fa-2x fa-fw" style="border-color:black; width:50px"></i>
+        <img src="logo.png" width=50 height=50 class="rounded"/>
         </div>
-        <div class="col-8 ms-2">
-            <span class="mb-0 fs-3">B-Board</span>
+        <div class="col-8">
+            <span class="mb-0 fs-2">B-Board</span>
         </div>
         <button title="Navigation menu" class="navbar-toggler bg-secondary" @onclick="ToggleNavMenu">
             <i class="fas fa-bars" style="color:white;"></i>
@@ -14,7 +14,14 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <div class="text-center mt-3">
-        <img src="http://ssl.gstatic.com/accounts/ui/avatar_2x.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+    <AuthorizeView>
+        <Authorized>
+           <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+        </Authorized>
+        <NotAuthorized>
+            <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+        </NotAuthorized>
+    </AuthorizeView>      
     </div>
      <AuthorizeView>
         <Authorized>
