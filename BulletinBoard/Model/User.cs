@@ -12,8 +12,6 @@ namespace BulletinBoard.Model
         public string? Country { get; set; }
         public string? City { get; set; }
         public string? PostCode { get; set; }
-        public string? Street { get; set; }
-        public string? StreetNumber { get; set; }
         public DateTime Joined { get; }
         public virtual IList<Group>? Groups { get; set; }
 
