@@ -1,91 +1,29 @@
-﻿<div class="top-row ps-1 navbar bg-light text-black ">
-    <div class="container-fluid">
-        <div -moz-box-shadow="col-2">
-        <img src="logo.png" width=50 height=50 class="rounded"/>
-        </div>
-        <div class="col-8">
-            <span class="mb-0 fs-2">B-Board</span>
-        </div>
-        <button title="Navigation menu" class="navbar-toggler bg-secondary" @onclick="ToggleNavMenu">
-            <i class="fas fa-bars" style="color:white;"></i>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <div class="text-center mt-3">
+﻿<MudNavMenu>
     <AuthorizeView>
         <Authorized>
-           <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+            <MudElement Class="d-flex justify-center">
+                <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
+            </MudElement>
+
+            <MudElement Class="d-flex justify-center">
+                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">Hello <br />@context.User.Identity?.Name!</MudText>
+            </MudElement>
         </Authorized>
         <NotAuthorized>
-            <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
-        </NotAuthorized>
-    </AuthorizeView>      
-    </div>
-     <AuthorizeView>
-        <Authorized>
-            <h4 class="text-white text-center mt-4">Hello<br /> <span class="text-warning">@context.User.Identity?.Name!</span></h4>
-        </Authorized>
-        <NotAuthorized>
-            <h4 class="text-white text-center mt-4">
-                <a href="Identity/Account/Login" class="btn btn-secondary btn shadow" role="button">Login</a> 
-                or
-                <a href="Identity/Account/Register" class="btn btn-success btn shadow" role="button">Register</a> 
-            </h4>
         </NotAuthorized>
     </AuthorizeView>
 
-    <nav class="flex-column text-white">
-        <h3 class="ms-3 mt-4">Bullietins</h3>
-        <hr class="bg-light mx-3" />
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="" Match="NavLinkMatch.All">
-                <span class="fas fa-home fa-fw me-2 fa-lg" aria-hidden="true"></span> Bulletins
-            </NavLink>
-        </div>
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="bulletin/add">
-                <span class="fas fa-plus fa-fw me-2 fa-lg" aria-hidden="true"></span> Add
-            </NavLink>
-        </div>
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="counter2">
-                <span class="fas fa-search fa-fw me-2 fa-lg" aria-hidden="true"></span> Search
-            </NavLink>
-        </div>
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="counter3">
-                <span class="fas fa-bookmark fa-fw me-2 fa-lg" aria-hidden="true"></span> Saved
-            </NavLink>
-        </div>
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="counter4">
-                <span class="fas fa-book-open fa-fw me-2 fa-lg" aria-hidden="true"></span> My Bulletins
-            </NavLink>
-        </div>
-        <h3 class="ms-3 mt-2">Groups</h3>
-        <hr class="bg-light mx-3" />
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="counter">
-                <span class="fas fa-users fa-fw me-2 fa-lg" aria-hidden="true"></span> Groups
-            </NavLink>
-        </div>
-        <div class="nav-item mx-3">
-            <NavLink class="nav-link shadow" href="counter7">
-                <span class="fas fa-users-cog fa-fw me-2 fa-lg" aria-hidden="true"></span> Create Group
-            </NavLink>
-        </div>
-    </nav>
-</div>
 
-@code {
-    private bool collapseNavMenu = true;
+    <MudText Typo="Typo.h4" Class="mx-3 mt-3">Bullietins</MudText>
+    <MudDivider Class="mt-3 mb-1"></MudDivider>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Bulletins</MudNavLink>
+    <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add</MudNavLink>
+    <MudNavLink Href="/2" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Search</MudNavLink>
+    <MudNavLink Href="/3" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Bookmark">Saved</MudNavLink>
+    <MudNavLink Href="/4" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">My Bulletins</MudNavLink>
+    <MudText Typo="Typo.h4" Class="mx-3 mt-3">Groups</MudText>
+    <MudDivider Class="mt-3 mb-1"></MudDivider>
+    <MudNavLink Href="/5" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
+    <MudNavLink Href="/6" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+</MudNavMenu>
