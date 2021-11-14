@@ -3,87 +3,84 @@
 @inject IWebHostEnvironment env
 @inject ISnackbar Snackbar
 
-<EditForm Model="_bulletin" OnValidSubmit="ValidFormSubmitted">
-    <MudElement Class="d-flex justify-space-around py-2 px-1 mt-6" >
-        <MudPaper Class="pa-2 mx-1 mud-theme-primary text-center" MinWidth=8rem>Bulletin</MudPaper>
-        <MudPaper Class="pa-2 mx-1 mud-theme-primary text-center" MinWidth=8rem>Attachments</MudPaper>
-        <MudPaper Class="pa-2 mx-1 mud-theme-primary text-center" MinWidth=8rem>Location</MudPaper>
+<MudText Typo="Typo.h4" Align="Align.Center"><b>Add</b> new bulletin</MudText>
+<EditForm Model="@_bulletin" OnValidSubmit="ValidFormSubmitted">
+    <MudElement Class="d-flex justify-space-around py-2 px-1 mt-6" Style="text-align:center">
+        <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Bulletin</MudPaper>
+        <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Attachments</MudPaper>
+        <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Location</MudPaper>
     </MudElement>
 
     <MudProgressLinear Color="Color.Success" Buffer="true" Value=@_stepValue BufferValue=@_stepBuffer Class="my-5" />
 
-    <form>
-        @* Bulletin step *@
-        <MudPaper Class="p-4" hidden=@(_step!=1) Style="min-height:30rem" Elevation="3">
-            <div class="mb-3">
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <InputText id="title" class="form-control" @bind-Value="_bulletin.Title"></InputText>
-                    <small class="form-text text-danger">Please enter a correct email address.</small>
-                </div>
-            </div>
-            <div class="mb-3">
-                <div class="form-group">
-                    <label for="title">Description</label>
-                    <InputTextArea id="title" class="form-control" @bind-Value="_bulletin.Description" rows="9"></InputTextArea>
-                </div>
-            </div>
-        </MudPaper>
-        @* Attachment step *@
-        <MudPaper Class="p-4" hidden=@(_step!=2) Style="min-height:30rem" Elevation="3">
-            <MudElement Class="d-flex justify-center">
+    @* Bulletin step *@
+    <MudPaper hidden=@(_step!=1) Style="min-height:30rem" Elevation="3">
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="12" Class="mx-8 mt-4">
+                <MudTextField T="string" Label="Title" Variant="Variant.Filled" For="@(() => _bulletin.Title)" />
+            </MudItem>
+            <MudItem xs="12" sm="12" md="12" Class="mx-8">
+                <MudTextField T="string" Label="Description" Lines="13" Variant="Variant.Filled" For="@(() => _bulletin.Description)" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @* Attachment step *@
+    <MudPaper Class="p-4" hidden=@(_step!=2) Style="min-height:30rem" Elevation="3">
+            <MudGrid Class="my-1 mx-1" Style="text-align:-webkit-center">
                 @foreach (var img in _file)
                 {
-                    <div style="position:relative">
-                        <img src="@img.Item2" width=200 height=200 class="mr-2 border rounded" style="border-color:black!important; display:block" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Error" aria-label="delete"
-                                   Style="position: absolute; bottom:0; left:0"
-                                   Class="m-2"
-                                   OnClick="() => RemoveImg(img.Item1)">
-                               </MudIconButton>
-                    </div>
+                    <MudItem lg="3" xl="4" xs="12" md="6">
+                        <MudCard Style="width:200px">
+                            <MudCardMedia Image="@img.Item2" Height="200" />
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="()=>RemoveImg(img.Item1)">Delete</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+
                 }
-            </MudElement>
-            <MudElement Class="d-flex justify-center mt-3">
+            </MudGrid>
 
-                <InputFile OnChange="@LoadFiles" multiple
-                           accept=".jpg, .jpeg, .png"
-                           CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed."
-                           MaxFileSize=@_uploadLimit
-                           FileTooLargeMessage="File is too large"
-                           hidden
-                           id="imgInput" />
-                <MudFab HtmlTag="label"
-                        Color="Color.Secondary"
-                        Icon="@Icons.Filled.Image"
-                        Label="Load picture"
-                        for="imgInput" />
-            </MudElement>
+        <MudElement Class="d-flex justify-center mt-3">
+            <InputFile OnChange="@LoadFiles" multiple
+                       accept=".jpg, .jpeg, .png"
+                       CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed."
+                       MaxFileSize=@_uploadLimit
+                       FileTooLargeMessage="File is too large"
+                       hidden
+                       id="imgInput" />
+            <MudFab Class="mb-4"
+                    HtmlTag="label"
+                    Color="Color.Secondary"
+                    Icon="@Icons.Filled.Image"
+                    Label="Load picture"
+                    for="imgInput" />
+        </MudElement>
+    </MudPaper>
 
-        </MudPaper>
-        @* Location step *@
-        <MudPaper Class="p-4" hidden=@(_step!=3) Style="min-height:30rem" Elevation="3">
-            <div class="mb-3">
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <InputText id="title" class="form-control" @bind-Value="_bulletin.Title"></InputText>
-                    <small class="form-text text-danger">Please enter a correct email address.</small>
-                </div>
+    @* Location step *@
+    <MudPaper Class="p-4" hidden=@(_step!=3) Style="min-height:30rem" Elevation="3">
+        <div class="mb-3">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <InputText id="title" class="form-control" @bind-Value="_bulletin.Title"></InputText>
+                <small class="form-text text-danger">Please enter a correct email address.</small>
             </div>
-            <div class="mb-3">
-                <div class="form-group">
-                    <label for="title">Description</label>
-                    <InputTextArea id="title" class="form-control" @bind-Value="_bulletin.Description" rows="5"></InputTextArea>
-                </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-group">
+                <label for="title">Description</label>
+                <InputTextArea id="title" class="form-control" @bind-Value="_bulletin.Description" rows="5"></InputTextArea>
             </div>
-        </MudPaper>
-    </form>
+        </div>
+    </MudPaper>
+
+
     <MudElement Class="d-flex justify-space-between">
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_step==1) OnClick=PreviousStep StartIcon="@Icons.Filled.ArrowBack" Class="mt-3">Previous step</MudButton>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick=NextStep Style=@(_step==3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.ArrowForward">Next step</MudButton>
-    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick=Submit Style=@(_step!=3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_step==1) OnClick=PreviousStep StartIcon="@Icons.Filled.ArrowBack" Class="mt-3">Previous step</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick=NextStep Style=@(_step==3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.ArrowForward">Next step</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick=Submit Style=@(_step!=3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
     </MudElement>
 </EditForm>
 
