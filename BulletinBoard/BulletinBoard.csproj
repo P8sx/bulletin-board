@@ -38,4 +38,9 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\group\" />
+    <Folder Include="wwwroot\images\public\" />
+  </ItemGroup>
+
 </Project>

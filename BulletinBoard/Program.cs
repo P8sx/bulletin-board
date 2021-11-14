@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using BulletinBoard;
 using MudBlazor.Services;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,15 +24,18 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
                 .AddUserManager<UserManager<User>>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-
+builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddScoped<BulletinService>();
+builder.Services.AddScoped<IBulletinService,BulletinService>();
+
+
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
 builder.Services.CreateRoles();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -48,8 +52,20 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles( new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        if(ctx.Context.Request.Path.StartsWithSegments("/images/group"))
+        {
+            ctx.Context.Response.Headers.Add("Cache-Control", "no-store");
+            ctx.Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            ctx.Context.Response.ContentLength = 0;
+            ctx.Context.Response.Body = Stream.Null;
+        }
+    }
+});
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();

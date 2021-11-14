@@ -3,6 +3,7 @@ using System;
 using BulletinBoard.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211114181527_Image")]
+    partial class Image
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +31,7 @@ namespace BulletinBoard.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
+                        .HasColumnType("longtext");
 
                     b.Property<uint?>("DownVotes")
                         .HasColumnType("int unsigned");
@@ -55,9 +55,7 @@ namespace BulletinBoard.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("longtext");
 
                     b.Property<uint?>("UpVotes")
                         .HasColumnType("int unsigned");
@@ -136,14 +134,10 @@ namespace BulletinBoard.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Extension")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<ulong?>("GroupId")
+                    b.Property<ulong>("GroupId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong?>("UserId")
+                    b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
 
                     b.HasKey("Id");
@@ -427,11 +421,15 @@ namespace BulletinBoard.Migrations
 
                     b.HasOne("BulletinBoard.Model.Group", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("BulletinBoard.Model.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 
