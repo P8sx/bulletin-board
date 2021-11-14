@@ -7,6 +7,7 @@ namespace BulletinBoard.Model
     {
         [Key]
         public Guid Id { get; set; }
+        [MaxLength(5)]
         public string Extension { get; set; } = "";
         public DateTime Created { get; set; } = DateTime.UtcNow; 
         public virtual User? User { get; set; }

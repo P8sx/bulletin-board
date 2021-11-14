@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211114211504_Image23")]
-    partial class Image23
+    [Migration("20211114234424_NameUpdate")]
+    partial class NameUpdate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -198,9 +198,6 @@ namespace BulletinBoard.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("Avatar")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("City")
                         .HasColumnType("longtext");
 
@@ -217,6 +214,9 @@ namespace BulletinBoard.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("char(36)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
@@ -255,6 +255,8 @@ namespace BulletinBoard.Migrations
                         .HasColumnType("varchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -438,6 +440,15 @@ namespace BulletinBoard.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BulletinBoard.Model.User", b =>
+                {
+                    b.HasOne("BulletinBoard.Model.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.UserRole", b =>
