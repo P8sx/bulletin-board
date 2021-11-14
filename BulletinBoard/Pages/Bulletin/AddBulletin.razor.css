@@ -2,3 +2,29 @@
     float: none;
     margin: 0 auto;
 }
+
+.drag-drop-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .4s;
+    min-height: 400px;
+}
+
+.drag-drop-input {
+    position: absolute;
+    width: 100%;
+    height: 90%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.drag-enter {
+    box-shadow: var(--mud-elevation-10);
+}
+
+.list {
+    padding: 2em;
+    min-width: 100%;
+}
