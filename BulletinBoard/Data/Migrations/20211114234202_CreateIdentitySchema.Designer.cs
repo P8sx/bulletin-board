@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211114202520_Image2")]
-    partial class Image2
+    [Migration("20211114234202_CreateIdentitySchema")]
+    partial class CreateIdentitySchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -138,6 +138,10 @@ namespace BulletinBoard.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<ulong?>("GroupId")
                         .HasColumnType("bigint unsigned");
 
@@ -182,7 +186,7 @@ namespace BulletinBoard.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.User", b =>
@@ -193,9 +197,6 @@ namespace BulletinBoard.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
-
-                    b.Property<Guid?>("Avatar")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("City")
                         .HasColumnType("longtext");
@@ -213,6 +214,9 @@ namespace BulletinBoard.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("char(36)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
@@ -252,6 +256,8 @@ namespace BulletinBoard.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ImageId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -259,7 +265,7 @@ namespace BulletinBoard.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.UserRole", b =>
@@ -279,7 +285,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
             modelBuilder.Entity("GroupUser", b =>
@@ -316,7 +322,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<ulong>", b =>
@@ -338,7 +344,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<ulong>", b =>
@@ -361,7 +367,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<ulong>", b =>
@@ -382,7 +388,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
@@ -434,6 +440,15 @@ namespace BulletinBoard.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BulletinBoard.Model.User", b =>
+                {
+                    b.HasOne("BulletinBoard.Model.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.UserRole", b =>
