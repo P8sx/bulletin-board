@@ -1,13 +1,10 @@
 ﻿@using BulletinBoard.Model
 @using System.IO
 @inject IWebHostEnvironment env
-<div class="row">
-    <div class="col-6 col-centered">
-    </div>
-</div>
+
 <EditForm Model="bulletin" OnValidSubmit="ValidFormSubmitted">
     <div class="row mt-2">
-        <div class="col-8 col-centered">
+        <div class="col-lg-8 col-centered">
             <div class="row mt-2 text-center">
                 <div class="col">Bulletin</div>
                 <div class="col">Attachments</div>
@@ -16,7 +13,7 @@
         </div>
     </div>
     <div class="row mt-2">
-        <div class="col-8 col-centered">
+        <div class="col-lg-8 col-centered">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: @(Step*33>=99?100:Step*33)%" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
@@ -24,8 +21,8 @@
     </div>
     <form>
 
-        <div class="row mt-2 @(Step==1?"":"d-none")">
-            <div class="col-8 col-centered">
+        <div class="row mt-2 @(Step==1?"":"d-none")"  style="min-height:30rem">
+            <div class="col-lg-8 col-centered">
                 <div class="mb-3">
                     <div class="form-group">
                         <label for="title">Title</label>
@@ -43,23 +40,38 @@
             </div>
         </div>
 
-        <div class="row mt-2 @(Step==2?"":"d-none")">
-            <div class="col-8 col-centered">
+        <div class="row mt-2 @(Step==2?"":"d-none")"  style="min-height:30rem">
+            <div class="col-lg-8 col-centered">
                 @foreach(var img in Base64Images)
                 {
                     <img src="@img"/>
                 }
-                <br />
+                <div class="row text-center mt-5">
+
+                <label for="imgInput" class="input-label">
+                    <a class="btn btn-warning">
+                        <i class="fa fa-images fa-fw"></i>
+                        Upload images
+                        </a>
+                </label>
+                </div>
+                <div class="row text-center">
+                    <small class="text-muted">Max 5 images, @UploadLimit MB per img</small>
+                </div>
+
                 <InputFile OnChange="@LoadFiles" multiple 
                 accept=".jpg, .jpeg, .png" 
                 CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." 
                 MaxFileSize=@UploadLimit
-                FileTooLargeMessage="File is too large"/>
+                FileTooLargeMessage="File is too large"
+                class="d-none"
+                id="imgInput"/>
+
             </div>
         </div>
 
-        <div class="row mt-2 @(Step==3?"":"d-none")">
-            <div class="col-8 col-centered">
+        <div class="row mt-2 @(Step==3?"":"d-none")"  style="min-height:30rem">
+            <div class="col-lg-8 col-centered">
                 <div class="mb-3">
                     <div class="form-group">
                         <label for="title">Title</label>
@@ -75,10 +87,11 @@
                 </div>
             </div>
         </div>
+
     </form>
 
     <div class="row mt-2">
-        <div class="col-8 col-centered">
+        <div class="col-lg-8 col-centered">
             <button class="btn btn-primary @(Step==1?"disabled":"")" @onclick=PreviousStep style="width:8rem">Previous step</button>
             <button class="btn btn-primary @(Step==3?"d-none":"")" style="float:right; width:8rem" @onclick=NextStep>Next step</button>
             <button class="btn btn-success @(Step!=3?"d-none":"")" style="float:right; width:8rem" @onclick=Submit>Publish</button>
@@ -90,39 +103,49 @@
 </EditForm>
 
 @code {
-    Bulletin bulletin = new();
-    public int UploadLimit = 5;
+    [Parameter]
+    public Guid GroupId { get; set; } = Guid.Empty;
+    // Form
+    private Bulletin bulletin = new();
+
+    private int UploadLimit = 5;
+
     private uint Step { get; set; } = 1;
     private long Files { get; set; } = 0;
+
     private HashSet<IBrowserFile> Images { get; set; } = new();
     private HashSet<string> Base64Images { get; set; } = new();
+
     private void ValidFormSubmitted()
     {
 
     }
+
     private void NextStep() => Step++;
     private void PreviousStep() => Step--;
+
+
     async Task LoadFiles(InputFileChangeEventArgs e)
     {
         Images.Clear();
         Base64Images.Clear();
 
         var format = "image/jpeg";
-        foreach(var img in e.GetMultipleFiles(5))
-        {  
-            Images.Add(img);
-            var resizedImageFile = await img.RequestImageFileAsync(format,250, 250);
+        foreach(var file in e.GetMultipleFiles(5))
+        {
+            Images.Add(file);
+            var resizedImageFile = await file.RequestImageFileAsync(format,250, 250);
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream().ReadAsync(buffer);
             Base64Images.Add($"data:{format};base64,{Convert.ToBase64String(buffer)}");
         }
     }
 
-    private async void Submit()
+    private async Task Submit()
     {
         foreach(var img in Images)
         {
-            Stream stream = img.OpenReadStream(UploadLimit*000000);
+            Stream stream = img.OpenReadStream(UploadLimit*1000000);
             var path = $"{env.WebRootPath}\\{img.Name}";
             FileStream fs = File.Create(path);
             await stream.CopyToAsync(fs);
