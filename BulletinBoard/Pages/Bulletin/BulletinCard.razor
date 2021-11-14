@@ -1,0 +1,45 @@
+﻿@using BulletinBoard.Model
+
+@if (Bulletin != null && Bulletin.User != null)
+{
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                <MudAvatar Image=@(Bulletin.User==null?"/images/avatars/no_avatar.png":$"/images/avatars/{Bulletin.User.Avatar}.png") />
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
+                <MudText Typo="Typo.body2"><strong>Added:</strong> @Bulletin.Created</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">@Bulletin.Description</MudText>
+        </MudCardContent>
+        <MudCarousel Style="height:300px; width:300px" ShowArrows="true" ShowDelimiters="true" AutoCycle="false" TData="object">
+            @foreach (var img in Bulletin.Images)
+            {
+                <MudCarouselItem Transition="Transition.Slide" Color="@Color.Primary">
+                    <div class="d-flex" style="height:100%">
+                        <MudCardMedia Image=@(img.GetPath()) Height="300" Style="width:300px" />
+
+                    </div>
+                </MudCarouselItem>
+            }
+        </MudCarousel>
+
+
+        <MudCardActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
+            <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" />
+        </MudCardActions>
+    </MudCard>
+}
+
+@code {
+    [Parameter]
+    public Bulletin Bulletin { get; set; } = new();
+}

@@ -1,26 +1,31 @@
 ﻿@using BulletinBoard.Model
 @using System.IO
+@using Microsoft.AspNetCore.Identity;
+@using BulletinBoard.Services
+
 @inject IWebHostEnvironment env
 @inject ISnackbar Snackbar
+@inject IHttpContextAccessor HttpContextAccessor
+@inject UserManager<User> UserManager
+@inject IBulletinService BulletinService
 
 <MudText Typo="Typo.h4" Align="Align.Center"><b>Add</b> new bulletin</MudText>
-<EditForm Model="@_bulletin" OnValidSubmit="ValidFormSubmitted">
+<EditForm Model="@_bulletin" OnValidSubmit="ValidFormSubmitted" OnInvalidSubmit="@(()=> {PreviousStep();PreviousStep();})">
     <MudElement Class="d-flex justify-space-around py-2 px-1 mt-6" Style="text-align:center">
         <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Bulletin</MudPaper>
         <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Attachments</MudPaper>
         <MudPaper Class="pa-2 mx-1 mud-theme-primary" MinWidth=7rem>Location</MudPaper>
     </MudElement>
-
     <MudProgressLinear Color="Color.Success" Buffer="true" Value=@_stepValue BufferValue=@_stepBuffer Class="my-5" />
-
+    <DataAnnotationsValidator />
     @* Bulletin step *@
     <MudPaper hidden=@(_step!=1) Style="min-height:30rem" Elevation="3">
         <MudGrid>
             <MudItem xs="12" sm="12" md="12" Class="mx-8 mt-4">
-                <MudTextField T="string" Label="Title" Variant="Variant.Filled" For="@(() => _bulletin.Title)" />
+                <MudTextField Label="Title" Variant="Variant.Filled" @bind-Value="_bulletin.Title" For="@(() => _bulletin.Title)" />
             </MudItem>
             <MudItem xs="12" sm="12" md="12" Class="mx-8">
-                <MudTextField T="string" Label="Description" Lines="13" Variant="Variant.Filled" For="@(() => _bulletin.Description)" />
+                <MudTextField T="string" Label="Description" Lines="13" Variant="Variant.Filled" @bind-Value="_bulletin.Description" For="@(() => _bulletin.Description)" />
             </MudItem>
         </MudGrid>
     </MudPaper>
@@ -34,14 +39,13 @@
                         <MudCard Style="width:200px">
                             <MudCardMedia Image="@img.Item2" Height="200" />
                             <MudCardActions>
-                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="()=>RemoveImg(img.Item1)">Delete</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="()=>RemoveFile(img.Item1)">Delete</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>
 
                 }
             </MudGrid>
-
         <MudElement Class="d-flex justify-center mt-3">
             <InputFile OnChange="@LoadFiles" multiple
                        accept=".jpg, .jpeg, .png"
@@ -61,32 +65,21 @@
 
     @* Location step *@
     <MudPaper Class="p-4" hidden=@(_step!=3) Style="min-height:30rem" Elevation="3">
-        <div class="mb-3">
-            <div class="form-group">
-                <label for="title">Title</label>
-                <InputText id="title" class="form-control" @bind-Value="_bulletin.Title"></InputText>
-                <small class="form-text text-danger">Please enter a correct email address.</small>
-            </div>
-        </div>
-        <div class="mb-3">
-            <div class="form-group">
-                <label for="title">Description</label>
-                <InputTextArea id="title" class="form-control" @bind-Value="_bulletin.Description" rows="5"></InputTextArea>
-            </div>
-        </div>
+        Tu powinna byc lokalizacja
     </MudPaper>
 
 
     <MudElement Class="d-flex justify-space-between">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_step==1) OnClick=PreviousStep StartIcon="@Icons.Filled.ArrowBack" Class="mt-3">Previous step</MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick=NextStep Style=@(_step==3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.ArrowForward">Next step</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick=Submit Style=@(_step!=3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Style=@(_step!=3?"display:none":"") Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
     </MudElement>
 </EditForm>
 
 @code {
     [Parameter]
-    public Guid GroupId { get; set; } = Guid.Empty;
+    public ulong GroupId { get; set; } = 0;
+    public string UserName { get => @UserManager.GetUserName(HttpContextAccessor.HttpContext.User); }
     // Form
     private Bulletin _bulletin = new();
 
@@ -103,11 +96,6 @@
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
-    private void ValidFormSubmitted()
-    {
-
-    }
-
     private void NextStep()
     {
         _step++;
@@ -121,8 +109,6 @@
         _stepValue = (_step - 1) * 33 == 99 ? 100 : (_step - 1) * 33;
         _stepBuffer = _step * 33 == 99 ? 100 : _step * 33;
     }
-
-
     async Task LoadFiles(InputFileChangeEventArgs e)
     {
         _file.Clear();
@@ -152,22 +138,33 @@
         }
     }
 
-    void RemoveImg(IBrowserFile img)
+    void RemoveFile(IBrowserFile img)
     {
         _file.RemoveAll(i => i.Item1 == img);
     }
 
-    private async Task Submit()
+    private async Task ValidFormSubmitted(EditContext editContext)
     {
-        foreach (var img in _file)
+        _bulletin.User = await UserManager.FindByNameAsync(UserName);
+
+        foreach (var file in _file)
         {
-            Stream stream = img.Item1.OpenReadStream(_maxFileSize);
-            var path = $"{env.WebRootPath}\\{img.Item1.Name}";
-            FileStream fs = File.Create(path);
+            Stream stream = file.Item1.OpenReadStream(_maxFileSize);
+            var img = new Image();
+            img.SetExtension(file.Item1.Name);
+            if (GroupId != 0)
+                img.GroupId = GroupId;
+            FileStream fs = File.Create($"{env.WebRootPath}/{img.GetPath()}");
             await stream.CopyToAsync(fs);
             stream.Close();
             fs.Close();
+
+            _bulletin.Images.Add(img);
         }
+        _bulletin.Created = DateTime.UtcNow;
+        var result = await BulletinService.AddBulletin(_bulletin);
+        if(result)
+                Snackbar.Add($"Bulletin has been added", Severity.Success);
     }
 
 }

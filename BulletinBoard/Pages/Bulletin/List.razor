@@ -1,0 +1,21 @@
+﻿@using BulletinBoard.Services
+@using BulletinBoard.Data
+@inject IBulletinService BulletinService
+
+@if (_bulletins != null)
+{
+    @foreach (var bulletin in _bulletins)
+    {
+        <BulletinCard Bulletin="bulletin"></BulletinCard>
+    }
+}
+
+@code {
+    IList<BulletinBoard.Model.Bulletin> _bulletins;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _bulletins = await BulletinService.GetBulletinsAsync(1, 10);
+    }
+
+}
