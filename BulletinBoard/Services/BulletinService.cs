@@ -30,7 +30,7 @@ namespace BulletinBoard.Services
             }
             return true;
         }
-        public async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit)
+        public async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit, ulong groupId = 1)
         {
             if (page == 0)
                 page = 1;
@@ -40,7 +40,7 @@ namespace BulletinBoard.Services
 
             var skip = (page - 1) * limit;
 
-            var savedSearches = _dbContext.Bulletins.Include(x => x.Images).Include(u => u.User).Skip(skip).Take(limit);
+            var savedSearches = _dbContext.Bulletins.Include(x => x.Images).Include(u => u.User).Where(g=>g.GroupId==groupId).Skip(skip).Take(limit);
             return await savedSearches.ToListAsync();
         }
 

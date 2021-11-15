@@ -2,16 +2,33 @@
 @using BulletinBoard.Data
 @inject IBulletinService BulletinService
 
-@if(_bulletins != null)
+
+@if (_bulletins != null)
 {
-    @foreach (var bulletin in _bulletins)
-    {
-        <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
-    }
+@*    <MudGrid Class="d-flex">
+        @foreach (var bulletin in _bulletins)
+        {
+            <MudItem lg="3" md="4" sm="6" xs="12" Style="width:100%">
+                <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
+            </MudItem>
+        }
+    </MudGrid>*@
+        <MudGrid>
+        @foreach (var bulletin in _bulletins)
+        {
+            <MudItem md="4" sm="6" xs="12" Style="width:100%">
+                <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
+            </MudItem>
+        }
+    </MudGrid>
+    <MudPagination BoundaryCount="1" MiddleCount="1" Count="22" @bind-Selected="@_page" />
 }
 
 @code {
-    IList<BulletinBoard.Model.Bulletin> _bulletins;
+
+
+    IList<BulletinBoard.Model.Bulletin> _bulletins = new List<BulletinBoard.Model.Bulletin>();
+    int _page = 1;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

@@ -1,13 +1,14 @@
 ﻿@using BulletinBoard.Model
 
+
 @if (Bulletin != null && Bulletin.User != null)
 {
-    <MudCard>
+    <MudCard Elevation="4" Class="mb-3" Style="height:100%">
         <MudCardHeader>
             <CardHeaderAvatar>
                 @*<MudAvatar Image=@(Bulletin.User==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />*@
             </CardHeaderAvatar>
-            <CardHeaderContent>
+            <CardHeaderContent >
                 <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
                 <MudText Typo="Typo.body2"><strong>Added:</strong> @Bulletin.Created</MudText>
             </CardHeaderContent>
@@ -17,21 +18,18 @@
         </MudCardHeader>
         <MudCardContent>
             <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
-            <MudText Typo="Typo.body2" Class="mt-2">@Bulletin.Description</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
         </MudCardContent>
-        <MudCarousel Style="height:300px; width:300px" ShowArrows="true" ShowDelimiters="true" AutoCycle="false" TData="object">
-            @foreach (var img in Bulletin.Images)
-            {
-                <MudCarouselItem Transition="Transition.Slide" Color="@Color.Primary">
-                    <div class="d-flex" style="height:100%">
-                        <MudCardMedia Image=@(img.GetPath()) Height="300" Style="width:300px" />
-
+        @if (Bulletin.Images.Any())
+        {
+            <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                <ItemTemplate>
+                    <div class="d-flex flex-column flex-column justify-center">
+                        <MudCardMedia Image=@context.GetPath() />
                     </div>
-                </MudCarouselItem>
-            }
-        </MudCarousel>
-
-
+                </ItemTemplate>
+            </MudCarousel>
+        }
         <MudCardActions>
             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
             <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" />
@@ -42,4 +40,5 @@
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = new();
+    private MudCarousel<Image> _carousel;
 }
