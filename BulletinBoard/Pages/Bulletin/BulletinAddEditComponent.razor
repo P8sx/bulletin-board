@@ -155,7 +155,6 @@
         if (Bulletin.UserId == 0)
             Bulletin.UserId = _user.Id;
         Bulletin.Created = DateTime.UtcNow;
-        Bulletin.GroupId = GroupId;
 
         // Create image entity and add it to bulletin
         foreach (var file in _files)
