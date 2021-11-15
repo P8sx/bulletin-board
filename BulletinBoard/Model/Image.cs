@@ -20,7 +20,7 @@ namespace BulletinBoard.Model
 
         public string GetPath()
         {
-            if(GroupId == null)
+            if(GroupId == 1)
             {
                 return $"/images/public/{Id}.{Extension}";
             }
@@ -31,11 +31,29 @@ namespace BulletinBoard.Model
         }
         public Image()
         {
-            Id = Guid.NewGuid(); 
+            Id = Guid.NewGuid();
         }
-        public void SetExtension(string fileName)
+        public Image SetExtension(string fileName)
         {
             Extension = fileName.Split('.').Last();
+            return this;
+        }
+        public Image SetGroup(ulong groupId)
+        {
+            GroupId = groupId;
+            return this;
+        }
+        public Image SetGroup(Group group)
+        {
+            Group = group;
+            GroupId = Group.Id;
+            return this;
+        }
+        public Image SetUser(User user)
+        {
+            User = user;
+            UserId = user.Id;
+            return this;
         }
         public Image(Guid id)
         {

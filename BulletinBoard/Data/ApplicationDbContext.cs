@@ -9,9 +9,9 @@ namespace BulletinBoard.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User, Role, ulong, IdentityUserClaim<ulong>, UserRole, IdentityUserLogin<ulong>, IdentityRoleClaim<ulong>, IdentityUserToken<ulong>>
     {
-        public virtual DbSet<Group> Groups { get; set; }
-        public virtual DbSet<Bulletin> Bulletins { get; set; }
-        public virtual DbSet<Comment> Comments { get; set; }
+        public virtual DbSet<Group> Groups { get; set; } = default!;
+        public virtual DbSet<Bulletin> Bulletins { get; set; } = default!;
+        public virtual DbSet<Comment> Comments { get; set; } = default!;
 
 
 

@@ -30,11 +30,12 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped<IBulletinService,BulletinService>();
-
+builder.Services.AddScoped<IUserService,UserService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
-builder.Services.CreateRoles();
+
+builder.Services.RunAppSetup();
 
 var app = builder.Build();
 
