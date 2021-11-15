@@ -13,7 +13,7 @@ namespace BulletinBoard.Model
         public string? City { get; set; }
         public string? PostCode { get; set; }
         public DateTime Joined { get; }
-        public virtual IList<Group>? Groups { get; set; }
+        public virtual IList<GroupUser>? GroupUsers { get; set; }
 
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")]

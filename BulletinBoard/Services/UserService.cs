@@ -15,15 +15,19 @@ namespace BulletinBoard.Services
 
         public async Task<List<Group>> GetUserGroups(User user)
         {
-            var defaultGroup = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == 1);
-            var groups = await _dbContext.UserRoles.Where(u => u.UserId == user.Id).Select(g => g.Group).ToListAsync();
-            if(groups is not null)
+            var mainGroup = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == 1);
+            if (mainGroup == null) 
+                return new();
+
+            var userGroups = await _dbContext.GroupUsers.Where(gu => gu.User == user).Select(gu => gu.Group).ToListAsync();
+            var groups = new List<Group>
             {
-                groups.Add(defaultGroup);
-                return groups;
-            }
-            else
-                return new List<Group>() { defaultGroup };
+                mainGroup
+            };
+            if(userGroups != null && userGroups.Any())
+                groups.AddRange(userGroups);
+
+            return groups;  
         }
     }
 }
