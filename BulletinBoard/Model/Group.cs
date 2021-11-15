@@ -23,6 +23,11 @@ namespace BulletinBoard.Model
         {
             Created = DateTime.UtcNow;
         }
+        public Group(ulong id)
+        {
+            Id = id;
+            Created = DateTime.UtcNow;
+        }
 
     }
 }

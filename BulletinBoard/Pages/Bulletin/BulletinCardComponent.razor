@@ -5,7 +5,7 @@
     <MudCard>
         <MudCardHeader>
             <CardHeaderAvatar>
-                <MudAvatar Image=@(Bulletin.User==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
+                @*<MudAvatar Image=@(Bulletin.User==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />*@
             </CardHeaderAvatar>
             <CardHeaderContent>
                 <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
