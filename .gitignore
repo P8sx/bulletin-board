@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 BulletinBoard/wwwroot/images
+BulletinBoard/wwwroot/lib
