@@ -20,7 +20,11 @@
     },
     {
       "library": "bootstrap-icons@1.7.0",
-      "destination": "wwwroot/lib/bootstrap-icons/" 
+      "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "jquery.imagesloaded@4.1.4",
+      "destination": "wwwroot/lib/jquery.imagesloaded/"
     }
   ]
 }

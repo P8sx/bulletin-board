@@ -1,0 +1,47 @@
+﻿@using BulletinBoard.Model
+
+
+@if (Bulletin != null && Bulletin.User != null)
+{
+    <MudCard Elevation="4" Class="mb-3">
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
+                <MudText Typo="Typo.body2"><strong>Added:</strong> @(((DateTime)Bulletin.Created).ToString("dd.MM.yyyy"))</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+        </MudCardContent>
+        @if (Bulletin.Images.Any())
+        {
+            <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                <ItemTemplate>
+                    <div class="d-flex flex-column flex-column justify-center">
+                        <MudCardMedia Image=@context.GetPath() />
+                    </div>
+                </ItemTemplate>
+            </MudCarousel>
+        }
+        <MudCardActions Class="d-flex">
+            <MudText Class="pl-3">123</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
+            <MudText Class="pl-3">123</MudText>
+            <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
+            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" Style="margin-left:auto" />
+        </MudCardActions>
+    </MudCard>
+}
+
+@code {
+    [Parameter]
+    public Bulletin Bulletin { get; set; } = new();
+    private MudCarousel<Image> _carousel;
+}

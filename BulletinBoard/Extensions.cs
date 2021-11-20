@@ -1,11 +1,17 @@
-﻿using BulletinBoard.Model;
+﻿using BulletinBoard.Data;
+using BulletinBoard.Model;
 using Microsoft.AspNetCore.Identity;
 
 namespace BulletinBoard
 {
     public static class Extensions
     {
-        public static void CreateRoles(this IServiceCollection services)
+        public static void RunAppSetup(this IServiceCollection services)
+        {
+            CreateRoles(services);
+            AddGroups(services); 
+        }
+        private static void CreateRoles(this IServiceCollection services)
         {
             foreach (var roleName in Enum.GetNames(typeof(RoleValue)))
             {
@@ -21,6 +27,22 @@ namespace BulletinBoard
             {
                 await roleManager.CreateAsync(new Role(roleName));
             }
+        }
+        private static void AddGroups(this IServiceCollection services)
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var group = new Group()
+            {
+                Id = 1,
+                Name = "Main",
+                Description = "Main application group",
+                Public = true
+            };   // Group 0 by default is main group (can be accesed by anyone)
+            if(!dbContext.Groups.Any(g => g.Id == group.Id))
+                dbContext.Groups.Add(group); ;
+
+            dbContext.SaveChanges();
         }
     }
 }
