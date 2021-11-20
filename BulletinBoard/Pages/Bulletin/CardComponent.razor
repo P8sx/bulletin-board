@@ -3,7 +3,7 @@
 
 @if (Bulletin != null && Bulletin.User != null)
 {
-    <MudCard Elevation="4" Class="mb-3">
+    <MudCard Outlined="true">
         <MudCardHeader>
             <CardHeaderAvatar>
                 <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
@@ -35,7 +35,9 @@
             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
             <MudText Class="pl-3">123</MudText>
             <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
-            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" Style="margin-left:auto" />
+            <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" />
+            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
+
         </MudCardActions>
     </MudCard>
 }

@@ -27,6 +27,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
 builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped<IBulletinService,BulletinService>();
@@ -34,7 +35,6 @@ builder.Services.AddScoped<IUserService,UserService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
-
 builder.Services.RunAppSetup();
 
 var app = builder.Build();
