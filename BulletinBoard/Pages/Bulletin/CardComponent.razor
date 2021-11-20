@@ -3,14 +3,14 @@
 
 @if (Bulletin != null && Bulletin.User != null)
 {
-    <MudCard Elevation="4" Class="mb-3" Style="height:100%">
+    <MudCard Elevation="4" Class="mb-3">
         <MudCardHeader>
             <CardHeaderAvatar>
-                @*<MudAvatar Image=@(Bulletin.User==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />*@
+                <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
             </CardHeaderAvatar>
-            <CardHeaderContent >
+            <CardHeaderContent>
                 <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
-                <MudText Typo="Typo.body2"><strong>Added:</strong> @Bulletin.Created</MudText>
+                <MudText Typo="Typo.body2"><strong>Added:</strong> @(((DateTime)Bulletin.Created).ToString("dd.MM.yyyy"))</MudText>
             </CardHeaderContent>
             <CardHeaderActions>
                 <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
@@ -30,9 +30,12 @@
                 </ItemTemplate>
             </MudCarousel>
         }
-        <MudCardActions>
+        <MudCardActions Class="d-flex">
+            <MudText Class="pl-3">123</MudText>
             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
-            <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" />
+            <MudText Class="pl-3">123</MudText>
+            <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
+            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" Style="margin-left:auto" />
         </MudCardActions>
     </MudCard>
 }

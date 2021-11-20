@@ -20,7 +20,11 @@ namespace BulletinBoard.Model
 
         public string GetPath()
         {
-            if(GroupId == 1)
+            if(GroupId == null)
+            {
+                return $"/images/avatars/{Id}.{Extension}";
+            }
+            else if(GroupId == 1)
             {
                 return $"/images/public/{Id}.{Extension}";
             }
