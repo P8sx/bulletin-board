@@ -1,7 +1,7 @@
 ﻿@page "/bulletin/add"
-<h1 class="text-center mt-4">Add new bulletin</h1>
-<PageTitle>New bulletin</PageTitle>
-<AddBulletin></AddBulletin>
+@attribute [Authorize]
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
+<AddEditComponent></AddEditComponent>
 @code {
 
 }

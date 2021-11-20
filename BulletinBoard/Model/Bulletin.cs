@@ -12,12 +12,16 @@ namespace BulletinBoard.Model
         // Bulletin Basic Info
         [Key]
         public ulong Id { get; set; }
+        [Required]
+        [StringLength(50,MinimumLength = 6, ErrorMessage = "Title must be at least 6 characters long (max 50)")]
         public string? Title { get; set; }
+        [Required]
+        [StringLength(1000, MinimumLength = 20, ErrorMessage = "Description must be at least 20 characters long (max 1000)")]
         public string? Description { get; set; }
         public DateTime? Created { get; set; }
         public DateTime? Modified { get; set; }
         public DateTime? Expired { get; set; }
-        public List<Guid>? AttachmentFiles { get; set; }
+        public List<Image> Images { get; set; } = new();
         public bool? Pinned { get; set; }
 
         // Bulletin Creator
@@ -35,8 +39,8 @@ namespace BulletinBoard.Model
         public uint? DownVotes { get; set; } = 0;
 
         // Bulletin Optional Location
-        public float? Longitude { get; set; }
-        public float? Latitude { get; set; }
+        public float? Longitude { get; set; } = 0;
+        public float? Latitude { get; set; } = 0;
 
         // Bulletin Comments
         public virtual IList<Comment>? Comments { get; set; }
