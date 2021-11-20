@@ -5,17 +5,7 @@
 
 @if (_bulletins != null)
 {
-    @*
-        <MudGrid>
-        @foreach (var bulletin in _bulletins)
-        {
-        <MudItem md="4" sm="6" xs="12" Style="width:100%">
-        <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
-        </MudItem>
-        }
-        </MudGrid>*@
-
-    <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); grid-auto-rows: 20px;">
+    <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(400px,1fr)); grid-auto-rows: 20px;">
         @foreach (var bulletin in _bulletins)
         {
             <div class="item">
@@ -37,7 +27,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _bulletins = await BulletinService.GetBulletinsAsync(1, 10);
+        _bulletins = await BulletinService.GetBulletinsAsyncCached(1, 10);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

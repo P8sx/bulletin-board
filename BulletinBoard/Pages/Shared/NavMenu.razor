@@ -1,11 +1,10 @@
 ﻿<MudNavMenu>
     <AuthorizeView>
         <Authorized>
-            <MudElement Class="d-flex justify-center">
+            <MudElement Class="d-flex flex-column justify-center">
                 <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
-            </MudElement>
-            <MudElement Class="d-flex justify-center">
-                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">Hello <br />@context.User.Identity?.Name!</MudText>
+                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">Hello</MudText>
+                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">@context.User.Identity?.Name!</MudText>                
             </MudElement>
         </Authorized>
         <NotAuthorized>
