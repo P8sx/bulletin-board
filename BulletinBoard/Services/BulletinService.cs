@@ -40,7 +40,7 @@ namespace BulletinBoard.Services
 
             var skip = (page - 1) * limit;
 
-            var savedSearches = _dbContext.Bulletins.Include(x => x.Images).Include(u => u.User).Where(g=>g.GroupId==groupId).Skip(skip).Take(limit);
+            var savedSearches = _dbContext.Bulletins.Include(x => x.Images).Include(u => u.User).ThenInclude(i =>i.Image).Where(g=>g.GroupId==groupId).Skip(skip).Take(limit);
             return await savedSearches.ToListAsync();
         }
 

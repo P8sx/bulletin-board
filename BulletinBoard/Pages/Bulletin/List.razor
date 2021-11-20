@@ -1,26 +1,31 @@
 ﻿@using BulletinBoard.Services
 @using BulletinBoard.Data
 @inject IBulletinService BulletinService
-
+@inject IJSRuntime JS
 
 @if (_bulletins != null)
 {
-@*    <MudGrid Class="d-flex">
-        @foreach (var bulletin in _bulletins)
-        {
-            <MudItem lg="3" md="4" sm="6" xs="12" Style="width:100%">
-                <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
-            </MudItem>
-        }
-    </MudGrid>*@
+    @*
         <MudGrid>
         @foreach (var bulletin in _bulletins)
         {
-            <MudItem md="4" sm="6" xs="12" Style="width:100%">
-                <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
-            </MudItem>
+        <MudItem md="4" sm="6" xs="12" Style="width:100%">
+        <BulletinCardComponent Bulletin="bulletin"></BulletinCardComponent>
+        </MudItem>
         }
-    </MudGrid>
+        </MudGrid>*@
+
+    <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); grid-auto-rows: 20px;">
+        @foreach (var bulletin in _bulletins)
+        {
+            <div class="item">
+                <div class="content">
+                    <CardComponent Bulletin="bulletin"></CardComponent>
+                </div>
+            </div>
+        }
+    </div>
+
     <MudPagination BoundaryCount="1" MiddleCount="1" Count="22" @bind-Selected="@_page" />
 }
 
@@ -33,6 +38,10 @@
     {
         await base.OnInitializedAsync();
         _bulletins = await BulletinService.GetBulletinsAsync(1, 10);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("resizeAllGridItems");
     }
 
 }

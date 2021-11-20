@@ -83,8 +83,6 @@
 
 @code {
     [Parameter]
-    public ulong GroupId { get; set; } = 1;
-    [Parameter]
     public Bulletin Bulletin { get; set; } = new();
 
     // User info
@@ -160,7 +158,7 @@
         foreach (var file in _files)
         {
             var img = new Image().SetExtension(file.Item1.Name)
-                                 .SetGroup(GroupId)
+                                 .SetGroup((ulong)Bulletin.GroupId)
                                  .SetUser(_user);
             Bulletin.Images.Add(img);
         }
