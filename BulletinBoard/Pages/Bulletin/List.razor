@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components;
 
 @inject IJSRuntime JS
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
 
@@ -33,24 +34,39 @@ else
 
 }
 @code {
-    private IList<BulletinInfoDTO> _bulletins;
-    private int _page = 1;
-    protected User _user;
+    [Parameter]
+    public bool UserBulletins { get; set; } = false;
+    [Parameter]
+    public ulong GroupId { get; set; } = 1;
+    [Parameter]
+    public bool UserBookmarks { get; set; } = false;
+
     [Inject]
     protected IBulletinService _bulletinService { get; set; }
+    [Inject]
+    protected IUserService _userService { get; set; }
+
+    protected User _user;
+
+
+    private IList<BulletinInfoDTO> _bulletins;
+    private int _page = 1;
+
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         _user = await UserManager.GetUserAsync(user);
-
-        _bulletins = await _bulletinService.GetBulletinsInfoAsyncCached(1, 10, _user);
+        if(UserBulletins)
+            _bulletins = await _bulletinService.GetUserBulletinsAsyncCached(1, 10, _user);
+        else if (UserBookmarks)
+        {
+            
+        }
+        else
+            _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, 10, _user, GroupId);
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await JS.InvokeVoidAsync("resizeAllGridItems");
-    }
+    protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("resizeAllGridItems");
 
 }

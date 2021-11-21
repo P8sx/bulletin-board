@@ -1,6 +1,7 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.DTOs
 @implements IDisposable
+
 @inherits List
 
 @if (Bulletin != null && Bulletin.User != null)
@@ -37,7 +38,7 @@
             <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote/>
             <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
             <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
-            <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" />
+            <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark  Style="margin-left:auto" />
             <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
 
         </MudCardActions>
@@ -47,7 +48,7 @@
 @code {
     [Parameter]
     public BulletinInfoDTO Bulletin { get; set; } = new();
-    private MudCarousel<Image> _carousel;
+    private MudCarousel<Image?> _carousel;
     private bool _updated = false;
     private void Vote()
     {
@@ -56,11 +57,16 @@
         Bulletin.UserVoted = !Bulletin.UserVoted;
         _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = Bulletin.Id });
     }
-    public void Dispose()
+    private void Bookmark()
     {
+        _updated = true;
+        Bulletin.UserBookmark = !Bulletin.UserBookmark;
+        _userService.Bookmark(new BulletinBookmark() { UserId = _user.Id, BulletinId = Bulletin.Id });
+    }
+    public void Dispose()
+    {       
         if (_updated)
-        {
-            
+        {          
         }
     }
 }

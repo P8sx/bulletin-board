@@ -24,6 +24,7 @@ namespace BulletinBoard.Model
         }
 
         public virtual IList<BulletinVote>? Votes { get; set; }
+        public virtual IList<BulletinBookmark>? Bookmarks { get; set; }
 
     }
 }

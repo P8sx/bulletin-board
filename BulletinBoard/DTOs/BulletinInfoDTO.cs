@@ -27,5 +27,7 @@ namespace BulletinBoard.DTOs
         // Bulletin Votes
         public uint VotesCount { get; set; }
         public bool UserVoted { get; set; }
+        public bool UserBookmark { get; set; }
+
     }
 }
