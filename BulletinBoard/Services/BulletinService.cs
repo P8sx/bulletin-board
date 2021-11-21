@@ -85,6 +85,16 @@ namespace BulletinBoard.Services
                 });
             return await savedSearches.ToListAsync();
         }
+        public async Task Vote(BulletinVote vote)
+        {
+            var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v=> v.BulletinId == vote.BulletinId && v.UserId==vote.UserId);
+            if (exist == default)
+                await _dbContext.BulletinsVotes.AddAsync(vote);
+            else
+                _dbContext.BulletinsVotes.Remove(exist);
+
+            await _dbContext.SaveChangesAsync();
+        }
 
     }
 }
