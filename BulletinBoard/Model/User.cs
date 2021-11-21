@@ -22,5 +22,8 @@ namespace BulletinBoard.Model
         {
             Joined = DateTime.UtcNow;
         }
+
+        public virtual IList<BulletinVote>? Votes { get; set; }
+
     }
 }

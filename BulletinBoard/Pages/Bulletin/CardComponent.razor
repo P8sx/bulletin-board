@@ -1,5 +1,5 @@
 ﻿@using BulletinBoard.Model
-
+@using BulletinBoard.DTOs
 
 @if (Bulletin != null && Bulletin.User != null)
 {
@@ -31,9 +31,9 @@
             </MudCarousel>
         }
         <MudCardActions Class="d-flex">
-            <MudText Class="pl-3">123</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" />
-            <MudText Class="pl-3">123</MudText>
+            <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) />
+            <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
             <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
             <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" />
             <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
@@ -44,6 +44,6 @@
 
 @code {
     [Parameter]
-    public Bulletin Bulletin { get; set; } = new();
+    public BulletinInfoDTO Bulletin { get; set; } = new();
     private MudCarousel<Image> _carousel;
 }

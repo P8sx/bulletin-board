@@ -1,4 +1,5 @@
 ﻿using BulletinBoard.Data;
+using BulletinBoard.DTOs;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -34,18 +35,20 @@ namespace BulletinBoard.Services
             return true;
         }
 
-        public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, ulong groupId = 1)
+
+        public async Task<IList<BulletinInfoDTO>> GetBulletinsInfoAsyncCached(int page, int limit, User user, ulong groupId = 1)
         {
             var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-                return await GetBulletinsAsync(page, limit, groupId);
+                return await GetBulletinsInfoAsync(page, limit, user ,groupId);
             });
             return result;
         }
 
 
-        public async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit, ulong groupId = 1)
+
+        public async Task<IList<BulletinInfoDTO>> GetBulletinsInfoAsync(int page, int limit,User user, ulong groupId = 1)
         {
             if (page == 0)
                 page = 1;
@@ -55,7 +58,31 @@ namespace BulletinBoard.Services
 
             var skip = (page - 1) * limit;
 
-            var savedSearches = _dbContext.Bulletins.Include(x => x.Images).Include(u => u.User).ThenInclude(i =>i.Image).Where(g=>g.GroupId==groupId).Skip(skip).Take(limit);
+            var savedSearches = _dbContext.Bulletins
+                .Include(x => x.Images)
+                .Include(u => u.User)
+                .ThenInclude(i => i.Image)
+                .Where(g => g.GroupId == groupId)
+                .Skip(skip)
+                .Take(limit)
+                .Select(a => new BulletinInfoDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Created = a.Created,
+                    Modified = a.Modified,
+                    Expired = a.Expired,
+                    Images = a.Images,
+                    Pinned = a.Pinned,
+                    User = a.User,
+                    Group = a.Group,
+                    Latitude = a.Latitude,
+                    Longitude = a.Longitude,
+                    CommentsCount = Convert.ToUInt32(a.Comments.Count()),
+                    VotesCount = Convert.ToUInt32(a.Votes.Count()),
+                    UserVoted = user!=null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+                });
             return await savedSearches.ToListAsync();
         }
 

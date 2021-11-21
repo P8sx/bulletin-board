@@ -1,7 +1,13 @@
 ﻿@using BulletinBoard.Services
 @using BulletinBoard.Data
+@using BulletinBoard.Model
+@using BulletinBoard.DTOs
+@using Microsoft.AspNetCore.Identity;
+
 @inject IBulletinService BulletinService
 @inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> UserManager
 
 @if (_bulletins != null)
 {
@@ -18,16 +24,27 @@
 
     <MudPagination BoundaryCount="1" MiddleCount="1" Count="22" @bind-Selected="@_page" />
 }
+else
+{
+    <MudElement Class="d-flex flex-column">
+            <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
+            <MudText Typo="Typo.h4"  Class="mx-auto mt-15">Loading bulletins</MudText>
+    </MudElement>
 
+}
 @code {
-
-
-    IList<BulletinBoard.Model.Bulletin> _bulletins = new List<BulletinBoard.Model.Bulletin>();
+    IList<BulletinInfoDTO> _bulletins;
+    private User _user;
     int _page = 1;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _bulletins = await BulletinService.GetBulletinsAsyncCached(1, 10);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _user = await UserManager.GetUserAsync(user);
+
+        _bulletins = await BulletinService.GetBulletinsInfoAsyncCached(1, 10, _user);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
