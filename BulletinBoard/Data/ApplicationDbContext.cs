@@ -13,7 +13,7 @@ namespace BulletinBoard.Data
         public virtual DbSet<GroupUser> GroupUsers { get; set; } = default!;
         public virtual DbSet<Bulletin> Bulletins { get; set; } = default!;
         public virtual DbSet<Comment> Comments { get; set; } = default!;
-
+        public virtual DbSet<BulletinVote> BulletinsVotes { get; set;} = default!;  
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -31,6 +31,8 @@ namespace BulletinBoard.Data
             builder.Entity<IdentityRoleClaim<ulong>>().ToTable("RoleClaims");
             builder.Entity<IdentityUserToken<ulong>>().ToTable("UserTokens");
 
+            builder.Entity<BulletinVote>()
+                .HasKey(sc => new { sc.UserId, sc.BulletinId });
 
             //builder.Entity<User>()
             //    .HasMany(left => left.Groups)

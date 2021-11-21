@@ -34,16 +34,16 @@ namespace BulletinBoard.Model
         [ForeignKey("Group")]
         public ulong? GroupId { get; set; }
 
-        // Bulletin Users Vote
-        public uint? UpVotes { get; set; } = 0;
-        public uint? DownVotes { get; set; } = 0;
-
         // Bulletin Optional Location
         public float? Longitude { get; set; } = 0;
         public float? Latitude { get; set; } = 0;
 
         // Bulletin Comments
         public virtual IList<Comment>? Comments { get; set; }
+
+        // Bulletin Votes
+        public virtual IList<BulletinVote>? Votes { get; set; }
+
 
 
 
