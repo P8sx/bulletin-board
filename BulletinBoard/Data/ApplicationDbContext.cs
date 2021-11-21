@@ -13,8 +13,8 @@ namespace BulletinBoard.Data
         public virtual DbSet<GroupUser> GroupUsers { get; set; } = default!;
         public virtual DbSet<Bulletin> Bulletins { get; set; } = default!;
         public virtual DbSet<Comment> Comments { get; set; } = default!;
-        public virtual DbSet<BulletinVote> BulletinsVotes { get; set;} = default!;  
-
+        public virtual DbSet<BulletinVote> BulletinsVotes { get; set;} = default!;
+        public virtual DbSet<BulletinBookmark> BulletinBookmarks { get; set; } = default!;
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -34,6 +34,8 @@ namespace BulletinBoard.Data
             builder.Entity<BulletinVote>()
                 .HasKey(sc => new { sc.UserId, sc.BulletinId });
 
+            builder.Entity<BulletinBookmark>()
+                .HasKey(sc => new { sc.UserId, sc.BulletinId });
             //builder.Entity<User>()
             //    .HasMany(left => left.Groups)
             //    .WithMany(right => right.Users)

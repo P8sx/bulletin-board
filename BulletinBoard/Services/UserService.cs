@@ -15,7 +15,7 @@ namespace BulletinBoard.Services
 
         public async Task<List<Group>> GetUserGroups(User user)
         {
-            var mainGroup = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == 1);
+            var mainGroup = _dbContext.Groups.FirstOrDefault(g => g.Id == 1);
             if (mainGroup == null) 
                 return new();
 
@@ -24,10 +24,20 @@ namespace BulletinBoard.Services
             {
                 mainGroup
             };
-            if(userGroups != null && userGroups.Any())
+            if (userGroups != null && userGroups.Any())
                 groups.AddRange(userGroups);
 
             return groups;  
+        }
+        public async Task Bookmark(BulletinBookmark bookmark)
+        {
+            var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bookmark.BulletinId && v.UserId == bookmark.UserId);
+            if (exist == default)
+                await _dbContext.BulletinBookmarks.AddAsync(bookmark);
+            else
+                _dbContext.BulletinBookmarks.Remove(exist);
+
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

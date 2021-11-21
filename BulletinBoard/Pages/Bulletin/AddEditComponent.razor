@@ -6,12 +6,12 @@
 
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
-
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
 
-@inject IBulletinService BulletinService
-@inject IUserService UserService
+
+
+
 
 <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
     <DataAnnotationsValidator />
@@ -84,10 +84,14 @@
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = new();
+    [Inject]
+    protected IBulletinService _bulletinService { get; set; }
+    [Inject]
+    protected IUserService _userService { get; set; }
 
-    // User info
-    private User _user = default!;
-    private List<Group> _userGroups = new()!;
+    protected User _user;
+    protected List<Group> _userGroups;
+
 
     // Bulletin default values
     private uint _uploadLimit = 5;
@@ -100,11 +104,12 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         _user = await UserManager.GetUserAsync(user);
-        _userGroups = await UserService.GetUserGroups(_user);
+        _userGroups = await _userService.GetUserGroups(_user);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        
     }
 
     // Load, validate, and convert files for preview
@@ -163,7 +168,7 @@
             Bulletin.Images.Add(img);
         }
         // Try save bulletin in db
-        var result = await BulletinService.AddBulletin(Bulletin);
+        var result = await _bulletinService.AddBulletin(Bulletin);
         if (!result)
         {
             Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);

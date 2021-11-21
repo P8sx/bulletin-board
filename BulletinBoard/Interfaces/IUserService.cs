@@ -4,6 +4,7 @@ namespace BulletinBoard.Services
 {
     public interface IUserService
     {
-        Task<List<Group>> GetUserGroups(User user);
+        public Task<List<Group>> GetUserGroups(User user);
+        public Task Bookmark(BulletinBookmark bookmark);
     }
 }
