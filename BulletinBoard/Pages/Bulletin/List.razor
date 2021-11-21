@@ -3,8 +3,8 @@
 @using BulletinBoard.Model
 @using BulletinBoard.DTOs
 @using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Components;
 
-@inject IBulletinService BulletinService
 @inject IJSRuntime JS
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
@@ -33,9 +33,11 @@ else
 
 }
 @code {
-    IList<BulletinInfoDTO> _bulletins;
-    private User _user;
-    int _page = 1;
+    private IList<BulletinInfoDTO> _bulletins;
+    private int _page = 1;
+    protected User _user;
+    [Inject]
+    protected IBulletinService _bulletinService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,7 +46,7 @@ else
         var user = authState.User;
         _user = await UserManager.GetUserAsync(user);
 
-        _bulletins = await BulletinService.GetBulletinsInfoAsyncCached(1, 10, _user);
+        _bulletins = await _bulletinService.GetBulletinsInfoAsyncCached(1, 10, _user);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

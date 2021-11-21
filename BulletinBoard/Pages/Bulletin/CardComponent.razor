@@ -1,5 +1,7 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.DTOs
+@implements IDisposable
+@inherits List
 
 @if (Bulletin != null && Bulletin.User != null)
 {
@@ -32,7 +34,7 @@
         }
         <MudCardActions Class="d-flex">
             <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) />
+            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote/>
             <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
             <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
             <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" />
@@ -46,4 +48,19 @@
     [Parameter]
     public BulletinInfoDTO Bulletin { get; set; } = new();
     private MudCarousel<Image> _carousel;
+    private bool _updated = false;
+    private void Vote()
+    {
+        _updated = true;
+        Bulletin.VotesCount = Bulletin.UserVoted?Bulletin.VotesCount-1:Bulletin.VotesCount+1;
+        Bulletin.UserVoted = !Bulletin.UserVoted;
+        _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = Bulletin.Id });
+    }
+    public void Dispose()
+    {
+        if (_updated)
+        {
+            
+        }
+    }
 }
