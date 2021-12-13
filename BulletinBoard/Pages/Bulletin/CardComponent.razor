@@ -6,44 +6,52 @@
 
 @if (Bulletin != null && Bulletin.User != null)
 {
-    <MudCard Outlined="true" >
+    <MudCard Outlined="true">
         <div style="position: relative;">
-        <MudCardHeader>
-            <CardHeaderAvatar>
-                <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
-            </CardHeaderAvatar>
-            <CardHeaderContent>
-                <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
-                <MudText Typo="Typo.body2"><strong>Added:</strong> @(((DateTime)Bulletin.Created).ToString("dd.MM.yyyy"))</MudText>
-                @if (Bulletin.Expired != null)
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
+                    <MudText Typo="Typo.body2"><strong>Created:</strong> @(((DateTime)Bulletin.Created).ToString("dd.MM.yyyy")) </MudText>
+                    @if (Bulletin.Expired != null)
+                    {
+                        <MudText Typo="Typo.body2"><strong>Expiring:</strong> @(((DateTime)Bulletin.Expired).ToString("dd.MM.yyyy"))</MudText>
+                    }
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                    </MudMenu>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Class="pt-0">
+                <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
+                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+                @if (Bulletin.Modified != null)
                 {
-                    <MudText Typo="Typo.body2"><strong>Expiring:</strong> @(((DateTime)Bulletin.Expired).ToString("dd.MM.yyyy"))</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2"><strong>Last modified:</strong> @(((DateTime)Bulletin.Modified).ToString("dd.MM.yyyy"))</MudText>
                 }
-            </CardHeaderContent>
-            <CardHeaderActions>
-                <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
-            </CardHeaderActions>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
-            <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
-        </MudCardContent>
-        @if (Bulletin.Images.Any())
-        {
-            <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
-                <ItemTemplate>
-                    <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
-                        <MudCardMedia Image=@context.GetPath() />
-                    </div>
-                </ItemTemplate>
-            </MudCarousel>
-        }
-        @if (Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)
-        {
-            <MudOverlay Visible="true" LightBackground="true" Absolute="true">
-                <MudChip Color="Color.Error" Class="px-5 py-2 mx-2"><MudText Typo="Typo.h6">This bulletin has expired</MudText></MudChip>
-            </MudOverlay>
-        }
+            </MudCardContent>
+            @if (Bulletin.Images.Any())
+            {
+                <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
+                            <MudCardMedia Image=@context.GetPath() />
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+            }
+            @if (Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)
+            {
+                <MudOverlay Visible="true" LightBackground="true" Absolute="true">
+                    <MudChip Color="Color.Error" Class="px-5 py-2 mx-2"><MudText Typo="Typo.h6">This bulletin has expired</MudText></MudChip>
+                </MudOverlay>
+            }
         </div>
         <MudCardActions Class="d-flex">
             <AuthorizeView>
