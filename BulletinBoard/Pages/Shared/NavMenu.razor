@@ -2,9 +2,9 @@
     <AuthorizeView>
         <Authorized>
             <MudElement Class="d-flex flex-column justify-center">
-                <img src="/no_avatar.png" class="avatar rounded-circle img-thumbnail" alt="avatar" width="150">
-                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">Hello</MudText>
-                <MudText Typo="Typo.h5" Class="mx-3 mt-3 text-center mud-secondary-text">@context.User.Identity?.Name!</MudText>                
+                <MudAvatar Image="/no_avatar.png" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
+                <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
+                <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>                
             </MudElement>
         </Authorized>
         <NotAuthorized>
