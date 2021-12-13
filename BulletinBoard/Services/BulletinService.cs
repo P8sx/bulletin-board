@@ -59,7 +59,7 @@ namespace BulletinBoard.Services
 
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
         {
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{user.Id}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{user.Id}{group.Id}{sort.orderBy}{sort.sortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsAsync(page, limit, user, group, sort);
@@ -68,7 +68,7 @@ namespace BulletinBoard.Services
         }
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
         {
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{user.Id}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{sort.orderBy}{sort.sortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsAsync(page, limit, user, new Group() { Id = 1}, sort);
@@ -76,6 +76,25 @@ namespace BulletinBoard.Services
             return result;
         }
 
+
+        public async Task<int> GetBulletinsCountAsyncCached(User user, Group group)
+        {
+            var result = await _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return await GetBulletinsCountAsync(user, group);
+            });
+            return result;
+        }
+        public async Task<int> GetBulletinsCountAsyncCached(User user)
+        {
+            var result = await _memoryCache.GetOrCreateAsync($"BulletinsCount", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return await GetBulletinsCountAsync(user, new Group() { Id = 1 });
+            });
+            return result;
+        }
 
 
         private async Task<IList<BulletinInfoDTO>> GetBulletinsAsync(int page, int limit, User user, Group group, BulletinSort sort)
@@ -88,7 +107,7 @@ namespace BulletinBoard.Services
 
             var skip = (page - 1) * limit;
 
-            var savedSearches = _dbContext.Bulletins
+            var bulletins = _dbContext.Bulletins
                 .Include(x => x.Images)
                 .Include(u => u.User)
                 .ThenInclude(i => i.Image)
@@ -116,19 +135,46 @@ namespace BulletinBoard.Services
                 });
 
             if (sort.sortBy == SortBy.Commented)
-                savedSearches = sort.orderBy == OrderBy.Ascending ? savedSearches.OrderBy(d => d.VotesCount) : savedSearches.OrderByDescending(d => d.VotesCount);
+                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
             else if (sort.sortBy == SortBy.Expiring)
-                savedSearches = sort.orderBy == OrderBy.Ascending ? savedSearches.OrderBy(d => d.Expired) : savedSearches.OrderByDescending(d => d.Expired);
+                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
             else if (sort.sortBy == SortBy.Commented)
-                savedSearches = sort.orderBy == OrderBy.Ascending ? savedSearches.OrderBy(d => d.CommentsCount) : savedSearches.OrderByDescending(d => d.CommentsCount);
+                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
             else
-                savedSearches = sort.orderBy == OrderBy.Ascending ? savedSearches.OrderBy(d => d.Created) : savedSearches.OrderByDescending(d => d.Created);
+                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
 
 
-            return await savedSearches.ToListAsync();
+            return await bulletins.ToListAsync();
         }
+        private async Task<int> GetBulletinsCountAsync(User user, Group group)
+        {
+            var bulletinsCount = await _dbContext.Bulletins
+                .Include(x => x.Images)
+                .Include(u => u.User)
+                .ThenInclude(i => i.Image)
+                .Where(g => g.GroupId == group.Id)
+                .Select(a => new BulletinInfoDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Created = a.Created,
+                    Modified = a.Modified,
+                    Expired = a.Expired,
+                    Images = a.Images,
+                    Pinned = a.Pinned,
+                    User = a.User,
+                    Group = a.Group,
+                    Latitude = a.Latitude,
+                    Longitude = a.Longitude,
+                    CommentsCount = Convert.ToUInt32(a.Comments.Count()),
+                    VotesCount = Convert.ToUInt32(a.Votes.Count()),
+                    UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
+                    UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+                }).CountAsync();
 
-
+            return bulletinsCount;
+        }
 
 
 

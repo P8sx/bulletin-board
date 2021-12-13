@@ -9,25 +9,29 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
-<MudElement Class="d-flex mb-2">
-    <MudText Typo="Typo.h4" Class="mr-auto">Bulletins</MudText>
+<MudText Typo="Typo.h4" Class="mr-auto">Bulletins</MudText>
+<MudElement Class="d-flex mb-4 justify-end ">
     <MudElement>
-        
-    </MudElement>
-
-    <MudElement>
-        <MudSelect T="string" Label="Sort" @bind-Value="_sortBy" Variant="Variant.Outlined" Style="max-width:130px">
-            <MudSelectItem T="string" Value="@("Latest")" />
-            <MudSelectItem T="string" Value="@("Popular")" />
-            <MudSelectItem T="string" Value="@("Commented")" />
-            <MudSelectItem T="string" Value="@("Expiring")" />
+        <MudSelect Label="Order" @bind-Value="_orderBy" Variant="Variant.Outlined" Style="max-width:130px">
+            @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+            {
+                <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
+            }
         </MudSelect>
     </MudElement>
     <MudElement>
-        <MudSelect T="int" Label="Bulletins per page" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
+        <MudSelect Label="Order" @bind-Value="_sortBy" Variant="Variant.Outlined" Style="max-width:130px" Class="ml-2">
+            @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+            {
+                <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
+            }
+        </MudSelect>
+    </MudElement>
+    <MudElement>
+        <MudSelect T="int" Label="Show" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
             <MudSelectItem T="int" Value="10" />
-            <MudSelectItem T="int" Value="20" />
             <MudSelectItem T="int" Value="30" />
+            <MudSelectItem T="int" Value="60" />
         </MudSelect>
     </MudElement>
 </MudElement>
@@ -36,7 +40,7 @@
 @if (_bulletins != null)
 {
     <MudElement>
-        <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(400px,1fr)); grid-auto-rows: 20px;">
+        <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(350px,1fr)); grid-auto-rows: 20px;">
             @foreach (var bulletin in _bulletins)
             {
                 <div class="item">
@@ -48,7 +52,7 @@
         </div>
     </MudElement>
     <MudElement Class="d-flex justify-center">
-        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="22" @bind-Selected="@_page" />
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" @bind-Selected="@_page" />
     </MudElement>
 
 }
@@ -59,7 +63,6 @@ else
         <MudText Typo="Typo.h4" Class="mx-auto mt-15">Loading bulletins</MudText>
     </MudElement>
 }
-
 
 
 @code {
@@ -75,13 +78,14 @@ else
     [Parameter]
     public Group? _group { get; set; }
 
+    public SortBy _sortBy = SortBy.Latest;
+    public OrderBy _orderBy = OrderBy.Ascending;
 
-    public string _sortBy = "Latest";
     public int _bulletinsPerPage = 10;
 
     private IList<BulletinInfoDTO> _bulletins = default!;
     private int _page = 1;
-
+    private int _bulletinsCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,19 +97,31 @@ else
     protected async Task GetBulletins()
     {
         if (_group is null)
-            _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user);
-        //else
-        //    _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage>=30?30:_bulletinsPerPage, _user, _group);
+        {
+            _bulletins = await _bulletinService.GetBulletinsAsyncCached(_page, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user);
+            _bulletinsCount = await _bulletinService.GetBulletinsCountAsyncCached(_user);
+        }
+        else
+        {
+            _bulletins = await _bulletinService.GetBulletinsAsyncCached(_page, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user, _group);
+            _bulletinsCount = await _bulletinService.GetBulletinsCountAsyncCached(_user, _group);
+        }
 
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("resizeAllGridItems");
-            await JS.InvokeVoidAsync("initializedBlazor");
+            await JS.InvokeVoidAsync("resizeAllGridItems");         
         }
-
+    }
+    private int NumberOfPages()
+    {
+        if (_bulletinsCount == 0) return 0;
+        return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount)/Convert.ToDouble(_bulletinsPerPage)));
+    }
+    private async Task Test(){
+        await JS.InvokeVoidAsync("initializedBlazor");
     }
 
 }

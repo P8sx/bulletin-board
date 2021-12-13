@@ -22,7 +22,7 @@
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
                         <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
                         <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
                     </MudMenu>
@@ -57,7 +57,7 @@
             <AuthorizeView>
                 <Authorized>
                     <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote />
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null &&Bulletin.Expired<DateTime.UtcNow)/>
                     <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
                     <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark Style="margin-left:auto" />
