@@ -18,10 +18,19 @@ function resizeInstance(instance) {
     resizeGridItem(item);
 }
 
+function initializedBlazor() {
+    const d = new Date();
+    let time = d.getTime();
+    console.log(time);
+}
+
+
 window.onload = resizeAllGridItems();
+
 window.addEventListener("resize", resizeAllGridItems);
 
 allItems = document.getElementsByClassName("item");
 for (x = 0; x < allItems.length; x++) {
     imagesLoaded(allItems[x], resizeInstance);
 }
+

@@ -10,12 +10,13 @@ namespace BulletinBoard.Services
 
         public UserService(ApplicationDbContext dbContext)
         {
-            this._dbContext = dbContext;
+            _dbContext = dbContext;
+            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5)); 
         }
 
         public async Task<List<Group>> GetUserGroups(User user)
         {
-            var mainGroup = _dbContext.Groups.FirstOrDefault(g => g.Id == 1);
+            var mainGroup = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == 1);
             if (mainGroup == null) 
                 return new();
 
@@ -26,7 +27,6 @@ namespace BulletinBoard.Services
             };
             if (userGroups != null && userGroups.Any())
                 groups.AddRange(userGroups);
-
             return groups;  
         }
         public async Task Bookmark(BulletinBookmark bookmark)

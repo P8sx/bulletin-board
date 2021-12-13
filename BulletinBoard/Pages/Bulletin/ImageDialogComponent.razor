@@ -1,0 +1,14 @@
+﻿<MudDialog>
+    <DialogContent>
+        <img src="@Path" style="max-height: 800px; height: 100%; width: 100%">
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public string Path { get; set; }
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

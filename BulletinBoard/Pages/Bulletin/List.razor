@@ -9,7 +9,27 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
+<MudGrid Class="mb-2">
+    <MudItem xs="6">
+        <MudText Typo="Typo.h4" Class="mb-4">Bulletins</MudText>
+    </MudItem>
 
+    <MudItem  xs="4"> 
+        <MudSelect T="string" Label="Sort" @bind-Value="_sortBy" Variant="Variant.Outlined">
+            <MudSelectItem T="string" Value="@("Latest")" />
+            <MudSelectItem T="string" Value="@("Popular")" />
+            <MudSelectItem T="string" Value="@("Commented")" />
+            <MudSelectItem T="string" Value="@("Expiring")" />
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="2"> 
+        <MudSelect T="int" Label="Bulletins" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined">
+            <MudSelectItem T="int" Value="10" />
+            <MudSelectItem T="int" Value="20" />
+            <MudSelectItem T="int" Value="30" />
+        </MudSelect>
+    </MudItem>
+</MudGrid>
 @if (_bulletins != null)
 {
     <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(400px,1fr)); grid-auto-rows: 20px;">
@@ -28,45 +48,43 @@
 else
 {
     <MudElement Class="d-flex flex-column">
-            <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
-            <MudText Typo="Typo.h4"  Class="mx-auto mt-15">Loading bulletins</MudText>
+        <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
+        <MudText Typo="Typo.h4" Class="mx-auto mt-15">Loading bulletins</MudText>
     </MudElement>
 
 }
 @code {
-    [Parameter]
-    public bool UserBulletins { get; set; } = false;
-    [Parameter]
-    public ulong GroupId { get; set; } = 1;
-    [Parameter]
-    public bool UserBookmarks { get; set; } = false;
-
     [Inject]
     protected IBulletinService _bulletinService { get; set; }
     [Inject]
     protected IUserService _userService { get; set; }
+    [Inject]
+    protected IDialogService _dialogService { get; set; }
 
     protected User _user;
 
+    public string _sortBy = "Latest";
+    public int _bulletinsPerPage = 10;
 
     private IList<BulletinInfoDTO> _bulletins;
     private int _page = 1;
-
+   
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         _user = await UserManager.GetUserAsync(user);
-        if(UserBulletins)
-            _bulletins = await _bulletinService.GetUserBulletinsAsyncCached(1, 10, _user);
-        else if (UserBookmarks)
-        {
-            
-        }
-        else
-            _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, 10, _user, GroupId);
+        _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage>=30?30:_bulletinsPerPage, _user);
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("resizeAllGridItems");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("resizeAllGridItems");
+            await JS.InvokeVoidAsync("initializedBlazor");
+        }
+
+    }
 
 }
