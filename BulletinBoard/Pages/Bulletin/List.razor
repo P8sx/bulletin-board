@@ -12,7 +12,7 @@
 <MudText Typo="Typo.h4" Class="mr-auto">Bulletins</MudText>
 <MudElement Class="d-flex mb-4 justify-end ">
     <MudElement>
-        <MudSelect Label="Order" @bind-Value="_orderBy" Variant="Variant.Outlined" Style="max-width:130px">
+        <MudSelect Label="Order" @bind-Value="_orderBy" Variant="Variant.Outlined" Style="max-width:280px">
             @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
             {
                 <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
@@ -20,7 +20,7 @@
         </MudSelect>
     </MudElement>
     <MudElement>
-        <MudSelect Label="Order" @bind-Value="_sortBy" Variant="Variant.Outlined" Style="max-width:130px" Class="ml-2">
+        <MudSelect Label="Sort" @bind-Value="_sortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2">
             @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
             {
                 <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
@@ -78,7 +78,7 @@ else
     [Parameter]
     public Group? _group { get; set; }
 
-    public SortBy _sortBy = SortBy.Latest;
+    public SortBy _sortBy = SortBy.Created;
     public OrderBy _orderBy = OrderBy.Ascending;
 
     public int _bulletinsPerPage = 10;

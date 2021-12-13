@@ -9,12 +9,12 @@ namespace BulletinBoard.Services
 {
     public struct BulletinSort
     {
-        public SortBy sortBy { get; set; } = SortBy.Latest;
+        public SortBy sortBy { get; set; } = SortBy.Created;
         public OrderBy orderBy { get; set; } = OrderBy.Ascending;
     }
     public enum SortBy
     {
-        Latest,
+        Created,
         Popular,
         Commented,
         Expiring
