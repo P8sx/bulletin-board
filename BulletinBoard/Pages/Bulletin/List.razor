@@ -52,7 +52,7 @@
         </div>
     </MudElement>
     <MudElement Class="d-flex justify-center">
-        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" @bind-Selected="@_page" />
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="GetBulletins"/>
     </MudElement>
 
 }
@@ -94,8 +94,9 @@ else
         _user = await UserManager.GetUserAsync(user);
         await GetBulletins();
     }
-    protected async Task GetBulletins()
+    protected async Task GetBulletins(int page = 1)
     {
+        _page = page;
         if (_group is null)
         {
             _bulletins = await _bulletinService.GetBulletinsAsyncCached(_page, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user);
@@ -106,7 +107,6 @@ else
             _bulletins = await _bulletinService.GetBulletinsAsyncCached(_page, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user, _group);
             _bulletinsCount = await _bulletinService.GetBulletinsCountAsyncCached(_user, _group);
         }
-
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
