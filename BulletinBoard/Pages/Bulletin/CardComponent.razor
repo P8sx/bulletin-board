@@ -27,23 +27,36 @@
         {
             <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
                 <ItemTemplate>
-                    <div class="d-flex flex-column flex-column justify-center">
-                        <MudCardMedia Image=@context.GetPath() />
+                    <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
+                        <MudCardMedia Image=@context.GetPath()/>
                     </div>
                 </ItemTemplate>
             </MudCarousel>
         }
         <MudCardActions Class="d-flex">
-            <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote/>
-            <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
-            <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
-            <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark  Style="margin-left:auto" />
-            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
+            <AuthorizeView>
+                <Authorized>
+                    <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote />
+                    <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
+                    <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
+                    <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark Style="margin-left:auto" />
+                </Authorized>
+                <NotAuthorized>
+                    <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" Disabled />
+                    <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
+                    <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
+                    <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled />
+                </NotAuthorized>
+            </AuthorizeView>
+            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
 
         </MudCardActions>
     </MudCard>
 }
+
+
 
 @code {
     [Parameter]
@@ -52,21 +65,24 @@
     private bool _updated = false;
     private void Vote()
     {
-        _updated = true;
-        Bulletin.VotesCount = Bulletin.UserVoted?Bulletin.VotesCount-1:Bulletin.VotesCount+1;
+        Bulletin.VotesCount = Bulletin.UserVoted ? Bulletin.VotesCount - 1 : Bulletin.VotesCount + 1;
         Bulletin.UserVoted = !Bulletin.UserVoted;
         _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = Bulletin.Id });
     }
     private void Bookmark()
     {
-        _updated = true;
         Bulletin.UserBookmark = !Bulletin.UserBookmark;
         _userService.Bookmark(new BulletinBookmark() { UserId = _user.Id, BulletinId = Bulletin.Id });
     }
     public void Dispose()
-    {       
-        if (_updated)
-        {          
-        }
+    {
+
+    }
+    private void OpenDialog(string path)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Path", path);
+        DialogOptions options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large};
+        _dialogService.Show<ImageDialogComponent>("Simple Dialog", parameters, options);
     }
 }

@@ -3,6 +3,7 @@ using BulletinBoard.DTOs;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 
 namespace BulletinBoard.Services
 {
@@ -17,6 +18,8 @@ namespace BulletinBoard.Services
             _dbContext = dbContext;
             _logger = logger;
             _memoryCache = memoryCache;
+            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
+
         }
 
         public async Task<bool> AddBulletin(Bulletin bulletin)
@@ -155,6 +158,8 @@ namespace BulletinBoard.Services
                 .Include(x => x.Images)
                 .Include(u => u.User)
                 .ThenInclude(i => i.Image)
+                .Include(b => b.Bookmarks)
+                //.Where(b=>b.Bookmarks.Any(u => ))
                 .Skip(skip)
                 .Take(limit)
                 .Select(a => new BulletinInfoDTO
