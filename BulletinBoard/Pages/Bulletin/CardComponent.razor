@@ -103,6 +103,6 @@
         var parameters = new DialogParameters();
         parameters.Add("Path", path);
         DialogOptions options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large };
-        _dialogService.Show<ImageDialogComponent>("Simple Dialog", parameters, options);
+        _dialogService.Show<ImageDialogComponent>("Image", parameters, options);
     }
 }

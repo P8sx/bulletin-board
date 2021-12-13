@@ -5,9 +5,12 @@ namespace BulletinBoard.Services
 {
     public interface IBulletinService
     {
-        public Task<bool> AddBulletin(Bulletin bulletin);
-        public Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, ulong groupId = 1);
-        public Task<IList<BulletinInfoDTO>> GetUserBulletinsAsyncCached(int page, int limit, User user);
-        public Task Vote(BulletinVote vote);
+        Task<bool> AddBulletin(Bulletin bulletin);
+
+        Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default);
+        Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default);
+
+
+        Task Vote(BulletinVote vote);
     }
 }

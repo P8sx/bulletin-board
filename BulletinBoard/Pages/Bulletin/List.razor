@@ -9,41 +9,48 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
-<MudGrid Class="mb-2">
-    <MudItem xs="6">
-        <MudText Typo="Typo.h4" Class="mb-4">Bulletins</MudText>
-    </MudItem>
+<MudElement Class="d-flex mb-2">
+    <MudText Typo="Typo.h4" Class="mr-auto">Bulletins</MudText>
+    <MudElement>
+        
+    </MudElement>
 
-    <MudItem  xs="4"> 
-        <MudSelect T="string" Label="Sort" @bind-Value="_sortBy" Variant="Variant.Outlined">
+    <MudElement>
+        <MudSelect T="string" Label="Sort" @bind-Value="_sortBy" Variant="Variant.Outlined" Style="max-width:130px">
             <MudSelectItem T="string" Value="@("Latest")" />
             <MudSelectItem T="string" Value="@("Popular")" />
             <MudSelectItem T="string" Value="@("Commented")" />
             <MudSelectItem T="string" Value="@("Expiring")" />
         </MudSelect>
-    </MudItem>
-    <MudItem xs="2"> 
-        <MudSelect T="int" Label="Bulletins per page" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined">
+    </MudElement>
+    <MudElement>
+        <MudSelect T="int" Label="Bulletins per page" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
             <MudSelectItem T="int" Value="10" />
             <MudSelectItem T="int" Value="20" />
             <MudSelectItem T="int" Value="30" />
         </MudSelect>
-    </MudItem>
-</MudGrid>
+    </MudElement>
+</MudElement>
+
+
 @if (_bulletins != null)
 {
-    <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(400px,1fr)); grid-auto-rows: 20px;">
-        @foreach (var bulletin in _bulletins)
-        {
-            <div class="item">
-                <div class="content">
-                    <CardComponent Bulletin="bulletin"></CardComponent>
+    <MudElement>
+        <div class="grid" style="display: grid; grid-gap:10px;grid-template-columns: repeat(auto-fill, minmax(400px,1fr)); grid-auto-rows: 20px;">
+            @foreach (var bulletin in _bulletins)
+            {
+                <div class="item">
+                    <div class="content">
+                        <CardComponent Bulletin="bulletin"></CardComponent>
+                    </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    </MudElement>
+    <MudElement Class="d-flex justify-center">
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="22" @bind-Selected="@_page" />
+    </MudElement>
 
-    <MudPagination BoundaryCount="1" MiddleCount="1" Count="22" @bind-Selected="@_page" />
 }
 else
 {
@@ -51,8 +58,10 @@ else
         <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
         <MudText Typo="Typo.h4" Class="mx-auto mt-15">Loading bulletins</MudText>
     </MudElement>
-
 }
+
+
+
 @code {
     [Inject]
     protected IBulletinService _bulletinService { get; set; }
@@ -61,21 +70,33 @@ else
     [Inject]
     protected IDialogService _dialogService { get; set; }
 
-    protected User _user;
+    [Parameter]
+    public User? _user { get; set; }
+    [Parameter]
+    public Group? _group { get; set; }
+
 
     public string _sortBy = "Latest";
     public int _bulletinsPerPage = 10;
 
-    private IList<BulletinInfoDTO> _bulletins;
+    private IList<BulletinInfoDTO> _bulletins = default!;
     private int _page = 1;
-   
+
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         _user = await UserManager.GetUserAsync(user);
-        _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage>=30?30:_bulletinsPerPage, _user);
+        await GetBulletins();
+    }
+    protected async Task GetBulletins()
+    {
+        if (_group is null)
+            _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user);
+        //else
+        //    _bulletins = await _bulletinService.GetBulletinsAsyncCached(1, _bulletinsPerPage>=30?30:_bulletinsPerPage, _user, _group);
+
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
