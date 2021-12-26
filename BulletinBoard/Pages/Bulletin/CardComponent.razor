@@ -6,7 +6,7 @@
 
 @if (Bulletin != null && Bulletin.User != null)
 {
-    <MudCard Outlined="true">
+    <MudCard Outlined="true" Class="mb-5">
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
@@ -38,13 +38,27 @@
             </MudCardContent>
             @if (Bulletin.Images.Any())
             {
-                <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
-                    <ItemTemplate>
-                        <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
-                            <MudCardMedia Image=@context.GetPath() />
-                        </div>
-                    </ItemTemplate>
-                </MudCarousel>
+                <MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
+                    <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                        <ItemTemplate>
+                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
+                                <MudCardMedia Image=@context.GetPath() />
+                            </div>
+                        </ItemTemplate>
+                    </MudCarousel>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
+                    <MudGrid Class="px-4">
+                        @foreach(var img in Bulletin.Images)
+                        {
+                            <MudItem xs="4">
+                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetPath()))">
+                                    <MudCardMedia Image=@img.GetPath()/>
+                                </div>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudHidden>
             }
             @if (Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)
             {

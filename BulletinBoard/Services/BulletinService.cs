@@ -11,6 +11,12 @@ namespace BulletinBoard.Services
     {
         public SortBy sortBy { get; set; } = SortBy.Created;
         public OrderBy orderBy { get; set; } = OrderBy.Ascending;
+        
+        public BulletinSort(SortBy sortBy, OrderBy orderBy)
+        {
+            this.orderBy = orderBy;
+            this.sortBy = sortBy;
+        }
     }
     public enum SortBy
     {
@@ -175,154 +181,6 @@ namespace BulletinBoard.Services
 
             return bulletinsCount;
         }
-
-
-
-
-        //public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, ulong groupId = 1)
-        //{
-        //    var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}", async p =>
-        //    {
-        //        p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-        //        return await GetBulletinsAsync(page, limit, user ,groupId);
-        //    });
-        //    return result;
-        //}
-        //public async Task<IList<BulletinInfoDTO>> GetUserBulletinsAsyncCached(int page, int limit, User user)
-        //{
-        //    var result = await _memoryCache.GetOrCreateAsync($"UserBulletins{page}{limit}", async p =>
-        //    {
-        //        p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-        //        return await GetUserBulletinsAsync(page, limit, user);
-        //    });
-        //    return result;
-        //}
-        //public async Task<IList<BulletinInfoDTO>> GetUserBookmarkBulletinsAsyncCached(int page, int limit, User user)
-        //{
-        //    var result = await _memoryCache.GetOrCreateAsync($"UserBulletins{page}{limit}", async p =>
-        //    {
-        //        p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-        //        return await GetUserBookmarkBulletinsAsync(page, limit, user);
-        //    });
-        //    return result;
-        //}
-
-        //private async Task<IList<BulletinInfoDTO>> GetBulletinsAsync(int page, int limit,User user, ulong groupId = 1)
-        //{
-        //    if (page == 0)
-        //        page = 1;
-
-        //    if (limit == 0)
-        //        limit = int.MaxValue;
-
-        //    var skip = (page - 1) * limit;
-
-        //    var savedSearches = _dbContext.Bulletins
-        //        .Include(x => x.Images)
-        //        .Include(u => u.User)
-        //        .ThenInclude(i => i.Image)
-        //        .Where(g => g.GroupId == groupId)
-        //        .Skip(skip)
-        //        .Take(limit)
-        //        .Select(a => new BulletinInfoDTO
-        //        {
-        //            Id = a.Id,
-        //            Title = a.Title,
-        //            Description = a.Description,
-        //            Created = a.Created,
-        //            Modified = a.Modified,
-        //            Expired = a.Expired,
-        //            Images = a.Images,
-        //            Pinned = a.Pinned,
-        //            User = a.User,
-        //            Group = a.Group,
-        //            Latitude = a.Latitude,
-        //            Longitude = a.Longitude,
-        //            CommentsCount = Convert.ToUInt32(a.Comments.Count()),
-        //            VotesCount = Convert.ToUInt32(a.Votes.Count()),
-        //            UserVoted = user!=null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-        //            UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
-        //        });
-        //    return await savedSearches.ToListAsync();
-        //}
-        //private async Task<IList<BulletinInfoDTO>> GetUserBulletinsAsync(int page, int limit, User user)
-        //{
-        //    if (page == 0)
-        //        page = 1;
-
-        //    if (limit == 0)
-        //        limit = int.MaxValue;
-
-        //    var skip = (page - 1) * limit;
-
-        //    var savedSearches = _dbContext.Bulletins
-        //        .Where(g => g.User == user)
-        //        .Include(x => x.Images)
-        //        .Include(u => u.User)
-        //        .ThenInclude(i => i.Image)
-        //        .Skip(skip)
-        //        .Take(limit)
-        //        .Select(a => new BulletinInfoDTO
-        //        {
-        //            Id = a.Id,
-        //            Title = a.Title,
-        //            Description = a.Description,
-        //            Created = a.Created,
-        //            Modified = a.Modified,
-        //            Expired = a.Expired,
-        //            Images = a.Images,
-        //            Pinned = a.Pinned,
-        //            User = a.User,
-        //            Group = a.Group,
-        //            Latitude = a.Latitude,
-        //            Longitude = a.Longitude,
-        //            CommentsCount = Convert.ToUInt32(a.Comments.Count()),
-        //            VotesCount = Convert.ToUInt32(a.Votes.Count()),
-        //            UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-        //            UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
-        //        });
-        //    return await savedSearches.ToListAsync();
-        //}
-        //private async Task<IList<BulletinInfoDTO>> GetUserBookmarkBulletinsAsync(int page, int limit, User user)
-        //{
-        //    if (page == 0)
-        //        page = 1;
-
-        //    if (limit == 0)
-        //        limit = int.MaxValue;
-
-        //    var skip = (page - 1) * limit;
-        //    var userBookmarks = await _dbContext.BulletinBookmarks.Where(u => u.UserId == user.Id).ToListAsync();
-
-        //    var savedSearches = _dbContext.Bulletins
-        //        .Include(x => x.Images)
-        //        .Include(u => u.User)
-        //        .ThenInclude(i => i.Image)
-        //        .Include(b => b.Bookmarks)
-        //        //.Where(b=>b.Bookmarks.Any(u => ))
-        //        .Skip(skip)
-        //        .Take(limit)
-        //        .Select(a => new BulletinInfoDTO
-        //        {
-        //            Id = a.Id,
-        //            Title = a.Title,
-        //            Description = a.Description,
-        //            Created = a.Created,
-        //            Modified = a.Modified,
-        //            Expired = a.Expired,
-        //            Images = a.Images,
-        //            Pinned = a.Pinned,
-        //            User = a.User,
-        //            Group = a.Group,
-        //            Latitude = a.Latitude,
-        //            Longitude = a.Longitude,
-        //            CommentsCount = Convert.ToUInt32(a.Comments.Count()),
-        //            VotesCount = Convert.ToUInt32(a.Votes.Count()),
-        //            UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-        //            UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
-        //        });
-        //    return await savedSearches.ToListAsync();
-        //}
 
         public async Task Vote(BulletinVote vote)
         {
