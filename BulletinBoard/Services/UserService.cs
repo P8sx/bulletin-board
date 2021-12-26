@@ -16,11 +16,12 @@ namespace BulletinBoard.Services
 
         public async Task<List<Group>> GetUserGroups(User user)
         {
-            var mainGroup = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == 1);
+            var mainGroup = await _dbContext.Groups.Include(g=>g.Image).FirstOrDefaultAsync(g => g.Id == 1);
+
             if (mainGroup == null) 
                 return new();
 
-            var userGroups = await _dbContext.GroupUsers.Where(gu => gu.User == user).Select(gu => gu.Group).ToListAsync();
+            var userGroups = await _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group.Image).Select(gu => gu.Group).ToListAsync();
             var groups = new List<Group>
             {
                 mainGroup
@@ -29,6 +30,12 @@ namespace BulletinBoard.Services
                 groups.AddRange(userGroups);
             return groups;  
         }
+        public async Task<List<GroupUser>> GetUserGroupsRolesAsync(User user)
+        {
+            var groupUser = _dbContext.GroupUsers.Include(gu => gu.User).Include(gu => gu.Role).Where(gu => gu.User == user).ToListAsync();
+            return await groupUser;
+        }
+
         public async Task Bookmark(BulletinBookmark bookmark)
         {
             var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bookmark.BulletinId && v.UserId == bookmark.UserId);

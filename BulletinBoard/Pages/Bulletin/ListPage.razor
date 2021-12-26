@@ -1,0 +1,126 @@
+﻿@page "/bulletin"
+
+@using BulletinBoard.Services
+@using BulletinBoard.Data
+@using BulletinBoard.Model
+@using BulletinBoard.DTOs
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Components;
+
+@inherits MainComponent
+
+@inject IJSRuntime JS
+
+@*<MudText Typo="Typo.h4" Class="mr-auto">Bulletins</MudText>*@
+
+@if(_group != null)
+{
+    <MudCard Class="mb-5">
+        @if(_group.Image != null)
+        {
+            <MudCardMedia Image=@(_group.Image.GetPath()) Height="200"/>
+        }
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">@_group.Name</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2">@_group.Description</MudText>
+        </MudCardContent>
+    </MudCard>
+}
+
+
+<MudElement Class="d-flex mb-4 justify-end ">
+    <MudElement>
+        <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => GetBulletins())">
+            @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+            {
+                <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
+            }
+        </MudSelect>
+    </MudElement>
+    <MudElement>
+        <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => GetBulletins())">
+            @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+            {
+                <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
+            }
+        </MudSelect>
+    </MudElement>
+    <MudElement>
+        <MudSelect T="int" Label="Show" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
+            <MudSelectItem T="int" Value="10" />
+            <MudSelectItem T="int" Value="30" />
+            <MudSelectItem T="int" Value="60" />
+        </MudSelect>
+    </MudElement>
+</MudElement>
+
+
+@if (_bulletins != null)
+{
+    <MudElement>
+        @foreach (var bulletin in _bulletins)
+        {
+            <CardComponent Bulletin="bulletin"></CardComponent>
+        }
+    </MudElement>
+    <MudElement Class="d-flex justify-center">
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="GetBulletins" />
+    </MudElement>
+
+}
+else
+{
+    <MudElement Class="d-flex flex-column">
+        <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
+        <MudText Typo="Typo.h4" Class="mx-auto mt-15">Loading bulletins</MudText>
+    </MudElement>
+}
+
+
+@code {
+    [Inject]
+    protected IBulletinService _bulletinService { get; set; }
+    [Inject]
+    protected IDialogService _dialogService { get; set; }
+
+    [Parameter]
+    public Group? _group { get; set; } = null;
+
+    public SortBy _sortBy = SortBy.Created;
+    public OrderBy _orderBy = OrderBy.Ascending;
+
+    public int _bulletinsPerPage = 10;
+
+    private IList<BulletinInfoDTO> _bulletins = default!;
+    private int _page = 1;
+    private int _bulletinsCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_group == null) _group = await _groupService.GetDefaultGroupAsync();
+        await base.OnInitializedAsync();
+        await GetBulletins();
+    }
+    protected async Task GetBulletins(int page = 1)
+    {
+        _page = page;
+        _bulletins = await _bulletinService.GetBulletinsAsyncCached(_page, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user, _group, new BulletinSort(_sortBy, _orderBy));
+        _bulletinsCount = await _bulletinService.GetBulletinsCountAsyncCached(_user, _group);               
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //await JS.InvokeVoidAsync("resizeAllGridItems");
+        }
+    }
+    private int NumberOfPages()
+    {
+        if (_bulletinsCount == 0) return 0;
+        return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
+    }
+}

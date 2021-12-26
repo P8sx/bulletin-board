@@ -65,7 +65,8 @@ namespace BulletinBoard.Services
 
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
         {
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{user.Id}{group.Id}{sort.orderBy}{sort.sortBy}", async p =>
+            var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.orderBy}{sort.sortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsAsync(page, limit, user, group, sort);

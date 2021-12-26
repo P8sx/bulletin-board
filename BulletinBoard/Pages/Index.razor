@@ -1,6 +1,13 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 <PageTitle>Index</PageTitle>
-<BulletinBoard.Pages.Bulletin.List></BulletinBoard.Pages.Bulletin.List>
 
 
+@code{
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        NavigationManager.NavigateTo("bulletin");
+    }
+}

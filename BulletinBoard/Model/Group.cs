@@ -16,6 +16,11 @@ namespace BulletinBoard.Model
         public string? Description { get; set; }
         public DateTime Created { get; private set; }
         public bool? Public { get; set; }
+        public virtual Image? Image { get; set; }
+        [ForeignKey("Image")]
+        public Guid? ImageId { get; set; }
+
+
         public virtual IList<GroupUser>? GroupUsers { get; set; }
         public virtual IList<Bulletin>? Bulletins { get; set; }
         public Group()
