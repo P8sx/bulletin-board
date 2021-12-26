@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options
-           .UseMySql(connectionString, new MySqlServerVersion(new Version(5, 7, 35))));
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options
+           .UseMySql(connectionString, new MySqlServerVersion(new Version(5, 7, 35))), ServiceLifetime.Transient);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -30,8 +30,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddScoped<IBulletinService,BulletinService>();
-builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddTransient<IBulletinService,BulletinService>();
+builder.Services.AddTransient<IUserService,UserService>();
+builder.Services.AddTransient<IGroupService,GroupService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();

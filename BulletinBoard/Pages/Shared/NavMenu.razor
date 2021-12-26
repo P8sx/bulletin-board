@@ -13,8 +13,8 @@
 
     <MudText Typo="Typo.h4" Class="mx-6 mt-3">Bullietins</MudText>
         <MudDivider Class="mt-3 mb-1"></MudDivider>
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">Bulletins</MudNavLink>
-        <MudNavLink Href="/2" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Search</MudNavLink>
+        <MudNavLink Href="/bulletin" Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">Bulletins</MudNavLink>
+@*        <MudNavLink Href="/2" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Search</MudNavLink>*@
         <AuthorizeView>
             <Authorized>
                 <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add</MudNavLink>
@@ -26,8 +26,8 @@
         <MudDivider Class="mt-3 mb-1"></MudDivider>
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="/5" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
-                <MudNavLink Href="/6" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
+                <MudNavLink Href="/group" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
+                <MudNavLink Href="/group/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
             </Authorized>
             <NotAuthorized>
                 <MudText Class="mx-3 my-3">Log in or Register to be able to use the groups</MudText>

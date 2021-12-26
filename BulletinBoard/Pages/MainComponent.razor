@@ -1,0 +1,35 @@
+﻿@using BulletinBoard.Model
+@using System.IO
+@using Microsoft.AspNetCore.Identity;
+@using BulletinBoard.Services
+@using System.Linq;
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> UserManager
+
+
+@code {
+    [Inject]
+    protected IUserService _userService { get; set; } = default!;
+    [Inject]
+    protected IGroupService _groupService { get; set; } = default!;
+
+    public User _user { get; set; } = default!;
+    public List<BulletinBoard.Model.Group> _userGroups { get; set; } = default!;
+    public List<BulletinBoard.Model.GroupUser> _userGroupRoles { get; set; } = default!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _user = await UserManager.GetUserAsync(authState.User);
+        _userGroups = await _userService.GetUserGroups(_user);
+        _userGroupRoles = await _userService.GetUserGroupsRolesAsync(_user);
+        
+    }
+    protected bool IsGroupAdmin(BulletinBoard.Model.Group group)
+    {
+        return true;
+    }
+}

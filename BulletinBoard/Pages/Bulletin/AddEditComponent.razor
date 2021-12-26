@@ -10,8 +10,7 @@
 @inject UserManager<User> UserManager
 
 
-
-
+@inherits MainComponent
 
 <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
     <DataAnnotationsValidator />
@@ -86,11 +85,6 @@
     public Bulletin Bulletin { get; set; } = new();
     [Inject]
     protected IBulletinService _bulletinService { get; set; }
-    [Inject]
-    protected IUserService _userService { get; set; }
-
-    protected User _user;
-    protected List<Group> _userGroups;
 
 
     // Bulletin default values
@@ -104,12 +98,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        _user = await UserManager.GetUserAsync(user);
-        _userGroups = await _userService.GetUserGroups(_user);
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-        
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;        
     }
 
     // Load, validate, and convert files for preview
