@@ -62,7 +62,6 @@ namespace BulletinBoard.Services
         }
 
 
-
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
@@ -82,7 +81,16 @@ namespace BulletinBoard.Services
             });
             return result;
         }
-
+        public async Task<BulletinInfoDTO> GetBulletinAsyncCached(User user, ulong groupId, Guid bulletinId)
+        {
+            var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{groupId}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return await GetBulletinAsync(user, groupId, bulletinId);
+            });
+            return result;
+        }
 
         public async Task<int> GetBulletinsCountAsyncCached(User user, Group group)
         {
@@ -183,6 +191,36 @@ namespace BulletinBoard.Services
             return bulletinsCount;
         }
 
+        private async Task<BulletinInfoDTO> GetBulletinAsync(User user, ulong groupId, Guid bulletinId)
+        {
+            var bulletin = _dbContext.Bulletins
+                .Include(x => x.Images)
+                .Include(u => u.User)
+                .ThenInclude(i => i.Image)
+                .Where(g => g.GroupId == groupId)
+                .Where(b => b.Id == bulletinId)
+                .Select(a => new BulletinInfoDTO
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Description = a.Description,
+                    Created = a.Created,
+                    Modified = a.Modified,
+                    Expired = a.Expired,
+                    Images = a.Images,
+                    Pinned = a.Pinned,
+                    User = a.User,
+                    Group = a.Group,
+                    Latitude = a.Latitude,
+                    Longitude = a.Longitude,
+                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
+                    VotesCount = Convert.ToUInt32(a.Votes.Count),
+                    UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
+                    UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+                }).FirstOrDefaultAsync();
+            return await bulletin;
+        }
+
         public async Task Vote(BulletinVote vote)
         {
             var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v=> v.BulletinId == vote.BulletinId && v.UserId==vote.UserId);
@@ -193,6 +231,8 @@ namespace BulletinBoard.Services
 
             await _dbContext.SaveChangesAsync();
         }
+
+
 
     }
 }
