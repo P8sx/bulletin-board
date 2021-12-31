@@ -11,7 +11,7 @@ namespace BulletinBoard.Model
     {
         // Bulletin Basic Info
         [Key]
-        public ulong Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         [Required]
         [StringLength(50,MinimumLength = 6, ErrorMessage = "Title must be at least 6 characters long (max 50)")]
         public string? Title { get; set; }

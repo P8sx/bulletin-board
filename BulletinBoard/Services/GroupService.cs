@@ -23,5 +23,9 @@ namespace BulletinBoard.Services
         {
             return await _dbContext.Groups.Where(g => g.Id == 1).Include(g=>g.Image).FirstOrDefaultAsync();
         }
+        public async Task<Group> GetGroupAsync(ulong groupId)
+        {
+            return await _dbContext.Groups.Where(g => g.Id == groupId).Include(g => g.Image).FirstOrDefaultAsync();
+        }
     }
 }

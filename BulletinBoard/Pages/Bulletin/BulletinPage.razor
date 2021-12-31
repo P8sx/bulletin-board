@@ -1,0 +1,13 @@
+﻿@page "/bulletin"
+
+<h3>BulletinPage</h3>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public long Group { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid Bulletin { get; set; }
+}

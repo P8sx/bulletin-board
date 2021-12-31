@@ -21,9 +21,9 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("Created")
                         .HasColumnType("datetime(6)");
@@ -73,8 +73,8 @@ namespace BulletinBoard.Migrations
                     b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("UserId", "BulletinId");
 
@@ -88,8 +88,8 @@ namespace BulletinBoard.Migrations
                     b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("UserId", "BulletinId");
 
@@ -104,8 +104,8 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong?>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
@@ -188,8 +188,8 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<ulong?>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
