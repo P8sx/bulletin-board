@@ -7,11 +7,13 @@ namespace BulletinBoard.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger _logger;
 
-        public UserService(ApplicationDbContext dbContext)
+        public UserService(ApplicationDbContext dbContext, ILogger<BulletinService> logger)
         {
             _dbContext = dbContext;
-            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5)); 
+            _logger = logger;
+
         }
 
         public async Task<List<Group>> GetUserGroups(User user)

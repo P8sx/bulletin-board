@@ -84,7 +84,7 @@
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled />
                 </NotAuthorized>
             </AuthorizeView>
-            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
+            <MudIconButton Link=@($"bulletin?group={Bulletin.Group.Id}&bulletin={Bulletin.Id}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
 
         </MudCardActions>
     </MudCard>

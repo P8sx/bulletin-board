@@ -32,14 +32,20 @@ namespace BulletinBoard
         {
             var serviceProvider = services.BuildServiceProvider();
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var img = new Image(Guid.Parse("00000000-0000-0000-0000-000000000001"))
+            {
+                Extension = "svg",
+            };
             var group = new Group()
             {
                 Id = 1,
                 Name = "Main",
                 Description = "Main application group",
-                Public = true
+                Public = true,
+                Image = img.SetGroup(1)
             };   // Group 0 by default is main group (can be accesed by anyone)
-            if(!dbContext.Groups.Any(g => g.Id == group.Id))
+
+            if (!dbContext.Groups.Any(g => g.Id == group.Id))
                 dbContext.Groups.Add(group); ;
 
             dbContext.SaveChanges();

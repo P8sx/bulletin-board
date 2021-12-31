@@ -26,10 +26,15 @@
         _user = await UserManager.GetUserAsync(authState.User);
         _userGroups = await _userService.GetUserGroups(_user);
         _userGroupRoles = await _userService.GetUserGroupsRolesAsync(_user);
-        
+
     }
     protected bool IsGroupAdmin(BulletinBoard.Model.Group group)
     {
         return true;
+    }
+    protected bool IsInGroup(long GroupId)
+    {
+        if (_userGroups == null || _userGroups.Count == 0) return false;
+        return _userGroups.Any(g => g.Id == (ulong)GroupId);
     }
 }

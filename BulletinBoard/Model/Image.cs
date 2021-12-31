@@ -18,6 +18,10 @@ namespace BulletinBoard.Model
         [ForeignKey("Group")]
         public ulong? GroupId { get; set; }
 
+        public Image()
+        {
+            Id = Guid.NewGuid();
+        }
         public string GetPath()
         {
             if(GroupId == null)
@@ -32,10 +36,6 @@ namespace BulletinBoard.Model
             {
                 return $"/images/group/{GroupId}/{Id}.{Extension}";
             }
-        }
-        public Image()
-        {
-            Id = Guid.NewGuid();
         }
         public Image SetExtension(string fileName)
         {
@@ -61,7 +61,7 @@ namespace BulletinBoard.Model
         }
         public Image(Guid id)
         {
-            Id= id; 
+            Id = id; 
         }
 
     }

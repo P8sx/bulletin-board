@@ -97,6 +97,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Bulletin.GroupId = 1;
         await base.OnInitializedAsync();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;        
     }
@@ -151,9 +152,7 @@
         // Create image entity and add it to bulletin
         foreach (var file in _files)
         {
-            var img = new Image().SetExtension(file.Item1.Name)
-                                 .SetGroup((ulong)Bulletin.GroupId)
-                                 .SetUser(_user);
+            var img = new Image().SetExtension(file.Item1.Name).SetGroup(1);
             Bulletin.Images.Add(img);
         }
         // Try save bulletin in db

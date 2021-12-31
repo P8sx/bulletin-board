@@ -9,13 +9,13 @@ namespace BulletinBoard.Services
 {
     public struct BulletinSort
     {
-        public SortBy sortBy { get; set; } = SortBy.Created;
-        public OrderBy orderBy { get; set; } = OrderBy.Ascending;
+        public SortBy SortBy { get; set; } = SortBy.Created;
+        public OrderBy OrderBy { get; set; } = OrderBy.Ascending;
         
         public BulletinSort(SortBy sortBy, OrderBy orderBy)
         {
-            this.orderBy = orderBy;
-            this.sortBy = sortBy;
+            this.OrderBy = orderBy;
+            this.SortBy = sortBy;
         }
     }
     public enum SortBy
@@ -66,7 +66,7 @@ namespace BulletinBoard.Services
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.orderBy}{sort.sortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.OrderBy}{sort.SortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsAsync(page, limit, user, group, sort);
@@ -75,7 +75,7 @@ namespace BulletinBoard.Services
         }
         public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
         {
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{sort.orderBy}{sort.sortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{sort.OrderBy}{sort.SortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsAsync(page, limit, user, new Group() { Id = 1}, sort);
@@ -135,20 +135,20 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments.Count()),
-                    VotesCount = Convert.ToUInt32(a.Votes.Count()),
+                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
+                    VotesCount = Convert.ToUInt32(a.Votes.Count),
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
                     UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 });
 
-            if (sort.sortBy == SortBy.Commented)
-                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
-            else if (sort.sortBy == SortBy.Expiring)
-                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
-            else if (sort.sortBy == SortBy.Commented)
-                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
+            if (sort.SortBy == SortBy.Commented)
+                bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
+            else if (sort.SortBy == SortBy.Expiring)
+                bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
+            else if (sort.SortBy == SortBy.Commented)
+                bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
             else
-                bulletins = sort.orderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
+                bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
 
 
             return await bulletins.ToListAsync();
@@ -174,8 +174,8 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments.Count()),
-                    VotesCount = Convert.ToUInt32(a.Votes.Count()),
+                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
+                    VotesCount = Convert.ToUInt32(a.Votes.Count),
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
                     UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 }).CountAsync();
