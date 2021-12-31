@@ -69,7 +69,7 @@
             }
         </MudElement>
         <MudElement Class="d-flex justify-center">
-            <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged"/>
+            <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
         </MudElement>
 
     }
@@ -83,7 +83,9 @@
 }
 else
 {
-    <MudText Typo="Typo.h3" Class="mr-auto">Sorry but you have no access to this group</MudText>
+    <MudElement Class="d-flex justify-center">
+        <MudText Typo="Typo.h3" Class="mr-auto">Sorry but there is nothing here</MudText>
+    </MudElement>
 }
 @code {
     [Parameter]
@@ -117,7 +119,7 @@ else
         Page = Page ?? 1;
         if (IsInGroup(Group ?? 1))
         {
-            if(_groupInfo == null) _groupInfo = await _groupService.GetGroupAsync((ulong)Group);
+            if (_groupInfo == null) _groupInfo = await _groupService.GetGroupAsync((ulong)Group);
             await GetBulletins();
         }
     }
