@@ -11,14 +11,14 @@ namespace BulletinBoard.Model
     {
         // Bulletin Basic Info
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
         [Required]
         [StringLength(50,MinimumLength = 6, ErrorMessage = "Title must be at least 6 characters long (max 50)")]
         public string? Title { get; set; }
         [Required]
         [StringLength(1000, MinimumLength = 20, ErrorMessage = "Description must be at least 20 characters long (max 1000)")]
         public string? Description { get; set; }
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
         public DateTime? Modified { get; set; }
         public DateTime? Expired { get; set; }
         public List<Image> Images { get; set; } = new();
@@ -32,7 +32,7 @@ namespace BulletinBoard.Model
         // Bulletin Group
         public virtual Group? Group { get; set; }
         [ForeignKey("Group")]
-        public ulong? GroupId { get; set; }
+        public Guid? GroupId { get; set; }
 
         // Bulletin Optional Location
         public float? Longitude { get; set; } = 0;
@@ -56,5 +56,15 @@ namespace BulletinBoard.Model
         [NotMapped]
         public bool UserBookmark { get; set; }
 
+        public Bulletin()
+        {
+            Id = Guid.NewGuid();
+            Created = DateTime.UtcNow;
+        }
+        public Bulletin(Guid id)
+        {
+            Id = id;
+            Created = DateTime.UtcNow;
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using BulletinBoard.Data;
-using BulletinBoard.DTOs;
 using BulletinBoard.Interfaces;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
@@ -20,24 +19,24 @@ namespace BulletinBoard.Services
             _memoryCache = memoryCache;
             _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
         }
-        public async Task<IList<CommentDTO>> GetCommentsAsyncCached(Guid BulletinId)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"Comments{BulletinId}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-                return await GetCommentsAsync(BulletinId);
-            });
-            return result;
-        }
         public async Task<bool> AddCommentAsync(Comment Comment)
         {
             return false;
         }
-        private async Task<IList<CommentDTO>> GetCommentsAsync(Guid BulletinId)
+        public async Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin)
+        {
+            var result = await _memoryCache.GetOrCreateAsync($"Comments{bulletin.Id}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                return await GetCommentsAsync(bulletin);
+            });
+            return result;
+        }
+        private async Task<IList<Comment>> GetCommentsAsync(Bulletin bulletin)
         {
             var comments = _dbContext.Comments
-                .Where(c => c.BulletinId == BulletinId)
-                .Select(c => new CommentDTO
+                .Where(c => c.BulletinId == bulletin.Id)
+                .Select(c => new Comment
                 {
                     Id = c.Id,
                     Created = c.Created,

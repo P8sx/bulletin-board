@@ -1,0 +1,26 @@
+﻿@using BulletinBoard.Model
+@using BulletinBoard.Services
+
+
+@inject IUserService UserService
+@using GEmojiSharp.Blazor
+
+<EditForm Model="@_comment" OnValidSubmit="ValidFormSubmitted">
+    <DataAnnotationsValidator />
+        <MudTextField Class="px-4" T="string" Label="Comment" Lines="4" Variant="Variant.Outlined" @bind-Value="_comment.Text" For="@(() => _comment.Text)" Immediate=true Text="asd" TextUpdateSuppression=false/>
+
+    <MudElement Class="d-flex justify-end mr-6">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment">Comment</MudButton>
+    </MudElement>
+</EditForm>
+@code {
+    [Parameter]
+    public Bulletin Bulletin { get; set; } = default!;
+
+    private string test = ":tada: witam";
+    private Comment _comment = new();
+    private async Task ValidFormSubmitted(EditContext editContext)
+    {
+
+    }
+}

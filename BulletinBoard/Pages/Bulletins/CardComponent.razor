@@ -1,5 +1,4 @@
 ﻿@using BulletinBoard.Model
-@using BulletinBoard.DTOs
 @using BulletinBoard.Services
 @implements IDisposable
 
@@ -88,7 +87,7 @@
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled />
                 </NotAuthorized>
             </AuthorizeView>
-            <MudIconButton Link=@($"bulletin?group={Bulletin.Group.Id}&bulletin={Bulletin.Id}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
+            <MudIconButton Link=@($"bulletin?groupid={Bulletin.Group!.Id}&bulletinid={Bulletin.Id}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
 
         </MudCardActions>
     </MudCard>
@@ -99,8 +98,7 @@
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = new();
-    private MudCarousel<Image?> _carousel;
-    private bool _updated = false;
+    private MudCarousel<Image>? _carousel;
     private void Vote()
     {
         Bulletin.VotesCount = Bulletin.UserVoted ? Bulletin.VotesCount - 1 : Bulletin.VotesCount + 1;

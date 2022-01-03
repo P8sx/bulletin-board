@@ -1,5 +1,4 @@
 ﻿using BulletinBoard.Data;
-using BulletinBoard.DTOs;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -72,47 +71,7 @@ namespace BulletinBoard.Services
             });
             return result;
         }
-        public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{sort.OrderBy}{sort.SortBy}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-                return await GetBulletinsAsync(page, limit, user, new Group() { Id = 1}, sort);
-            });
-            return result;
-        }
-        public async Task<Bulletin> GetBulletinAsyncCached(User user, ulong groupId, Guid bulletinId)
-        {
-            var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{groupId}{bulletinId}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-                return await GetBulletinAsync(user, groupId, bulletinId);
-            });
-            return result;
-        }
-
-        public async Task<int> GetBulletinsCountAsyncCached(User user, Group group)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-                return await GetBulletinsCountAsync(user, group);
-            });
-            return result;
-        }
-        public async Task<int> GetBulletinsCountAsyncCached(User user)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"BulletinsCount", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
-                return await GetBulletinsCountAsync(user, new Group() { Id = 1 });
-            });
-            return result;
-        }
-
-
-        private async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit, User user, Group group, BulletinSort sort)
+        private async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit, User? user, Group group, BulletinSort sort)
         {
             if (page == 0)
                 page = 1;
@@ -125,7 +84,7 @@ namespace BulletinBoard.Services
             var bulletins = _dbContext.Bulletins
                 .Include(x => x.Images)
                 .Include(u => u.User)
-                .ThenInclude(i => i.Image)
+                .ThenInclude(i => i!.Image)
                 .Where(g => g.GroupId == group.Id)
                 .Skip(skip)
                 .Take(limit)
@@ -161,44 +120,42 @@ namespace BulletinBoard.Services
 
             return await bulletins.ToListAsync();
         }
-        private async Task<int> GetBulletinsCountAsync(User user, Group group)
-        {
-            var bulletinsCount = await _dbContext.Bulletins
-                .Include(x => x.Images)
-                .Include(u => u.User)
-                .ThenInclude(i => i.Image)
-                .Where(g => g.GroupId == group.Id)
-                .Select(a => new BulletinInfoDTO
-                {
-                    Id = a.Id,
-                    Title = a.Title,
-                    Description = a.Description,
-                    Created = a.Created,
-                    Modified = a.Modified,
-                    Expired = a.Expired,
-                    Images = a.Images,
-                    Pinned = a.Pinned,
-                    User = a.User,
-                    Group = a.Group,
-                    Latitude = a.Latitude,
-                    Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
-                    VotesCount = Convert.ToUInt32(a.Votes.Count),
-                    UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-                    UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
-                }).CountAsync();
 
-            return bulletinsCount;
+
+
+        public async Task<int> GetBulletinsCountAsyncCached(Group group)
+        {
+            return await _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return await GetBulletinsCountAsync(group);
+            });
+        }
+        private async Task<int> GetBulletinsCountAsync(Group group)
+        {
+            return await _dbContext.Bulletins
+                .Where(g => g.GroupId == group.Id)
+                .CountAsync();
         }
 
-        private async Task<Bulletin> GetBulletinAsync(User user, ulong groupId, Guid bulletinId)
+
+        public async Task<Bulletin?> GetBulletinInfoAsyncCached(User user, Group group, Bulletin bulletin)
         {
-            var bulletin = _dbContext.Bulletins
+            var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
+            return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{group.Id}{bulletin.Id}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                return await GetBulletinInfoAsync(user!, group, bulletin);
+            });
+        }
+        private async Task<Bulletin?> GetBulletinInfoAsync(User user, Group group, Bulletin bulletin)
+        {
+            return await _dbContext.Bulletins
                 .Include(x => x.Images)
                 .Include(u => u.User)
-                .ThenInclude(i => i.Image)
-                .Where(g => g.GroupId == groupId)
-                .Where(b => b.Id == bulletinId)
+                .ThenInclude(i => i!.Image)
+                .Where(g => g.GroupId == group.Id)
+                .Where(b => b.Id == bulletin.Id)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -213,12 +170,11 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
-                    VotesCount = Convert.ToUInt32(a.Votes.Count),
+                    CommentsCount = Convert.ToUInt32(a.Comments!.Count),
+                    VotesCount = Convert.ToUInt32(a.Votes!.Count),
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-                    UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+                    UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 }).FirstOrDefaultAsync();
-            return await bulletin;
         }
 
         public async Task Vote(BulletinVote vote)

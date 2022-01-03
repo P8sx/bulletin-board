@@ -1,4 +1,5 @@
 ﻿using BulletinBoard.Data;
+using BulletinBoard.Extensions;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,12 +53,12 @@ namespace BulletinBoard.Services
 
         private List<Group>? GetUserGroups(User? user)
         {
-            var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == 1);
+            var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == Const.DefaultGroupId);
 
             if (mainGroup == null)
                 return null;
 
-            var userGroups = _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group.Image).Select(gu => gu.Group).ToList();
+            var userGroups = _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group!.Image).Select(gu => gu.Group).ToList();
             userGroups.Add(mainGroup);
             return userGroups!;
         }
@@ -65,13 +66,6 @@ namespace BulletinBoard.Services
         {
             var groupUser = _dbContext.GroupUsers.Include(gu => gu.User).Include(gu => gu.Role).Where(gu => gu.User == user).ToList();
             return groupUser;
-        }
-
-        public bool IsInGroup(long groupId)
-        {
-            if (UserGroups == null || UserGroups.Count == 0) 
-                return false;
-            return UserGroups.Any(g => g.Id == Convert.ToUInt64(groupId));
         }
         public bool IsInGroup(Group group)
         {

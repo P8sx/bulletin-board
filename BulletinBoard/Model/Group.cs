@@ -11,7 +11,7 @@ namespace BulletinBoard.Model
     public class Group
     {
         [Key]
-        public ulong Id { get; set; }
+        public Guid Id { get; set; } 
         public string? Name { get; set; }
         public string? Description { get; set; }
         public DateTime Created { get; private set; }
@@ -25,9 +25,10 @@ namespace BulletinBoard.Model
         public virtual IList<Bulletin>? Bulletins { get; set; }
         public Group()
         {
+            Id = Guid.NewGuid();
             Created = DateTime.UtcNow;
         }
-        public Group(ulong id)
+        public Group(Guid id)
         {
             Id = id;
             Created = DateTime.UtcNow;

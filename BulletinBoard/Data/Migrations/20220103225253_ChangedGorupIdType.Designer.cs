@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211230232745_Init")]
-    partial class Init
+    [Migration("20220103225253_ChangedGorupIdType")]
+    partial class ChangedGorupIdType
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,7 +27,7 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime?>("Created")
+                    b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
@@ -38,8 +38,8 @@ namespace BulletinBoard.Migrations
                     b.Property<DateTime?>("Expired")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<ulong?>("GroupId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("char(36)");
 
                     b.Property<float?>("Latitude")
                         .HasColumnType("float");
@@ -113,6 +113,7 @@ namespace BulletinBoard.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Text")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<ulong?>("UserId")
@@ -129,9 +130,9 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.Group", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
@@ -161,8 +162,8 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("GroupId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("Joined")
                         .HasColumnType("datetime(6)");
@@ -201,19 +202,9 @@ namespace BulletinBoard.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("varchar(5)");
 
-                    b.Property<ulong?>("GroupId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<ulong?>("UserId")
-                        .HasColumnType("bigint unsigned");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BulletinId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Image");
                 });
@@ -539,18 +530,6 @@ namespace BulletinBoard.Migrations
                     b.HasOne("BulletinBoard.Model.Bulletin", null)
                         .WithMany("Images")
                         .HasForeignKey("BulletinId");
-
-                    b.HasOne("BulletinBoard.Model.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId");
-
-                    b.HasOne("BulletinBoard.Model.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.User", b =>

@@ -4,7 +4,6 @@ namespace BulletinBoard.Services
 {
     public interface IGroupService
     {
-        Task<Group> GetDefaultGroupAsyncCached();
-        Task<Group> GetGroupAsyncCached(ulong groupId);
+        Task<Group?> GetGroupInfoAsyncCached(Group group);
     }
 }
