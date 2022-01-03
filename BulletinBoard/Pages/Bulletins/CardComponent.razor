@@ -1,6 +1,10 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.DTOs
+@using BulletinBoard.Services
 @implements IDisposable
+
+@inject IUserService UserService
+@inject IDialogService DialogService
 
 @inherits ListPage
 
@@ -94,19 +98,19 @@
 
 @code {
     [Parameter]
-    public BulletinInfoDTO Bulletin { get; set; } = new();
+    public Bulletin Bulletin { get; set; } = new();
     private MudCarousel<Image?> _carousel;
     private bool _updated = false;
     private void Vote()
     {
         Bulletin.VotesCount = Bulletin.UserVoted ? Bulletin.VotesCount - 1 : Bulletin.VotesCount + 1;
         Bulletin.UserVoted = !Bulletin.UserVoted;
-        _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = Bulletin.Id });
+        UserService.Vote(Bulletin);
     }
     private void Bookmark()
     {
         Bulletin.UserBookmark = !Bulletin.UserBookmark;
-        _userService.Bookmark(new BulletinBookmark() { UserId = _user.Id, BulletinId = Bulletin.Id });
+        UserService.Bookmark(Bulletin);
     }
     public void Dispose()
     {
@@ -116,7 +120,6 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Path", path);
-        DialogOptions options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large };
-        _dialogService.Show<ImageDialogComponent>("Image", parameters, options);
+        DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 }

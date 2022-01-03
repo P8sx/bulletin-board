@@ -62,7 +62,7 @@ namespace BulletinBoard.Services
         }
 
 
-        public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
+        public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.OrderBy}{sort.SortBy}", async p =>
@@ -72,7 +72,7 @@ namespace BulletinBoard.Services
             });
             return result;
         }
-        public async Task<IList<BulletinInfoDTO>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
+        public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
         {
             var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{sort.OrderBy}{sort.SortBy}", async p =>
             {
@@ -81,7 +81,7 @@ namespace BulletinBoard.Services
             });
             return result;
         }
-        public async Task<BulletinInfoDTO> GetBulletinAsyncCached(User user, ulong groupId, Guid bulletinId)
+        public async Task<Bulletin> GetBulletinAsyncCached(User user, ulong groupId, Guid bulletinId)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             var result = await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{groupId}{bulletinId}", async p =>
@@ -112,7 +112,7 @@ namespace BulletinBoard.Services
         }
 
 
-        private async Task<IList<BulletinInfoDTO>> GetBulletinsAsync(int page, int limit, User user, Group group, BulletinSort sort)
+        private async Task<IList<Bulletin>> GetBulletinsAsync(int page, int limit, User user, Group group, BulletinSort sort)
         {
             if (page == 0)
                 page = 1;
@@ -129,7 +129,7 @@ namespace BulletinBoard.Services
                 .Where(g => g.GroupId == group.Id)
                 .Skip(skip)
                 .Take(limit)
-                .Select(a => new BulletinInfoDTO
+                .Select(a => new Bulletin
                 {
                     Id = a.Id,
                     Title = a.Title,
@@ -143,10 +143,10 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments.Count),
-                    VotesCount = Convert.ToUInt32(a.Votes.Count),
+                    CommentsCount = Convert.ToUInt32(a.Comments!.Count),
+                    VotesCount = Convert.ToUInt32(a.Votes!.Count),
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-                    UserBookmark = user != null && a.Bookmarks.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+                    UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 });
 
             if (sort.SortBy == SortBy.Commented)
@@ -191,7 +191,7 @@ namespace BulletinBoard.Services
             return bulletinsCount;
         }
 
-        private async Task<BulletinInfoDTO> GetBulletinAsync(User user, ulong groupId, Guid bulletinId)
+        private async Task<Bulletin> GetBulletinAsync(User user, ulong groupId, Guid bulletinId)
         {
             var bulletin = _dbContext.Bulletins
                 .Include(x => x.Images)
@@ -199,7 +199,7 @@ namespace BulletinBoard.Services
                 .ThenInclude(i => i.Image)
                 .Where(g => g.GroupId == groupId)
                 .Where(b => b.Id == bulletinId)
-                .Select(a => new BulletinInfoDTO
+                .Select(a => new Bulletin
                 {
                     Id = a.Id,
                     Title = a.Title,

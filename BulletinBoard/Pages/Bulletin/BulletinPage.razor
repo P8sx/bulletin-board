@@ -4,11 +4,14 @@
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Bulletins
 @using BulletinBoard.Services
-@inherits MainComponent
+
+@inject IUserService UserService
+@inject IBulletinService BulletinService
+@inject IDialogService DialogService
 
 @if (_pageState == PageState.SUCCESS && _bulletin != null)
 {
-     <MudCard Outlined="true" Class="mb-5">
+    <MudCard Outlined="true" Class="mb-5">
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
@@ -24,9 +27,9 @@
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
                     </MudMenu>
                 </CardHeaderActions>
             </MudCardHeader>
@@ -51,11 +54,11 @@
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
                     <MudGrid Class="px-4">
-                        @foreach(var img in _bulletin.Images)
+                        @foreach (var img in _bulletin.Images)
                         {
                             <MudItem xs="4">
                                 <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetPath()))">
-                                    <MudCardMedia Image=@img.GetPath()/>
+                                    <MudCardMedia Image=@img.GetPath() />
                                 </div>
                             </MudItem>
                         }
@@ -73,7 +76,7 @@
             <AuthorizeView>
                 <Authorized>
                     <MudText Class="pl-3">@_bulletin.VotesCount</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(_bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(_bulletin.Expired != null &&_bulletin.Expired<DateTime.UtcNow)/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(_bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(_bulletin.Expired != null &&_bulletin.Expired<DateTime.UtcNow) />
                     <MudText Class="pl-3">@_bulletin.CommentsCount</MudText>
                     <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(_bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark Style="margin-left:auto" />
@@ -88,8 +91,25 @@
             </AuthorizeView>
         </MudCardActions>
     </MudCard>
-    <MudCard Outlined="true" Class="mb-5">
-        aasdd
+
+
+    <MudCard Outlined="true" Class="py-5">
+        <AuthorizeView Context="authorizedView">
+            <Authorized>
+
+                <EditForm Model="@_comment" OnValidSubmit="ValidFormSubmitted">
+                    <DataAnnotationsValidator />
+                    <MudTextField Class="px-4" T="string" Label="Comment" Lines="3" Variant="Variant.Outlined" @bind-Value="_comment.Text" For="@(() => _comment.Text)" />
+                    <MudElement Class="d-flex justify-end mr-6">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment">Comment</MudButton>
+                    </MudElement>
+                </EditForm>
+
+            </Authorized>
+            <NotAuthorized>
+
+            </NotAuthorized>
+        </AuthorizeView>
     </MudCard>
 
 }
@@ -112,12 +132,10 @@ else
     [SupplyParameterFromQuery]
     public Guid Bulletin { get; set; }
 
-    [Inject]
-    protected IBulletinService _bulletinService { get; set; }
-    [Inject]
-    protected IDialogService _dialogService { get; set; }
 
-    private BulletinInfoDTO _bulletin = default!;
+    private Comment _comment = new();
+
+    private Bulletin _bulletin = default!;
     private MudCarousel<Image?> _carousel = default!;
     private List<CommentDTO> _comments = default!;
 
@@ -127,10 +145,10 @@ else
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (IsInGroup(Group))
+        if (UserService.IsInGroup(Group))
         {
-            _pageState = PageState.SUCCESS;       
-            _bulletin = await _bulletinService.GetBulletinAsyncCached(_user, Convert.ToUInt64(Group), Bulletin);
+            _pageState = PageState.SUCCESS;
+            _bulletin = await BulletinService.GetBulletinAsyncCached(UserService.User!, Convert.ToUInt64(Group), Bulletin);
         }
         else
         {
@@ -142,22 +160,23 @@ else
     {
         _bulletin.VotesCount = _bulletin.UserVoted ? _bulletin.VotesCount - 1 : _bulletin.VotesCount + 1;
         _bulletin.UserVoted = !_bulletin.UserVoted;
-        _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = _bulletin.Id });
+        UserService.Vote(_bulletin);
     }
     private void Bookmark()
     {
         _bulletin.UserBookmark = !_bulletin.UserBookmark;
-        _userService.Bookmark(new BulletinBookmark() { UserId = _user.Id, BulletinId = _bulletin.Id });
+        UserService.Bookmark(new BulletinBookmark() { UserId = UserService.User.Id, BulletinId = _bulletin.Id });
     }
-    public void Dispose()
-    {
 
-    }
     private void OpenDialog(string path)
     {
         var parameters = new DialogParameters();
         parameters.Add("Path", path);
-        DialogOptions options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large };
-        _dialogService.Show<ImageDialogComponent>("Image", parameters, options);
+        DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+    }
+
+    private async Task ValidFormSubmitted(EditContext editContext)
+    {
+
     }
 }

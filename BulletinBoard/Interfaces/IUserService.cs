@@ -4,8 +4,15 @@ namespace BulletinBoard.Services
 {
     public interface IUserService
     {
-        Task<List<Group>> GetUserGroups(User user);
+        User? User { get; }
+        List<Group>? UserGroups { get; }
+        List<GroupUser>? UserGroupsRoles { get; }
+
         Task Bookmark(BulletinBookmark bookmark);
-        Task<List<GroupUser>> GetUserGroupsRolesAsync(User user);
+        bool IsInGroup(long groupId);
+        bool IsInGroup(Group group);
+        void UpdateUserGroups();
+        Task Bookmark(Bulletin bulletin);
+        Task Vote(Bulletin bulletin);
     }
 }

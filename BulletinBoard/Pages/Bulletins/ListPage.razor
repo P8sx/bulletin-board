@@ -8,9 +8,11 @@
 @using Microsoft.AspNetCore.Components;
 @using BulletinBoard.Extensions;
 
-@inherits MainComponent
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject IBulletinService BulletinService
+@inject NavigationManager NavigationManager
 
-@inject IJSRuntime JS
 
 @if (_pageState == PageState.SUCCESS && _groupInfo != null && _bulletins != null)
 {
@@ -89,13 +91,6 @@ else
     [SupplyParameterFromQuery]
     public int? Page { get; set; } = 1;
 
-    [Inject]
-    protected IBulletinService _bulletinService { get; set; }
-    [Inject]
-    protected IDialogService _dialogService { get; set; }
-    [Inject]
-    protected NavigationManager _navigationManager { get; set; }
-
     public SortBy _sortBy = SortBy.Created;
     public OrderBy _orderBy = OrderBy.Ascending;
 
@@ -104,7 +99,7 @@ else
 
     public int _bulletinsPerPage = 10;
     private Group _groupInfo;
-    private IList<BulletinInfoDTO> _bulletins = default!;
+    private IList<Bulletin> _bulletins = default!;
     private int _bulletinsCount = 0;
 
 
@@ -113,10 +108,10 @@ else
         await base.SetParametersAsync(parameters);
         Group = Group ?? 1;
         Page = Page ?? 1;
-        if (IsInGroup(Group ?? 1))
+        if (UserService.IsInGroup(Convert.ToInt64(Group)))
         {
             _pageState = PageState.SUCCESS;
-            if (_groupInfo == null) _groupInfo = await _groupService.GetGroupAsyncCached((ulong)Group);
+            if (_groupInfo == null) _groupInfo = await GroupService.GetGroupAsyncCached((ulong)Group);
             await GetBulletins();
         }
         else
@@ -132,12 +127,12 @@ else
     protected async Task PageChanged(int page)
     {
         Page = page;
-        _navigationManager.NavigateTo($"/bulletins?group{Group}&page={page}");
+        NavigationManager.NavigateTo($"/bulletins?group{Group}&page={page}");
     }
     protected async Task GetBulletins()
     {
-        _bulletins = await _bulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _user, _groupInfo, new BulletinSort(_sortBy, _orderBy));
-        _bulletinsCount = await _bulletinService.GetBulletinsCountAsyncCached(_user, _groupInfo);
+        _bulletins = await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _groupInfo, new BulletinSort(_sortBy, _orderBy));
+        _bulletinsCount = await BulletinService.GetBulletinsCountAsyncCached(UserService.User!, _groupInfo);
         base.StateHasChanged();
     }
     private int NumberOfPages()
