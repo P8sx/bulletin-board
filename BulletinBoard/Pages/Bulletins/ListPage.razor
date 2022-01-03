@@ -6,31 +6,30 @@
 @using BulletinBoard.DTOs
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
+@using BulletinBoard.Extensions;
 
 @inherits MainComponent
 
 @inject IJSRuntime JS
 
-@if (Group == 1 || IsInGroup(Group ?? 1))
+@if (_pageState == PageState.SUCCESS && _groupInfo != null && _bulletins != null)
 {
 
-    @if (_groupInfo != null)
-    {
-        <MudCard Class="mb-5">
-            @if (_groupInfo.Image != null)
-            {
-                <MudCardMedia Image=@(_groupInfo.Image.GetPath()) Height="200" />
-            }
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h4">@_groupInfo.Name</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.body2">@_groupInfo.Description</MudText>
-            </MudCardContent>
-        </MudCard>
-    }
+    <MudCard Class="mb-5">
+        @if (_groupInfo.Image != null)
+        {
+            <MudCardMedia Image=@(_groupInfo.Image.GetPath()) Height="200" />
+        }
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">@_groupInfo.Name</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2">@_groupInfo.Description</MudText>
+        </MudCardContent>
+    </MudCard>
+
 
 
     <MudElement Class="d-flex mb-4 justify-end ">
@@ -60,32 +59,26 @@
     </MudElement>
 
 
-    @if (_bulletins != null)
-    {
-        <MudElement>
-            @foreach (var bulletin in _bulletins)
-            {
-                <CardComponent Bulletin="bulletin"></CardComponent>
-            }
-        </MudElement>
-        <MudElement Class="d-flex justify-center">
-            <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
-        </MudElement>
 
-    }
-    else
-    {
-        <MudElement Class="d-flex flex-column">
-            <MudProgressCircular Color="Color.Primary" Style="height:200px;width:200px;" Class="mx-auto mt-15" Indeterminate="true" />
-            <MudText Typo="Typo.h4" Class="mx-auto mt-15">Loading bulletins</MudText>
-        </MudElement>
-    }
+    <MudElement>
+        @foreach (var bulletin in _bulletins)
+        {
+            <CardComponent Bulletin="bulletin"></CardComponent>
+        }
+    </MudElement>
+
+    <MudElement Class="d-flex justify-center">
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
+    </MudElement>
+
+}
+else if (_pageState == PageState.ACCESS_BLOCKED)
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
 }
 else
 {
-    <MudElement Class="d-flex justify-center">
-        <MudText Typo="Typo.h3" Class="mr-auto">Sorry but there is nothing here</MudText>
-    </MudElement>
+    <LoadingComponent></LoadingComponent>
 }
 @code {
     [Parameter]
@@ -106,6 +99,9 @@ else
     public SortBy _sortBy = SortBy.Created;
     public OrderBy _orderBy = OrderBy.Ascending;
 
+
+    private PageState _pageState = PageState.LOADING;
+
     public int _bulletinsPerPage = 10;
     private Group _groupInfo;
     private IList<BulletinInfoDTO> _bulletins = default!;
@@ -119,8 +115,13 @@ else
         Page = Page ?? 1;
         if (IsInGroup(Group ?? 1))
         {
-            if (_groupInfo == null) _groupInfo = await _groupService.GetGroupAsync((ulong)Group);
+            _pageState = PageState.SUCCESS;
+            if (_groupInfo == null) _groupInfo = await _groupService.GetGroupAsyncCached((ulong)Group);
             await GetBulletins();
+        }
+        else
+        {
+            _pageState = PageState.ACCESS_BLOCKED;
         }
     }
 

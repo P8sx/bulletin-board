@@ -2,8 +2,14 @@
 using BulletinBoard.Model;
 using Microsoft.AspNetCore.Identity;
 
-namespace BulletinBoard
+namespace BulletinBoard.Extensions
 {
+    public enum PageState
+    {
+        LOADING,
+        SUCCESS,
+        ACCESS_BLOCKED
+    }
     public static class Extensions
     {
         public static void RunAppSetup(this IServiceCollection services)

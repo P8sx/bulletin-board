@@ -14,7 +14,7 @@ namespace BulletinBoard.Model
         public virtual Bulletin? Bulletin { get; set; }
         [ForeignKey("Bulletin")]
         public Guid? BulletinId { get; set; }
-
+        [Required]
         public string? Text { get; set; }
         public DateTime Created { get; set; }
         public Comment()
