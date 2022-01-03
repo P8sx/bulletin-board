@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\images\group\**" />
+    <Content Remove="wwwroot\images\group\**" />
+    <EmbeddedResource Remove="wwwroot\images\group\**" />
+    <None Remove="wwwroot\images\group\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Pages\Bulletin\AddBulletin.razor.css" />
   </ItemGroup>
 
@@ -23,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="GEmojiSharp.Blazor" Version="1.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0" />
@@ -32,10 +40,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.0" />
     <PackageReference Include="MudBlazor" Version="6.0.2" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\images\group\" />
   </ItemGroup>
 
 </Project>

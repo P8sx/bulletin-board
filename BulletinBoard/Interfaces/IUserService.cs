@@ -9,7 +9,6 @@ namespace BulletinBoard.Services
         List<GroupUser>? UserGroupsRoles { get; }
 
         Task Bookmark(BulletinBookmark bookmark);
-        bool IsInGroup(long groupId);
         bool IsInGroup(Group group);
         void UpdateUserGroups();
         Task Bookmark(Bulletin bulletin);

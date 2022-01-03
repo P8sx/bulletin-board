@@ -1,5 +1,4 @@
 ﻿@page "/bulletin"
-@using BulletinBoard.DTOs
 @using BulletinBoard.Extensions
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Bulletins
@@ -15,10 +14,10 @@
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Image=@(_bulletin.User.Image==null?"/images/avatars/no_avatar.png":_bulletin.User.Image.GetPath()) />
+                    <MudAvatar Image=@(_bulletin.User!.Image==null?"/images/avatars/no_avatar.png":_bulletin.User.Image.GetPath()) />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.body1">@_bulletin.User.UserName</MudText>
+                    <MudText Typo="Typo.body1">@_bulletin.User!.UserName</MudText>
                     <MudText Typo="Typo.body2"><strong>Created:</strong> @(((DateTime)_bulletin.Created).ToString("dd.MM.yyyy")) </MudText>
                     @if (_bulletin.Expired != null)
                     {
@@ -97,13 +96,7 @@
         <AuthorizeView Context="authorizedView">
             <Authorized>
 
-                <EditForm Model="@_comment" OnValidSubmit="ValidFormSubmitted">
-                    <DataAnnotationsValidator />
-                    <MudTextField Class="px-4" T="string" Label="Comment" Lines="3" Variant="Variant.Outlined" @bind-Value="_comment.Text" For="@(() => _comment.Text)" />
-                    <MudElement Class="d-flex justify-end mr-6">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment">Comment</MudButton>
-                    </MudElement>
-                </EditForm>
+               <AddCommentComponent Bulletin="_bulletin"></AddCommentComponent>
 
             </Authorized>
             <NotAuthorized>
@@ -126,18 +119,17 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public long Group { get; set; }
+    public Guid GroupId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid Bulletin { get; set; }
+    public Guid BulletinId { get; set; }
 
 
-    private Comment _comment = new();
 
-    private Bulletin _bulletin = default!;
-    private MudCarousel<Image?> _carousel = default!;
-    private List<CommentDTO> _comments = default!;
+    private Bulletin? _bulletin = default!;
+    private MudCarousel<Image> _carousel = default!;
+    private List<Comment> _comments = default!;
 
     private PageState _pageState = PageState.LOADING;
 
@@ -145,10 +137,10 @@ else
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (UserService.IsInGroup(Group))
+        if (UserService.IsInGroup(new Group(GroupId)))
         {
             _pageState = PageState.SUCCESS;
-            _bulletin = await BulletinService.GetBulletinAsyncCached(UserService.User!, Convert.ToUInt64(Group), Bulletin);
+            _bulletin = await BulletinService.GetBulletinInfoAsyncCached(UserService.User!, new Group(GroupId), new Bulletin(BulletinId));
         }
         else
         {
@@ -158,14 +150,19 @@ else
     }
     private void Vote()
     {
-        _bulletin.VotesCount = _bulletin.UserVoted ? _bulletin.VotesCount - 1 : _bulletin.VotesCount + 1;
-        _bulletin.UserVoted = !_bulletin.UserVoted;
-        UserService.Vote(_bulletin);
+        if(_bulletin != null){
+            _bulletin.VotesCount = _bulletin.UserVoted ? _bulletin.VotesCount - 1 : _bulletin.VotesCount + 1;
+            _bulletin.UserVoted = !_bulletin.UserVoted;
+            UserService.Vote(_bulletin);
+        }
     }
     private void Bookmark()
     {
-        _bulletin.UserBookmark = !_bulletin.UserBookmark;
-        UserService.Bookmark(new BulletinBookmark() { UserId = UserService.User.Id, BulletinId = _bulletin.Id });
+        if (_bulletin != null)
+        {
+            _bulletin.UserBookmark = !_bulletin.UserBookmark;
+            UserService.Bookmark(new BulletinBookmark() { UserId = UserService.User!.Id, BulletinId = _bulletin.Id });
+        }
     }
 
     private void OpenDialog(string path)
@@ -175,8 +172,4 @@ else
         DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 
-    private async Task ValidFormSubmitted(EditContext editContext)
-    {
-
-    }
 }

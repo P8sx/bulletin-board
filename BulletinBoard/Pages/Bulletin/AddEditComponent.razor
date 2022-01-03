@@ -1,4 +1,5 @@
-﻿@using BulletinBoard.Model
+﻿@using BulletinBoard.Extensions
+@using BulletinBoard.Model
 @using System.IO
 @using Microsoft.AspNetCore.Identity;
 @using BulletinBoard.Services
@@ -9,7 +10,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
 @inject IUserService UserService
-
+@inject IBulletinService BulletinService
 
 
 
@@ -64,12 +65,12 @@
 
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                <MudSelect T="ulong?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
+                <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
                     @if (UserService.UserGroups is not null)
                     {
                         @foreach (var group in UserService.UserGroups)
                         {
-                            <MudSelectItem T="ulong?" Value="@group.Id" >@group.Name</MudSelectItem>
+                            <MudSelectItem T="Guid?" Value="@group.Id" >@group.Name</MudSelectItem>
                         }
                     }
                 </MudSelect>
@@ -84,8 +85,6 @@
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = new();
-    [Inject]
-    protected IBulletinService _bulletinService { get; set; }
 
 
     // Bulletin default values
@@ -98,7 +97,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.GroupId = 1;
+        Bulletin.GroupId = Const.DefaultGroupId;
         await base.OnInitializedAsync();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;        
     }
@@ -153,11 +152,11 @@
         // Create image entity and add it to bulletin
         foreach (var file in _files)
         {
-            var img = new Image().SetExtension(file.Item1.Name).SetGroup(1);
+            var img = new Image().SetExtension(file.Item1.Name);
             Bulletin.Images.Add(img);
         }
         // Try save bulletin in db
-        var result = await _bulletinService.AddBulletin(Bulletin);
+        var result = await BulletinService.AddBulletin(Bulletin);
         if (!result)
         {
             Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);

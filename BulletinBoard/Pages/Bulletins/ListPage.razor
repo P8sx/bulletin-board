@@ -3,7 +3,6 @@
 @using BulletinBoard.Services
 @using BulletinBoard.Data
 @using BulletinBoard.Model
-@using BulletinBoard.DTOs
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
 @using BulletinBoard.Extensions;
@@ -14,21 +13,21 @@
 @inject NavigationManager NavigationManager
 
 
-@if (_pageState == PageState.SUCCESS && _groupInfo != null && _bulletins != null)
+@if (_pageState == PageState.SUCCESS && _group != null && _bulletins != null)
 {
 
-    <MudCard Class="mb-5">
-        @if (_groupInfo.Image != null)
+    <MudCard Outlined="true" Class="mb-3">
+        @if (_group.Image != null)
         {
-            <MudCardMedia Image=@(_groupInfo.Image.GetPath()) Height="200" />
+            <MudCardMedia Image=@(_group.Image.GetPath()) Height="200" />
         }
         <MudCardHeader>
             <CardHeaderContent>
-                <MudText Typo="Typo.h4">@_groupInfo.Name</MudText>
+                <MudText Typo="Typo.h4">@_group.Name</MudText>
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
-            <MudText Typo="Typo.body2">@_groupInfo.Description</MudText>
+            <MudText Typo="Typo.body2">@_group.Description</MudText>
         </MudCardContent>
     </MudCard>
 
@@ -85,7 +84,7 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public long? Group { get; set; }
+    public Guid? GroupId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -97,8 +96,9 @@ else
 
     private PageState _pageState = PageState.LOADING;
 
+    private Group? _group;
+
     public int _bulletinsPerPage = 10;
-    private Group _groupInfo;
     private IList<Bulletin> _bulletins = default!;
     private int _bulletinsCount = 0;
 
@@ -106,12 +106,12 @@ else
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        Group = Group ?? 1;
+        GroupId = GroupId ?? Const.DefaultGroupId;
         Page = Page ?? 1;
-        if (UserService.IsInGroup(Convert.ToInt64(Group)))
+        if (UserService.IsInGroup(new Group(GroupId ?? Const.DefaultGroupId)))
         {
             _pageState = PageState.SUCCESS;
-            if (_groupInfo == null) _groupInfo = await GroupService.GetGroupAsyncCached((ulong)Group);
+            if (_group == null) _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
             await GetBulletins();
         }
         else
@@ -124,15 +124,15 @@ else
     {
         await base.OnInitializedAsync();
     }
-    protected async Task PageChanged(int page)
+    protected void PageChanged(int page)
     {
         Page = page;
-        NavigationManager.NavigateTo($"/bulletins?group{Group}&page={page}");
+        NavigationManager.NavigateTo($"/bulletins?groupid{GroupId}&page={page}");
     }
     protected async Task GetBulletins()
     {
-        _bulletins = await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _groupInfo, new BulletinSort(_sortBy, _orderBy));
-        _bulletinsCount = await BulletinService.GetBulletinsCountAsyncCached(UserService.User!, _groupInfo);
+        _bulletins = await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _group!, new BulletinSort(_sortBy, _orderBy));
+        _bulletinsCount = await BulletinService.GetBulletinsCountAsyncCached(_group!);
         base.StateHasChanged();
     }
     private int NumberOfPages()

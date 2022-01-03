@@ -19,32 +19,19 @@ namespace BulletinBoard.Services
             _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
 
         }
-        public async Task<Group> GetDefaultGroupAsyncCached()
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"DefaultGroup", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
-                return await GetDefaultGroupAsync();
-            });
-            return result;
-        }
-        public async Task<Group> GetGroupAsyncCached(ulong groupId)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"Group{groupId}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
-                return await GetGroupAsync(groupId);
-            });
-            return result;
-        }
 
-        private async Task<Group> GetDefaultGroupAsync()
+        public async Task<Group?> GetGroupInfoAsyncCached(Group group)
         {
-            return await _dbContext.Groups.Where(g => g.Id == 1).Include(g=>g.Image).FirstOrDefaultAsync();
+            var result = await _memoryCache.GetOrCreateAsync($"Group{group.Id}", async p =>
+            {
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
+                return await GetGroupAsync(group);
+            });
+            return result;
         }
-        private async Task<Group> GetGroupAsync(ulong groupId)
+        private async Task<Group?> GetGroupAsync(Group group)
         {
-            return await _dbContext.Groups.Where(g => g.Id == groupId).Include(g => g.Image).FirstOrDefaultAsync();
+            return await _dbContext.Groups.Where(g => g.Id == group.Id).Include(g => g.Image).FirstOrDefaultAsync();
         }
     }
 }

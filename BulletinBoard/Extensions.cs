@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BulletinBoard.Extensions
 {
+    static class Const
+    {
+        public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    }
     public enum PageState
     {
         LOADING,
@@ -38,17 +42,17 @@ namespace BulletinBoard.Extensions
         {
             var serviceProvider = services.BuildServiceProvider();
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-            var img = new Image(Guid.Parse("00000000-0000-0000-0000-000000000001"))
+            var img = new Image(Const.DefaultGroupId)
             {
                 Extension = "svg",
             };
             var group = new Group()
             {
-                Id = 1,
+                Id = Const.DefaultGroupId,
                 Name = "Main",
                 Description = "Main application group",
                 Public = true,
-                Image = img.SetGroup(1)
+                Image = img
             };   // Group 0 by default is main group (can be accesed by anyone)
 
             if (!dbContext.Groups.Any(g => g.Id == group.Id))
