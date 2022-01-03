@@ -5,7 +5,7 @@ using BulletinBoard.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using BulletinBoard;
+using BulletinBoard.Extensions;
 using MudBlazor.Services;
 using System.Net;
 
