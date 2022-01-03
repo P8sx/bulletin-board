@@ -30,9 +30,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddTransient<IBulletinService,BulletinService>();
-builder.Services.AddTransient<IUserService,UserService>();
-builder.Services.AddTransient<IGroupService,GroupService>();
+builder.Services.AddScoped<IBulletinService,BulletinService>();
+builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IGroupService,GroupService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();

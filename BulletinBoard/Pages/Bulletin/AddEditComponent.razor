@@ -8,9 +8,10 @@
 @inject IWebHostEnvironment env
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
+@inject IUserService UserService
 
 
-@inherits MainComponent
+
 
 <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
     <DataAnnotationsValidator />
@@ -64,9 +65,9 @@
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
                 <MudSelect T="ulong?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
-                    @if (_userGroups is not null)
+                    @if (UserService.UserGroups is not null)
                     {
-                        @foreach (var group in _userGroups)
+                        @foreach (var group in UserService.UserGroups)
                         {
                             <MudSelectItem T="ulong?" Value="@group.Id" >@group.Name</MudSelectItem>
                         }
@@ -146,7 +147,7 @@
     {
         // Set bulletin data
         if (Bulletin.UserId == 0)
-            Bulletin.UserId = _user.Id;
+            Bulletin.UserId = UserService.User!.Id;
         Bulletin.Created = DateTime.UtcNow;
 
         // Create image entity and add it to bulletin
