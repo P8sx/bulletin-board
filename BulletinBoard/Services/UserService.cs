@@ -46,19 +46,6 @@ namespace BulletinBoard.Services
         }
 
 
-        //private List<Group>? GetUserGroups(User? user)
-        //{
-        //    using var _dbContext = _dbFactory.CreateDbContext();
-        //    var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == Const.DefaultGroupId);
-
-        //    if (mainGroup == null)
-        //        return null;
-
-        //    var userGroups = _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group!.Image).Select(gu => gu.Group).ToList();
-        //    userGroups.Add(mainGroup);
-        //    return userGroups!;
-        //}
-
         private List<GroupUser>? GetUserGroups(User? user)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
@@ -82,9 +69,16 @@ namespace BulletinBoard.Services
 
         public bool IsGroupModerator(Group group)
         {
-            return true;
+            if (UserGroups!.Any(a => (a.GroupId == group.Id)&&(a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin)))
+                return true;
+            return false;
         }
-
+        public bool IsBulletinOwner(Bulletin bulletin)
+        {
+            if (User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User.Id))
+                return true;
+            return false;
+        }
         public void AddUserToGroup(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();

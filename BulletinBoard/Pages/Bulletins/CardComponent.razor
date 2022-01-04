@@ -22,19 +22,26 @@
                     {
                         <MudText Typo="Typo.body2"><strong>Expiring:</strong> @(((DateTime)Bulletin.Expired).ToString("dd.MM.yyyy"))</MudText>
                     }
+                    @if (GroupInfo)
+                    {
+                        <MudText Typo="Typo.body2" Style="overflow-wrap: break-word;"><strong>Post from group:</strong> @Bulletin.Group!.Name</MudText>
+                    }
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
+                        @if (UserService.IsGroupModerator(new Group(){Id = Bulletin.Group!.Id}) || UserService.IsBulletinOwner(Bulletin))
+                        {
+                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
+                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        }
                     </MudMenu>
                 </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent Class="pt-0">
                 <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
                 <Emoji>
-                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
                 </Emoji>
 
                 @if (Bulletin.Modified != null)
@@ -55,11 +62,11 @@
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
                     <MudGrid Class="px-4">
-                        @foreach(var img in Bulletin.Images)
+                        @foreach (var img in Bulletin.Images)
                         {
                             <MudItem xs="4">
                                 <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetPath()))">
-                                    <MudCardMedia Image=@img.GetPath()/>
+                                    <MudCardMedia Image=@img.GetPath() />
                                 </div>
                             </MudItem>
                         }
@@ -77,7 +84,7 @@
             <AuthorizeView>
                 <Authorized>
                     <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null &&Bulletin.Expired<DateTime.UtcNow)/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null &&Bulletin.Expired<DateTime.UtcNow) />
                     <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
                     <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark Style="margin-left:auto" />
@@ -101,6 +108,8 @@
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = new();
+    [Parameter]
+    public bool GroupInfo { get; set; } = false;
     private MudCarousel<Image>? _carousel;
     private void Vote()
     {
