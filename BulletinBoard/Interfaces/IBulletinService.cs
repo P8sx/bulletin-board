@@ -8,6 +8,5 @@ namespace BulletinBoard.Services
         Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default);
         Task<Bulletin?> GetBulletinInfoAsyncCached(User user, Group group, Bulletin bulletin);
         Task<int> GetBulletinsCountAsyncCached(Group group);
-        Task Vote(BulletinVote vote);
     }
 }

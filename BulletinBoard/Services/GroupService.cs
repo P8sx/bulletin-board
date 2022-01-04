@@ -7,17 +7,15 @@ namespace BulletinBoard.Services
 {
     public class GroupService : IGroupService
     {
-        private readonly ApplicationDbContext _dbContext;
+
         private readonly ILogger _logger;
         private readonly IMemoryCache _memoryCache;
-
-        public GroupService(ApplicationDbContext dbContext, ILogger<BulletinService> logger, IMemoryCache memoryCache)
+        private readonly IDbContextFactory<ApplicationDbContext> _dbFactory;
+        public GroupService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache)
         {
-            _dbContext = dbContext;
+            _dbFactory = dbFactory;
             _logger = logger;
             _memoryCache = memoryCache;
-            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
-
         }
 
         public async Task<Group?> GetGroupInfoAsyncCached(Group group)
@@ -31,6 +29,7 @@ namespace BulletinBoard.Services
         }
         private async Task<Group?> GetGroupAsync(Group group)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Groups.Where(g => g.Id == group.Id).Include(g => g.Image).FirstOrDefaultAsync();
         }
     }
