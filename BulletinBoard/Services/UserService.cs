@@ -11,8 +11,7 @@ namespace BulletinBoard.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public User? User { get; private set; }
-        public List<Group>? UserGroups { get; private set; }
-        public List<GroupUser>? UserGroupsRoles { get; private set; }
+        public List<GroupUser>? UserGroups { get; private set; }
 
         public bool IsAuthenticated
         {
@@ -29,13 +28,11 @@ namespace BulletinBoard.Services
             _httpContextAccessor = httpContextAccessor;
             User = GetUser();
             UserGroups = GetUserGroups(User);
-            UserGroupsRoles = GetUserGroupsRoles(User);
         }
 
         public void UpdateUserGroups()
         {
             UserGroups = GetUserGroups(User);
-            UserGroupsRoles = GetUserGroupsRoles(User);
         }
 
         private User? GetUser()
@@ -49,31 +46,56 @@ namespace BulletinBoard.Services
         }
 
 
-        private List<Group>? GetUserGroups(User? user)
+        //private List<Group>? GetUserGroups(User? user)
+        //{
+        //    using var _dbContext = _dbFactory.CreateDbContext();
+        //    var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == Const.DefaultGroupId);
+
+        //    if (mainGroup == null)
+        //        return null;
+
+        //    var userGroups = _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group!.Image).Select(gu => gu.Group).ToList();
+        //    userGroups.Add(mainGroup);
+        //    return userGroups!;
+        //}
+
+        private List<GroupUser>? GetUserGroups(User? user)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == Const.DefaultGroupId);
-
-            if (mainGroup == null)
-                return null;
-
-            var userGroups = _dbContext.GroupUsers.Where(gu => gu.User == user).Include(g => g.Group!.Image).Select(gu => gu.Group).ToList();
-            userGroups.Add(mainGroup);
-            return userGroups!;
-        }
-        private List<GroupUser>? GetUserGroupsRoles(User? user)
-        {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            var groupUser = _dbContext.GroupUsers.Include(gu => gu.User).Include(gu => gu.Role).Where(gu => gu.User == user).ToList();
+            var groupUser = _dbContext.GroupUsers
+                .Include(gu => gu.User)
+                .Include(gu => gu.Role)
+                .Include(gu => gu.Group)
+                .ThenInclude(gu => gu!.Image)
+                .Where(gu => gu.User == user)
+                .ToList();
             return groupUser;
         }
         public bool IsInGroup(Group group)
         {
+            if (group.Id == Const.DefaultGroupId)
+                return true;
             if (UserGroups == null || UserGroups.Count == 0)
                 return false;
-            return UserGroups.Any(g => g.Id == group.Id);
+            return UserGroups.Any(g => g.GroupId == group.Id);
         }
 
+        public bool IsGroupModerator(Group group)
+        {
+            return true;
+        }
+
+        public void AddUserToGroup(Group group)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            try
+            {
+                _dbContext.GroupUsers.Add(new GroupUser { GroupId = group.Id, UserId=User!.Id, Role=new Role("User") });
+            }catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+        }
         public async Task Bookmark(BulletinBookmark bookmark)
         {
             using var _dbContext = _dbFactory.CreateDbContext();

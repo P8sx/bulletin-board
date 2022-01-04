@@ -69,7 +69,7 @@
                     {
                         @foreach (var group in UserService.UserGroups)
                         {
-                            <MudSelectItem T="Guid?" Value="@group.Id">@group.Name</MudSelectItem>
+                            <MudSelectItem T="Guid?" Value="@group.GroupId">@group.Group!.Name</MudSelectItem>
                         }
                     }
                 </MudSelect>

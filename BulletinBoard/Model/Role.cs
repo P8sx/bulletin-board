@@ -23,8 +23,12 @@ namespace BulletinBoard.Model
         public Role(string name) : base(name)
         {
             if(Enum.TryParse(name, out RoleValue roleValue))
+            {
                 RoleValue = roleValue;
-
+                NormalizedName = name.ToUpper();
+                Id = Convert.ToUInt64(roleValue);
+            }
+                
         }
     }
 }

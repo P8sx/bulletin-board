@@ -5,8 +5,7 @@ namespace BulletinBoard.Services
     public interface IUserService
     {
         User? User { get; }
-        List<Group>? UserGroups { get; }
-        List<GroupUser>? UserGroupsRoles { get; }
+        List<GroupUser>? UserGroups { get; }
 
         Task Bookmark(BulletinBookmark bookmark);
         bool IsInGroup(Group group);

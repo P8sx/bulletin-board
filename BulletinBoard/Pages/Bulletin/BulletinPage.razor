@@ -12,7 +12,7 @@
 
 @using GEmojiSharp.Blazor
 
-@if (_pageState == PageState.SUCCESS && _bulletin != null)
+@if (_pageState == State.SUCCESS && _bulletin != null)
 {
     <MudCard Outlined="true" Class="mb-5">
         <div style="position: relative;">
@@ -118,7 +118,11 @@
         {
             <CommentComponent Comment=comment></CommentComponent>
         }
-        
+
+    }
+    else if (_commentState == State.LOADING)
+    {
+        <LoadingComponent></LoadingComponent>       
     }
     else
     {
@@ -127,7 +131,7 @@
         </MudPaper>
     }
 }
-else if (_pageState == PageState.ACCESS_BLOCKED)
+else if (_pageState == State.ACCESS_BLOCKED)
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
@@ -150,28 +154,31 @@ else
     private Bulletin? _bulletin = default!;
     private MudCarousel<Image> _carousel = default!;
     private IList<Comment> _comments = default!;
-    private PageState _pageState = PageState.LOADING;
+    private State _pageState = State.LOADING;
+    private State _commentState = State.LOADING;
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
         if (UserService.IsInGroup(new Group(GroupId)))
         {
-            _pageState = PageState.SUCCESS;
             _bulletin = await BulletinService.GetBulletinInfoAsyncCached(UserService.User!, new Group(GroupId), new Bulletin(BulletinId));
             _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId));
+            _commentState = _pageState = State.SUCCESS;
         }
         else
         {
-            _pageState = PageState.ACCESS_BLOCKED;
+            _commentState = _pageState = State.ACCESS_BLOCKED;
         }
         StateHasChanged();
     }
     protected async Task UpdateComments(bool update)
     {
         _comments = default!;
+        _commentState = State.LOADING;
         StateHasChanged();
         _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
+        _commentState = State.SUCCESS;
         StateHasChanged();
     }
     private void Vote()
