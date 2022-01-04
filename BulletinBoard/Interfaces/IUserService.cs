@@ -12,5 +12,7 @@ namespace BulletinBoard.Services
         void UpdateUserGroups();
         Task Bookmark(Bulletin bulletin);
         Task Vote(Bulletin bulletin);
+        bool IsGroupModerator(Group group);
+        bool IsBulletinOwner(Bulletin bulletin);
     }
 }

@@ -179,6 +179,7 @@ else
         StateHasChanged();
         _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
         _commentState = State.SUCCESS;
+        _bulletin.CommentsCount++;
         StateHasChanged();
     }
     private void Vote()
