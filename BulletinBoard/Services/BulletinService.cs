@@ -36,7 +36,7 @@ namespace BulletinBoard.Services
         private readonly ILogger _logger;
         private readonly IMemoryCache _memoryCache;
 
-        public BulletinService(ApplicationDbContext dbContext, ILogger<BulletinService> logger, IMemoryCache memoryCache)
+        public BulletinService(ApplicationDbContext dbContext, ILogger<BulletinService> logger, IMemoryCache memoryCache )
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -66,7 +66,7 @@ namespace BulletinBoard.Services
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.OrderBy}{sort.SortBy}", async p =>
             {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1);
                 return await GetBulletinsAsync(page, limit, user, group, sort);
             });
             return result;
@@ -81,13 +81,13 @@ namespace BulletinBoard.Services
 
             var skip = (page - 1) * limit;
 
+
+
             var bulletins = _dbContext.Bulletins
                 .Include(x => x.Images)
                 .Include(u => u.User)
                 .ThenInclude(i => i!.Image)
                 .Where(g => g.GroupId == group.Id)
-                .Skip(skip)
-                .Take(limit)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -102,13 +102,13 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments!.Count),
-                    VotesCount = Convert.ToUInt32(a.Votes!.Count),
+                    CommentsCount = a.Comments!.Count,
+                    VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
                     UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 });
 
-            if (sort.SortBy == SortBy.Commented)
+            if (sort.SortBy == SortBy.Popular)
                 bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
             else if (sort.SortBy == SortBy.Expiring)
                 bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
@@ -117,7 +117,9 @@ namespace BulletinBoard.Services
             else
                 bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
 
-
+            bulletins = bulletins
+                .Skip(skip)
+                .Take(limit);
             return await bulletins.ToListAsync();
         }
 
@@ -125,11 +127,12 @@ namespace BulletinBoard.Services
 
         public async Task<int> GetBulletinsCountAsyncCached(Group group)
         {
-            return await _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
+            var result = _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
                 return await GetBulletinsCountAsync(group);
             });
+            return await result;
         }
         private async Task<int> GetBulletinsCountAsync(Group group)
         {
@@ -170,8 +173,8 @@ namespace BulletinBoard.Services
                     Group = a.Group,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
-                    CommentsCount = Convert.ToUInt32(a.Comments!.Count),
-                    VotesCount = Convert.ToUInt32(a.Votes!.Count),
+                    CommentsCount = a.Comments!.Count,
+                    VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
                     UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 }).FirstOrDefaultAsync();

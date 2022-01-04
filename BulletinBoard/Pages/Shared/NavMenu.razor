@@ -1,5 +1,5 @@
 ﻿
-<MudPaper Width="16rem" Elevation="0">
+
     <MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary" Class="pa-2">
         <AuthorizeView>
             <Authorized>
@@ -17,9 +17,9 @@
         <MudDivider Class="mt-3 mb-1"></MudDivider>
 
 
-        <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="false">
+        <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="true">
+            <MudNavLink Href="/bulletins" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
             <MudNavLink Href="/bulletins" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
-            <MudNavLink Href="/bulletins" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Newest</MudNavLink>
         </MudNavGroup>
 
         <AuthorizeView>
@@ -41,4 +41,3 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudNavMenu>
-</MudPaper>

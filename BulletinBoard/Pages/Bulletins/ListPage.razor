@@ -34,7 +34,7 @@
 
     <MudElement Class="d-flex mb-4 justify-end ">
         <MudElement>
-            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => GetBulletins())">
+            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
                 @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
                 {
                     <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
@@ -42,7 +42,7 @@
             </MudSelect>
         </MudElement>
         <MudElement>
-            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => GetBulletins())">
+            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
                 @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
                 {
                     <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
@@ -97,7 +97,7 @@ else
 
     private Group? _group;
 
-    public int _bulletinsPerPage = 10;
+    private int _bulletinsPerPage = 10;
     private IList<Bulletin> _bulletins = default!;
     private int _bulletinsCount = 0;
 
@@ -110,30 +110,38 @@ else
         if (UserService.IsInGroup(new Group(GroupId ?? Const.DefaultGroupId)))
         {
             _pageState = PageState.SUCCESS;
-            if (_group == null) _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
-            await GetBulletins();
+            _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
+            _bulletins = await GetBulletins();
+            _bulletinsCount = await GetBulletinsCount();
         }
         else
         {
             _pageState = PageState.ACCESS_BLOCKED;
         }
+        StateHasChanged();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
     protected void PageChanged(int page)
     {
-        Page = page;
         NavigationManager.NavigateTo($"/bulletins?groupid{GroupId}&page={page}");
     }
-    protected async Task GetBulletins()
+
+    protected async Task<IList<Bulletin>> GetBulletins()
     {
-        _bulletins = await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _group!, new BulletinSort(_sortBy, _orderBy));
-        _bulletinsCount = await BulletinService.GetBulletinsCountAsyncCached(_group!);
-        base.StateHasChanged();
+        return await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _group!, new BulletinSort(_sortBy, _orderBy));
     }
+    protected async Task<int> GetBulletinsCount()
+    {
+        return await BulletinService.GetBulletinsCountAsyncCached(_group!);
+    }
+
+    protected async Task UpdateBulletins()
+    {
+        _bulletins = await GetBulletins();
+        _bulletinsCount = await GetBulletinsCount();
+        StateHasChanged();
+    }
+
     private int NumberOfPages()
     {
         if (_bulletinsCount == 0) return 0;
