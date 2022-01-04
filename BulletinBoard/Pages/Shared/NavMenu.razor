@@ -18,8 +18,8 @@
 
 
         <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="true">
-            <MudNavLink Href="/bulletins" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
-            <MudNavLink Href="/bulletins" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
+            <MudNavLink Href="/bulletins?sortby=0" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
+            <MudNavLink Href="/bulletins?sortby=1" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
         </MudNavGroup>
 
         <AuthorizeView>

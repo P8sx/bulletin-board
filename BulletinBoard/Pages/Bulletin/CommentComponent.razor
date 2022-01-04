@@ -1,17 +1,17 @@
 ﻿@using BulletinBoard.Model
 @using GEmojiSharp.Blazor
 
-<MudCard Outlined="true" Class="mb-3 mx-4">
+<MudCard Outlined="true" Class="mb-3">
 <MudCardHeader>
     <CardHeaderAvatar>
         <MudAvatar Image=@(Comment.User!.Image==null?"/images/avatars/no_avatar.png":Comment.User.Image.GetPath()) />
     </CardHeaderAvatar>
     <CardHeaderContent>
         <MudText Typo="Typo.body1">@Comment.User!.UserName</MudText>
-        <MudText Typo="Typo.body2"><strong>Posted:</strong> @(((DateTime)Comment.Created).ToString("dd.MM.yyyy HH:mm")) </MudText>
+        <MudText Typo="Typo.subtitle2"><strong>Posted:</strong> @(((DateTime)Comment.Created).ToString("dd.MM.yyyy HH:mm")) </MudText>
     </CardHeaderContent>
     <CardHeaderActions>
-        <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
+        <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
             <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
             <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
             <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
@@ -19,7 +19,7 @@
     </CardHeaderActions>
 </MudCardHeader>
 <MudCardContent Class="pt-0">
-    <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
+    <MudText Typo="Typo.body1" Class="mt-2" Style="overflow-wrap: break-word;">
         <Emoji>@Comment.Text</Emoji>
     </MudText>
 </MudCardContent>
