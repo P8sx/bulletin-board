@@ -1,6 +1,6 @@
 ﻿using BulletinBoard.Model;
 
-namespace BulletinBoard.Interfaces
+namespace BulletinBoard.Services
 {
     public interface ICommentService
     {

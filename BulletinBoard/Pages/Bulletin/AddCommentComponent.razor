@@ -1,26 +1,52 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.Services
 
-
+@inject ISnackbar Snackbar
 @inject IUserService UserService
+@inject ICommentService CommentService
+
 @using GEmojiSharp.Blazor
 
-<EditForm Model="@_comment" OnValidSubmit="ValidFormSubmitted">
+<EditForm Model="@_commentText" OnValidSubmit="ValidFormSubmitted">
     <DataAnnotationsValidator />
-        <MudTextField Class="px-4" T="string" Label="Comment" Lines="4" Variant="Variant.Outlined" @bind-Value="_comment.Text" For="@(() => _comment.Text)" Immediate=true Text="asd" TextUpdateSuppression=false/>
+    <MudTextField Class="px-4" T="string" Label="Comment" HelperText="Github emoji are suported" Lines="4" Variant="Variant.Outlined" @bind-Value="_commentText" />
 
-    <MudElement Class="d-flex justify-end mr-6">
+    <MudElement Class="d-flex justify-end mr-5">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment">Comment</MudButton>
     </MudElement>
 </EditForm>
+
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = default!;
 
-    private string test = ":tada: witam";
-    private Comment _comment = new();
+
+    private String _commentText = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
+
     private async Task ValidFormSubmitted(EditContext editContext)
     {
+        if (UserService.User == null)
+        {
+            Snackbar.Add($"There was an error adding comment - try later", Severity.Error);
+            return;
+        }
+        Comment comment = new();
+        comment.Text = _commentText;
+        comment.UserId = UserService.User.Id;
+        comment.BulletinId = Bulletin.Id;
 
+        var result = await CommentService.AddCommentAsync(comment);
+        if (result)
+            Snackbar.Add($"Your comment has been added", Severity.Success);
+        else
+            Snackbar.Add($"There was an error adding comment - try later", Severity.Error);
     }
+
 }
