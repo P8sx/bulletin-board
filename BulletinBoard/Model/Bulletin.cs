@@ -48,9 +48,9 @@ namespace BulletinBoard.Model
         public virtual IList<BulletinBookmark>? Bookmarks { get; set; }
 
         [NotMapped]
-        public uint CommentsCount { get; set; }
+        public int CommentsCount { get; set; }
         [NotMapped]
-        public uint VotesCount { get; set; }
+        public int VotesCount { get; set; }
         [NotMapped]
         public bool UserVoted { get; set; }
         [NotMapped]

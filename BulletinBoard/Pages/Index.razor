@@ -5,9 +5,11 @@
 
 
 @code{
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        base.OnInitialized();
-        NavigationManager.NavigateTo("bulletins");
+        if (firstRender)
+        {
+            NavigationManager.NavigateTo("bulletins");
+        }
     }
 }
