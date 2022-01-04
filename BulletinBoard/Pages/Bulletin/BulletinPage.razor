@@ -7,6 +7,7 @@
 
 @inject IBulletinService BulletinService
 @inject IDialogService DialogService
+@using GEmojiSharp.Blazor
 
 
 @if (_pageState == PageState.SUCCESS && _bulletin != null)
@@ -35,7 +36,9 @@
             </MudCardHeader>
             <MudCardContent Class="pt-0">
                 <MudText Typo="Typo.h4">@_bulletin.Title</MudText>
-                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@_bulletin.Description</MudText>
+                <Emoji>
+                    <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@_bulletin.Description</MudText>
+                </Emoji>
                 @if (_bulletin.Modified != null)
                 {
                     <MudText Typo="Typo.body2" Class="mt-2"><strong>Last modified:</strong> @(((DateTime)_bulletin.Modified).ToString("dd.MM.yyyy"))</MudText>
@@ -105,20 +108,22 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudPaper>
-
-    <MudPaper Outlined="true" Class="py-5">
-        @if (_comments != null && _comments.Any())
-        {
+    <MudText Typo="Typo.h4" Class="mb-2">Comments</MudText>
+    @if (_comments != null && _comments.Any())
+    {
+        <MudPaper Outlined="true" Class="py-5">
             @foreach (var comment in _comments)
             {
                 <CommentComponent Comment=comment></CommentComponent>
             }
-        }
-        else
-        {
-            <MudText>Sorry but there is no comment</MudText>
-        }
-    </MudPaper>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Outlined="true" Class="py-5">
+            <MudText Align="Align.Center" >Sorry but there is no comments</MudText>
+        </MudPaper>
+    }
 }
 else if (_pageState == PageState.ACCESS_BLOCKED)
 {

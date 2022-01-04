@@ -11,17 +11,17 @@
 @inject UserManager<User> UserManager
 @inject IUserService UserService
 @inject IBulletinService BulletinService
+@inject NavigationManager NavigationManager
 
 
-
-<EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
-    <DataAnnotationsValidator />
-    <MudPaper Style="min-height:30rem" Class="mud-width-full py-8" Elevation="3">
+<MudPaper Style="min-height:30rem; position: relative;" Class="mud-width-full py-8" Elevation="1">
+    <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
+        <DataAnnotationsValidator />
         <MudGrid>
             <MudItem xs="12" md="12" Class="px-8">
                 <MudText Typo="Typo.h5">Bulletin</MudText>
                 <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)" />
-                <MudTextField T="string" Label="Description" HelperText="Content of your bulletin" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />           
+                <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />
             </MudItem>
             <MudItem xs="12" md="8" Class="px-8">
                 <MudText Typo="Typo.h5">Attachments</MudText>
@@ -62,7 +62,6 @@
                 </MudText>
             </MudItem>
             <MudItem xs="12" md="4" Class="px-8">
-
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
                 <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
@@ -70,17 +69,22 @@
                     {
                         @foreach (var group in UserService.UserGroups)
                         {
-                            <MudSelectItem T="Guid?" Value="@group.Id" >@group.Name</MudSelectItem>
+                            <MudSelectItem T="Guid?" Value="@group.Id">@group.Name</MudSelectItem>
                         }
                     }
                 </MudSelect>
             </MudItem>
+
         </MudGrid>
         <MudElement Class="d-flex justify-end mr-6">
             <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
         </MudElement>
-    </MudPaper>
-</EditForm>
+    </EditForm>
+     <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
+        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
+    </MudOverlay>
+</MudPaper>
+
 
 @code {
     [Parameter]
@@ -94,12 +98,12 @@
     // Bulletin attachments
     private List<Tuple<IBrowserFile, string>> _files = new();
 
-
+    private bool _blocked = false;
     protected override async Task OnInitializedAsync()
     {
         Bulletin.GroupId = Const.DefaultGroupId;
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;        
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
     // Load, validate, and convert files for preview
@@ -144,6 +148,7 @@
     // Submit form
     private async Task ValidFormSubmitted(EditContext editContext)
     {
+        _blocked = true;
         // Set bulletin data
         if (Bulletin.UserId == 0)
             Bulletin.UserId = UserService.User!.Id;
@@ -159,11 +164,13 @@
         var result = await BulletinService.AddBulletin(Bulletin);
         if (!result)
         {
+            _blocked = false;
+            _files = new();
             Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
             return;
         }
         // If bulletin succesfuly added save images on server
-        foreach(var file in _files.Select((image,index)=>(image,index)))
+        foreach (var file in _files.Select((image, index) => (image, index)))
         {
             Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
             FileStream fs = File.Create($"{env.WebRootPath}/{Bulletin.Images[file.index].GetPath()}");
@@ -171,8 +178,8 @@
             stream.Close();
             fs.Close();
         }
-
-         Snackbar.Add($"Bulletin has been added", Severity.Success);
+        Snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");
     }
-
 }

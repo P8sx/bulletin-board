@@ -13,10 +13,10 @@ namespace BulletinBoard.Model
         [Key]
         public Guid Id { get; set; }
         [Required]
-        [StringLength(50,MinimumLength = 6, ErrorMessage = "Title must be at least 6 characters long (max 50)")]
+        [StringLength(50,MinimumLength = 3, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
         public string? Title { get; set; }
         [Required]
-        [StringLength(1000, MinimumLength = 20, ErrorMessage = "Description must be at least 20 characters long (max 1000)")]
+        [StringLength(1000, MinimumLength = 10, ErrorMessage = "Description must be at least 10 characters long (max 1000)")]
         public string? Description { get; set; }
         public DateTime Created { get; set; }
         public DateTime? Modified { get; set; }
