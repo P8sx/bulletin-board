@@ -1,5 +1,6 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.Services
+@using GEmojiSharp.Blazor
 @implements IDisposable
 
 @inject IUserService UserService
@@ -33,7 +34,10 @@
             </MudCardHeader>
             <MudCardContent Class="pt-0">
                 <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
+                <Emoji>
                 <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+                </Emoji>
+
                 @if (Bulletin.Modified != null)
                 {
                     <MudText Typo="Typo.body2" Class="mt-2"><strong>Last modified:</strong> @(((DateTime)Bulletin.Modified).ToString("dd.MM.yyyy"))</MudText>
