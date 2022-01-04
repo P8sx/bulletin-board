@@ -1,28 +1,27 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.Services
+@using System.ComponentModel.DataAnnotations
 
 @inject ISnackbar Snackbar
-@inject IUserService UserService
-@inject ICommentService CommentService
+@inherits BulletinPage
 
 @using GEmojiSharp.Blazor
 
-<EditForm Model="@_commentText" OnValidSubmit="ValidFormSubmitted">
-    <DataAnnotationsValidator />
-    <MudTextField Class="px-4" T="string" Label="Comment" HelperText="Github emoji are suported" Lines="4" Variant="Variant.Outlined" @bind-Value="_commentText" />
 
-    <MudElement Class="d-flex justify-end mr-5">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment">Comment</MudButton>
-    </MudElement>
-</EditForm>
+<MudTextField Class="px-4" T="string" Label="Comment" HelperText="Github emoji are suported" Lines="4" Variant="Variant.Outlined" @bind-Value="_commentText" />
+
+<MudElement Class="d-flex justify-end mr-5">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment" OnClick=Submitted>Comment</MudButton>
+</MudElement>
 
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = default!;
 
-
+    [Required]
     private String _commentText = "";
 
+    private DateTime _lastComment;
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,23 +29,43 @@
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
-    private async Task ValidFormSubmitted(EditContext editContext)
+    private async Task Submitted()
     {
+
+        if (_lastComment + TimeSpan.FromSeconds(15) > DateTime.UtcNow)
+        {
+            Snackbar.Add($"You posting too fast - try again later", Severity.Error);
+            return;
+        }
+        else
+        {
+            _lastComment = DateTime.UtcNow;
+        }
+
+
+
         if (UserService.User == null)
         {
             Snackbar.Add($"There was an error adding comment - try later", Severity.Error);
             return;
         }
+        if(_commentText.Length == 0)
+        {
+            Snackbar.Add($"Can't add empty comment", Severity.Warning);
+            return;
+        }    
         Comment comment = new();
         comment.Text = _commentText;
         comment.UserId = UserService.User.Id;
         comment.BulletinId = Bulletin.Id;
-
+        _commentText = "";
         var result = await CommentService.AddCommentAsync(comment);
         if (result)
             Snackbar.Add($"Your comment has been added", Severity.Success);
         else
             Snackbar.Add($"There was an error adding comment - try later", Severity.Error);
+
+        await UpdateComments();
     }
 
 }

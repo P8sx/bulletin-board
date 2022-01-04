@@ -87,8 +87,8 @@ namespace BulletinBoard.Services
         public async Task Bookmark(Bulletin bulletin)
         {
             var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
-            if (exist == default)
-                await _dbContext.BulletinBookmarks.AddAsync(new BulletinBookmark { Bulletin = bulletin, User = User});
+            if (exist == null)
+                await _dbContext.BulletinBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id});
             else
                 _dbContext.BulletinBookmarks.Remove(exist);
 
@@ -97,8 +97,8 @@ namespace BulletinBoard.Services
         public async Task Vote(Bulletin bulletin)
         {
             var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
-            if (exist == default)
-                await _dbContext.BulletinsVotes.AddAsync(new BulletinVote { Bulletin = bulletin, User = User });
+            if (exist == null)
+                await _dbContext.BulletinsVotes.AddAsync(new BulletinVote { BulletinId = bulletin.Id, UserId = User!.Id });
             else
                 _dbContext.BulletinsVotes.Remove(exist);
 
