@@ -5,23 +5,18 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace BulletinBoard.Services
 {
-    public class CommentService : ICommentService
+    public class CommentService : BaseService, ICommentService
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger _logger;
-        private readonly IMemoryCache _memoryCache;
 
-        public CommentService(ApplicationDbContext dbContext, ILogger<BulletinService> logger, IMemoryCache memoryCache)
+        public CommentService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
         {
-            _dbContext = dbContext;
-            _logger = logger;
-            _memoryCache = memoryCache;
-            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
+
         }
         public async Task<bool> AddCommentAsync(Comment Comment)
         {
             try
             {
+                using var _dbContext = _dbFactory.CreateDbContext();
                 _dbContext.Comments.Add(Comment);
                 await _dbContext.SaveChangesAsync();
                 return true;
@@ -44,6 +39,7 @@ namespace BulletinBoard.Services
         }
         private async Task<IList<Comment>> GetCommentsAsync(Bulletin bulletin)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var comments = _dbContext.Comments
                 .Where(c => c.BulletinId == bulletin.Id)
                 .Include(c=>c.User)

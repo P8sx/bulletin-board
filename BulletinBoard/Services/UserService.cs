@@ -2,13 +2,12 @@
 using BulletinBoard.Extensions;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace BulletinBoard.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseService, IUserService
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public User? User { get; private set; }
@@ -25,10 +24,8 @@ namespace BulletinBoard.Services
             }
         }
 
-        public UserService(IHttpContextAccessor httpContextAccessor, ApplicationDbContext dbContext, ILogger<BulletinService> logger)
+        public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor): base(dbFactory,logger,memoryCache)
         {
-            _dbContext = dbContext;
-            _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             User = GetUser();
             UserGroups = GetUserGroups(User);
@@ -45,6 +42,7 @@ namespace BulletinBoard.Services
         {
             if (_httpContextAccessor.HttpContext != null && _httpContextAccessor.HttpContext.User.Identity != null && _httpContextAccessor.HttpContext.User.Identity.Name != null)
             {
+                using var _dbContext = _dbFactory.CreateDbContext();
                 return _dbContext.Users.Where(u => u.UserName == _httpContextAccessor.HttpContext.User.Identity.Name).FirstOrDefault();
             }
             return null;
@@ -53,6 +51,7 @@ namespace BulletinBoard.Services
 
         private List<Group>? GetUserGroups(User? user)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var mainGroup = _dbContext.Groups.Include(g => g.Image).FirstOrDefault(g => g.Id == Const.DefaultGroupId);
 
             if (mainGroup == null)
@@ -64,6 +63,7 @@ namespace BulletinBoard.Services
         }
         private List<GroupUser>? GetUserGroupsRoles(User? user)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var groupUser = _dbContext.GroupUsers.Include(gu => gu.User).Include(gu => gu.Role).Where(gu => gu.User == user).ToList();
             return groupUser;
         }
@@ -76,6 +76,7 @@ namespace BulletinBoard.Services
 
         public async Task Bookmark(BulletinBookmark bookmark)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bookmark.BulletinId && v.UserId == bookmark.UserId);
             if (exist == default)
                 await _dbContext.BulletinBookmarks.AddAsync(bookmark);
@@ -86,6 +87,7 @@ namespace BulletinBoard.Services
         }
         public async Task Bookmark(Bulletin bulletin)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
             if (exist == null)
                 await _dbContext.BulletinBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id});
@@ -96,6 +98,7 @@ namespace BulletinBoard.Services
         }
         public async Task Vote(Bulletin bulletin)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
             if (exist == null)
                 await _dbContext.BulletinsVotes.AddAsync(new BulletinVote { BulletinId = bulletin.Id, UserId = User!.Id });

@@ -30,24 +30,16 @@ namespace BulletinBoard.Services
         Descending
     }
 
-    public class BulletinService : IBulletinService
+    public class BulletinService : BaseService, IBulletinService
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger _logger;
-        private readonly IMemoryCache _memoryCache;
-
-        public BulletinService(ApplicationDbContext dbContext, ILogger<BulletinService> logger, IMemoryCache memoryCache )
+        public BulletinService(IDbContextFactory<ApplicationDbContext> dbFactory,  ILogger<BulletinService> logger, IMemoryCache memoryCache ):base(dbFactory, logger, memoryCache)
         {
-            _dbContext = dbContext;
-            _logger = logger;
-            _memoryCache = memoryCache;
-            _dbContext.Database.SetCommandTimeout(TimeSpan.FromSeconds(5));
-
         }
         public async Task<bool> AddBulletin(Bulletin bulletin)
         {
             try
             {
+                using var _dbContext = _dbFactory.CreateDbContext();
                 await _dbContext.Bulletins.AddAsync(bulletin);
                 await _dbContext.SaveChangesAsync();
 
@@ -66,7 +58,7 @@ namespace BulletinBoard.Services
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{group.Id}{sort.OrderBy}{sort.SortBy}", async p =>
             {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1);
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinsAsync(page, limit, user, group, sort);
             });
             return result;
@@ -83,6 +75,7 @@ namespace BulletinBoard.Services
 
 
 
+            using var _dbContext = _dbFactory.CreateDbContext();
             var bulletins = _dbContext.Bulletins
                 .Include(x => x.Images)
                 .Include(u => u.User)
@@ -129,13 +122,14 @@ namespace BulletinBoard.Services
         {
             var result = _memoryCache.GetOrCreateAsync($"BulletinsCount{group.Id}", async p =>
             {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinsCountAsync(group);
             });
             return await result;
         }
         private async Task<int> GetBulletinsCountAsync(Group group)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Bulletins
                 .Where(g => g.GroupId == group.Id)
                 .CountAsync();
@@ -147,50 +141,39 @@ namespace BulletinBoard.Services
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{group.Id}{bulletin.Id}", async p =>
             {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinInfoAsync(user!, group, bulletin);
             });
         }
         private async Task<Bulletin?> GetBulletinInfoAsync(User user, Group group, Bulletin bulletin)
         {
+            using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Bulletins
-                .Include(x => x.Images)
-                .Include(u => u.User)
-                .ThenInclude(i => i!.Image)
-                .Where(g => g.GroupId == group.Id)
-                .Where(b => b.Id == bulletin.Id)
-                .Select(a => new Bulletin
-                {
-                    Id = a.Id,
-                    Title = a.Title,
-                    Description = a.Description,
-                    Created = a.Created,
-                    Modified = a.Modified,
-                    Expired = a.Expired,
-                    Images = a.Images,
-                    Pinned = a.Pinned,
-                    User = a.User,
-                    Group = a.Group,
-                    Latitude = a.Latitude,
-                    Longitude = a.Longitude,
-                    CommentsCount = a.Comments!.Count,
-                    VotesCount = a.Votes!.Count,
-                    UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
-                    UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
-                }).FirstOrDefaultAsync();
+            .Include(x => x.Images)
+            .Include(u => u.User)
+            .ThenInclude(i => i!.Image)
+            .Where(g => g.GroupId == group.Id)
+            .Where(b => b.Id == bulletin.Id)
+            .Select(a => new Bulletin
+            {
+                Id = a.Id,
+                Title = a.Title,
+                Description = a.Description,
+                Created = a.Created,
+                Modified = a.Modified,
+                Expired = a.Expired,
+                Images = a.Images,
+                Pinned = a.Pinned,
+                User = a.User,
+                Group = a.Group,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
+                CommentsCount = a.Comments!.Count,
+                VotesCount = a.Votes!.Count,
+                UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
+                UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
+            }).FirstOrDefaultAsync();
         }
-
-        public async Task Vote(BulletinVote vote)
-        {
-            var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v=> v.BulletinId == vote.BulletinId && v.UserId==vote.UserId);
-            if (exist == default)
-                await _dbContext.BulletinsVotes.AddAsync(vote);
-            else
-                _dbContext.BulletinsVotes.Remove(exist);
-
-            await _dbContext.SaveChangesAsync();
-        }
-
 
 
     }
