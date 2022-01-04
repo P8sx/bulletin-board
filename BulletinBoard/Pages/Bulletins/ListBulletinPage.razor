@@ -12,7 +12,7 @@
 @inject IBulletinService BulletinService
 @inject NavigationManager NavigationManager
 
-@if (_pageState == PageState.SUCCESS && _group != null && _bulletins != null)
+@if (_pageState == State.SUCCESS && _group != null && _bulletins != null)
 {
 
     <MudCard Outlined="true" Class="mb-3">
@@ -72,7 +72,7 @@
     </MudElement>
 
 }
-else if (_pageState == PageState.ACCESS_BLOCKED)
+else if (_pageState == State.ACCESS_BLOCKED)
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
@@ -100,7 +100,7 @@ else
 
 
 
-    private PageState _pageState = PageState.LOADING;
+    private State _pageState = State.LOADING;
 
     private Group? _group;
 
@@ -122,11 +122,11 @@ else
             _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
             _bulletins = await GetBulletins();
             _bulletinsCount = await GetBulletinsCount();
-            _pageState = PageState.SUCCESS;
+            _pageState = State.SUCCESS;
         }
         else
         {
-            _pageState = PageState.ACCESS_BLOCKED;
+            _pageState = State.ACCESS_BLOCKED;
         }
         StateHasChanged();
     }

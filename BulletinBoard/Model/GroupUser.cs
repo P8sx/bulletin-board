@@ -21,6 +21,9 @@ namespace BulletinBoard.Model
 
         public DateTime? Joined { get; set; }
 
-
+        public GroupUser()
+        {
+            Joined = DateTime.UtcNow;
+        }
     }
 }

@@ -34,6 +34,7 @@ builder.Services.AddScoped<IBulletinService,BulletinService>();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IGroupService,GroupService>();
 builder.Services.AddScoped<ICommentService,CommentService>();
+builder.Services.AddTransient<IHelperService,HelperService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
