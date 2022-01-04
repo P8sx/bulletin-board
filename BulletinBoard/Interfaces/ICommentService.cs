@@ -5,6 +5,6 @@ namespace BulletinBoard.Services
     public interface ICommentService
     {
         Task<bool> AddCommentAsync(Comment Comment);
-        Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin);
+        Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin, bool forceReload = false);
     }
 }

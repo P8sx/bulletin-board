@@ -4,10 +4,10 @@
 @using BulletinBoard.Pages.Bulletins
 @using BulletinBoard.Services
 
-@inject IUserService UserService
+
 @inject IBulletinService BulletinService
 @inject IDialogService DialogService
-@inject ICommentService CommentService
+
 
 @if (_pageState == PageState.SUCCESS && _bulletin != null)
 {
@@ -129,7 +129,6 @@ else
     <LoadingComponent></LoadingComponent>
 }
 
-
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
@@ -139,7 +138,11 @@ else
     [SupplyParameterFromQuery]
     public Guid BulletinId { get; set; }
 
+    [Inject]
+    protected IUserService UserService { get; set; } = default!;
 
+    [Inject]
+    protected ICommentService CommentService { get; set; } = default!;
 
     private Bulletin? _bulletin = default!;
     private MudCarousel<Image> _carousel = default!;
@@ -162,6 +165,11 @@ else
             _pageState = PageState.ACCESS_BLOCKED;
         }
         base.StateHasChanged();
+    }
+    protected async Task UpdateComments()
+    {
+        _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
+        StateHasChanged();
     }
     private void Vote()
     {
