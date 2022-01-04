@@ -89,8 +89,15 @@ else
     [SupplyParameterFromQuery]
     public int? Page { get; set; } = 1;
 
-    public SortBy _sortBy = SortBy.Created;
-    public OrderBy _orderBy = OrderBy.Ascending;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? SortBy { get; set; } = 0;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? OrderBy { get; set; } = 0;
+
+
 
 
     private PageState _pageState = PageState.LOADING;
@@ -100,7 +107,8 @@ else
     private int _bulletinsPerPage = 10;
     private IList<Bulletin> _bulletins = default!;
     private int _bulletinsCount = 0;
-
+    private SortBy _sortBy = Services.SortBy.Created;
+    private OrderBy _orderBy = Services.OrderBy.Ascending;
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
@@ -109,10 +117,12 @@ else
         Page = Page ?? 1;
         if (UserService.IsInGroup(new Group(GroupId ?? Const.DefaultGroupId)))
         {
-            _pageState = PageState.SUCCESS;
+            _sortBy = (SortBy)((SortBy??1)%4);
+            _orderBy = (OrderBy)((OrderBy??1)%2);
             _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
             _bulletins = await GetBulletins();
             _bulletinsCount = await GetBulletinsCount();
+            _pageState = PageState.SUCCESS;
         }
         else
         {

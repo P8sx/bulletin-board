@@ -7,8 +7,10 @@
 
 @inject IBulletinService BulletinService
 @inject IDialogService DialogService
-@using GEmojiSharp.Blazor
+@inject IUserService UserService
+@inject ICommentService CommentService
 
+@using GEmojiSharp.Blazor
 
 @if (_pageState == PageState.SUCCESS && _bulletin != null)
 {
@@ -100,7 +102,7 @@
         <AuthorizeView Context="authorizedView">
             <Authorized>
 
-                <AddCommentComponent Bulletin="_bulletin"></AddCommentComponent>
+                <AddCommentComponent Bulletin="_bulletin" CommentUpdateCallback="UpdateComments"></AddCommentComponent>
 
             </Authorized>
             <NotAuthorized>
@@ -111,12 +113,12 @@
     <MudText Typo="Typo.h4" Class="mb-2">Comments</MudText>
     @if (_comments != null && _comments.Any())
     {
-        <MudPaper Outlined="true" Class="py-5">
-            @foreach (var comment in _comments)
-            {
-                <CommentComponent Comment=comment></CommentComponent>
-            }
-        </MudPaper>
+        
+        @foreach (var comment in _comments)
+        {
+            <CommentComponent Comment=comment></CommentComponent>
+        }
+        
     }
     else
     {
@@ -143,18 +145,12 @@ else
     [SupplyParameterFromQuery]
     public Guid BulletinId { get; set; }
 
-    [Inject]
-    protected IUserService UserService { get; set; } = default!;
 
-    [Inject]
-    protected ICommentService CommentService { get; set; } = default!;
 
     private Bulletin? _bulletin = default!;
     private MudCarousel<Image> _carousel = default!;
     private IList<Comment> _comments = default!;
-
     private PageState _pageState = PageState.LOADING;
-
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
@@ -169,10 +165,12 @@ else
         {
             _pageState = PageState.ACCESS_BLOCKED;
         }
-        base.StateHasChanged();
+        StateHasChanged();
     }
-    protected async Task UpdateComments()
+    protected async Task UpdateComments(bool update)
     {
+        _comments = default!;
+        StateHasChanged();
         _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
         StateHasChanged();
     }

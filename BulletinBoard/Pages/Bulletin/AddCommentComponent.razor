@@ -3,7 +3,8 @@
 @using System.ComponentModel.DataAnnotations
 
 @inject ISnackbar Snackbar
-@inherits BulletinPage
+@inject IUserService UserService
+@inject ICommentService CommentService
 
 @using GEmojiSharp.Blazor
 
@@ -18,9 +19,11 @@
     [Parameter]
     public Bulletin Bulletin { get; set; } = default!;
 
+    [Parameter]
+    public EventCallback<bool> CommentUpdateCallback { get; set; }
+
     [Required]
     private String _commentText = "";
-
     private DateTime _lastComment;
 
     protected override async Task OnInitializedAsync()
@@ -32,7 +35,7 @@
     private async Task Submitted()
     {
 
-        if (_lastComment + TimeSpan.FromSeconds(15) > DateTime.UtcNow)
+        if (_lastComment + TimeSpan.FromSeconds(10) > DateTime.UtcNow)
         {
             Snackbar.Add($"You posting too fast - try again later", Severity.Error);
             return;
@@ -61,11 +64,14 @@
         _commentText = "";
         var result = await CommentService.AddCommentAsync(comment);
         if (result)
+        {
             Snackbar.Add($"Your comment has been added", Severity.Success);
+            await CommentUpdateCallback.InvokeAsync(true);
+        }
         else
             Snackbar.Add($"There was an error adding comment - try later", Severity.Error);
 
-        await UpdateComments();
+        
     }
 
 }

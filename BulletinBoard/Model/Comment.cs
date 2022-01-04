@@ -15,6 +15,7 @@ namespace BulletinBoard.Model
         [ForeignKey("Bulletin")]
         public Guid? BulletinId { get; set; }
         [Required]
+        [StringLength(200, MinimumLength = 1, ErrorMessage = "Comment can't be empty")]
         public string? Text { get; set; }
         public DateTime Created { get; set; }
         public Comment()
