@@ -79,6 +79,11 @@ namespace BulletinBoard.Services
                 return true;
             return false;
         }
+
+        public bool CanEditBulletin(Group group, Bulletin bulletin)
+        {
+            return IsInGroup(group)&&(IsBulletinOwner(bulletin)||IsGroupModerator(group));
+        }
         public void AddUserToGroup(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
