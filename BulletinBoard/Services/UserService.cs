@@ -75,7 +75,7 @@ namespace BulletinBoard.Services
         }
         public bool IsBulletinOwner(Bulletin bulletin)
         {
-            if (User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User.Id))
+            if (User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User!.Id))
                 return true;
             return false;
         }
