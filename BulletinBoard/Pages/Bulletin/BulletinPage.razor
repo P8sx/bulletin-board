@@ -167,7 +167,7 @@ else
         await base.SetParametersAsync(parameters);
         if (UserService.IsInGroup(new Group(GroupId)))
         {
-            _bulletin = await BulletinService.GetBulletinInfoAsyncCached(UserService.User!, new Group(GroupId), new Bulletin(BulletinId));
+            _bulletin = await BulletinService.GetBulletinInfoAsyncCached(UserService.User!, new Bulletin(BulletinId));
             _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId));
             _commentState = _pageState = State.SUCCESS;
         }

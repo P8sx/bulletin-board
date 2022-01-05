@@ -136,23 +136,22 @@ namespace BulletinBoard.Services
         }
 
         // Request info for specific bulletin
-        public async Task<Bulletin?> GetBulletinInfoAsyncCached(User user, Group group, Bulletin bulletin)
+        public async Task<Bulletin?> GetBulletinInfoAsyncCached(User? user, Bulletin bulletin)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{group.Id}{bulletin.Id}", async p =>
+            return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Id}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
-                return await GetBulletinInfoAsync(user!, group, bulletin);
+                return await GetBulletinInfoAsync(user!,  bulletin);
             });
         }
-        private async Task<Bulletin?> GetBulletinInfoAsync(User user, Group group, Bulletin bulletin)
+        public async Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Bulletins
             .Include(x => x.Images)
             .Include(u => u.User)
             .ThenInclude(i => i!.Image)
-            .Where(g => g.GroupId == group.Id)
             .Where(b => b.Id == bulletin.Id)
             .Where(b => b.Deleted == false)
             .Select(a => new Bulletin
@@ -166,7 +165,9 @@ namespace BulletinBoard.Services
                 Images = a.Images,
                 Pinned = a.Pinned,
                 User = a.User,
+                UserId = a.UserId,
                 Group = a.Group,
+                GroupId = a.GroupId,
                 Latitude = a.Latitude,
                 Longitude = a.Longitude,
                 CommentsCount = a.Comments!.Count,

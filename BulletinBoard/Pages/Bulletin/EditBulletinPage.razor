@@ -1,4 +1,8 @@
-﻿@using BulletinBoard.Extensions
+﻿@page "/bulletin/edit"
+
+@attribute [Authorize]
+
+@using BulletinBoard.Extensions
 @using BulletinBoard.Model
 @using System.IO
 @using Microsoft.AspNetCore.Identity;
@@ -12,7 +16,10 @@
 @inject NavigationManager NavigationManager
 
 
-<MudPaper Style="min-height:30rem; position: relative;" Class="mud-width-full py-8" Elevation="1">
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
+@if(Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
+{
+    <MudPaper Style="min-height:30rem; position: relative;" Class="mud-width-full py-8" Elevation="1">
     <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
         <DataAnnotationsValidator />
         <MudGrid>
@@ -62,14 +69,8 @@
             <MudItem xs="12" md="4" Class="px-8">
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
-                    @if (UserService.UserGroups is not null)
-                    {
-                        @foreach (var group in UserService.UserGroups)
-                        {
-                            <MudSelectItem T="Guid?" Value="@group.GroupId">@group.Group!.Name</MudSelectItem>
-                        }
-                    }
+                <MudSelect T="Guid?" Label="Group" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin group" @bind-value="Bulletin.GroupId">
+                    <MudSelectItem T="Guid?" Value="@Bulletin.GroupId">@Bulletin.Group!.Name</MudSelectItem>
                 </MudSelect>
             </MudItem>
 
@@ -82,12 +83,19 @@
         <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
     </MudOverlay>
 </MudPaper>
+}
+else
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
 
 
 @code {
     [Parameter]
-    public Bulletin Bulletin { get; set; } = new();
+    [SupplyParameterFromQuery]
+    public Guid BulletinId { get; set; } 
 
+    public Bulletin? Bulletin { get; set; } = new();
 
     // Bulletin default values
     private uint _uploadLimit = 5;
@@ -99,12 +107,16 @@
     private bool _blocked = false;
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.GroupId = Const.DefaultGroupId;
         await base.OnInitializedAsync();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
-    // Load, validate, and convert files for preview
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Bulletin = await BulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId))!;
+        StateHasChanged();
+    }
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
         _files.Clear();
@@ -133,17 +145,14 @@
         }
     }
 
-    // Delete file from list
     private void DeleteFile(IBrowserFile file)
     {
         if (_files.Any())
         {
             _files.RemoveAll(i => i.Item1 == file);
         }
-
     }
 
-    // Submit form
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _blocked = true;
