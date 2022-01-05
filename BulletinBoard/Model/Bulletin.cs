@@ -23,7 +23,7 @@ namespace BulletinBoard.Model
         public DateTime? Expired { get; set; }
         public List<Image> Images { get; set; } = new();
         public bool? Pinned { get; set; }
-
+        public bool Deleted { get; set; } = false;
         // Bulletin Creator
         public virtual User? User { get; set; }
         [ForeignKey("User")]

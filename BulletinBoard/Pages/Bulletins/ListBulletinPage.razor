@@ -10,6 +10,7 @@
 @inject IUserService UserService
 @inject IGroupService GroupService
 @inject IBulletinService BulletinService
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
 @if (_pageState == State.SUCCESS && _group != null && _bulletins != null)
@@ -63,7 +64,7 @@
     <MudElement>
         @foreach (var bulletin in _bulletins)
         {
-            <CardComponent Bulletin="bulletin"></CardComponent>
+            <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin"></CardComponent>
         }
     </MudElement>
 
@@ -100,13 +101,14 @@ else
 
 
 
-    private State _pageState = State.LOADING;
 
     private Group? _group;
 
     private int _bulletinsPerPage = 10;
-    private IList<Bulletin> _bulletins = default!;
     private int _bulletinsCount = 0;
+
+    private IList<Bulletin> _bulletins = default!;
+    private State _pageState = State.LOADING;
     private SortBy _sortBy = Services.SortBy.Created;
     private OrderBy _orderBy = Services.OrderBy.Ascending;
 
@@ -131,6 +133,12 @@ else
         StateHasChanged();
     }
 
+     protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
+
     protected void PageChanged(int page)
     {
         NavigationManager.NavigateTo($"/bulletins?groupid{GroupId}&page={page}");
@@ -140,6 +148,7 @@ else
     {
         return await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _group!, new BulletinSort(_sortBy, _orderBy));
     }
+
     protected async Task<int> GetBulletinsCount()
     {
         return await BulletinService.GetBulletinsCountAsyncCached(_group!);
@@ -156,5 +165,18 @@ else
     {
         if (_bulletinsCount == 0) return 0;
         return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
+    }
+
+    protected async Task RemoveBulletin(Bulletin bulletin)
+    {
+        var result = await BulletinService.RemoveBulletin(bulletin);
+        if (result)
+        {
+            Snackbar.Add($"Bulletin has been removed", Severity.Success);
+            _bulletins.Remove(bulletin);
+            _bulletinsCount--;
+        }
+        else
+            Snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
     }
 }

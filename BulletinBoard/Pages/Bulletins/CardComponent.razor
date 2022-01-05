@@ -32,8 +32,8 @@
                         <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
                         @if (UserService.IsGroupModerator(new Group(){Id = Bulletin.Group!.Id}) || UserService.IsBulletinOwner(Bulletin))
                         {
-                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
-                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                            <MudMenuItem OnClick=@(async () => await BulletinRemovedCallback.InvokeAsync(Bulletin))><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
+                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
                         }
                     </MudMenu>
                 </CardHeaderActions>
@@ -110,6 +110,10 @@
     public Bulletin Bulletin { get; set; } = new();
     [Parameter]
     public bool GroupInfo { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<Bulletin> BulletinRemovedCallback { get; set; }
+
     private MudCarousel<Image>? _carousel;
     private void Vote()
     {
@@ -131,5 +135,9 @@
         var parameters = new DialogParameters();
         parameters.Add("Path", path);
         DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+    }
+    private void Delete()
+    {
+        
     }
 }

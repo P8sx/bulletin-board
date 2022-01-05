@@ -9,12 +9,15 @@
 @inject IDialogService DialogService
 @inject IUserService UserService
 @inject ICommentService CommentService
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
 
 @using GEmojiSharp.Blazor
 
 @if (_pageState == State.SUCCESS && _bulletin != null)
 {
-    <MudCard Outlined="true" Class="mb-5">
+    @*<MudCard Outlined="true" Class="mb-5">
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
@@ -31,8 +34,11 @@
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
                         <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        @if (UserService.IsGroupModerator(new Group() { Id = _bulletin.Group!.Id }) || UserService.IsBulletinOwner(_bulletin))
+                        {
+                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
+                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        }
                     </MudMenu>
                 </CardHeaderActions>
             </MudCardHeader>
@@ -95,8 +101,8 @@
                 </NotAuthorized>
             </AuthorizeView>
         </MudCardActions>
-    </MudCard>
-
+    </MudCard>*@
+    <CardComponent Bulletin="_bulletin" BulletinRemovedCallback="RemoveBulletin"></CardComponent>
 
     <MudPaper Outlined="true" Class="py-5 mb-5">
         <AuthorizeView Context="authorizedView">
@@ -113,7 +119,7 @@
     <MudText Typo="Typo.h4" Class="mb-2">Comments</MudText>
     @if (_comments != null && _comments.Any())
     {
-        
+
         @foreach (var comment in _comments)
         {
             <CommentComponent Comment=comment></CommentComponent>
@@ -122,12 +128,12 @@
     }
     else if (_commentState == State.LOADING)
     {
-        <LoadingComponent></LoadingComponent>       
+        <LoadingComponent></LoadingComponent>
     }
     else
     {
         <MudPaper Outlined="true" Class="py-5">
-            <MudText Align="Align.Center" >Sorry but there is no comments</MudText>
+            <MudText Align="Align.Center">Sorry but there is no comments</MudText>
         </MudPaper>
     }
 }
@@ -152,7 +158,6 @@ else
 
 
     private Bulletin? _bulletin = default!;
-    private MudCarousel<Image> _carousel = default!;
     private IList<Comment> _comments = default!;
     private State _pageState = State.LOADING;
     private State _commentState = State.LOADING;
@@ -172,6 +177,13 @@ else
         }
         StateHasChanged();
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
+
     protected async Task UpdateComments(bool update)
     {
         _comments = default!;
@@ -179,25 +191,8 @@ else
         StateHasChanged();
         _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
         _commentState = State.SUCCESS;
-        _bulletin.CommentsCount++;
+        _bulletin!.CommentsCount++;
         StateHasChanged();
-    }
-    private void Vote()
-    {
-        if (_bulletin != null)
-        {
-            _bulletin.VotesCount = _bulletin.UserVoted ? _bulletin.VotesCount - 1 : _bulletin.VotesCount + 1;
-            _bulletin.UserVoted = !_bulletin.UserVoted;
-            UserService.Vote(_bulletin);
-        }
-    }
-    private void Bookmark()
-    {
-        if (_bulletin != null)
-        {
-            _bulletin.UserBookmark = !_bulletin.UserBookmark;
-            UserService.Bookmark(new BulletinBookmark() { UserId = UserService.User!.Id, BulletinId = _bulletin.Id });
-        }
     }
 
     private void OpenDialog(string path)
@@ -207,4 +202,16 @@ else
         DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 
+    protected async Task RemoveBulletin(Bulletin bulletin)
+    {
+        var result = await BulletinService.RemoveBulletin(bulletin);
+        if (result)
+        {
+            Snackbar.Add($"Bulletin has been removed - redirecting", Severity.Success);
+            await Task.Delay(2000);
+            await JS.InvokeVoidAsync("history.back");
+        }
+        else
+            Snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
+    }
 }

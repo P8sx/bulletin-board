@@ -81,6 +81,7 @@ namespace BulletinBoard.Services
                 .Include(u => u.User)
                 .ThenInclude(i => i!.Image)
                 .Where(g => g.GroupId == group.Id)
+                .Where(b=>b.Deleted == false)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -130,6 +131,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Bulletins
                 .Where(g => g.GroupId == group.Id)
+                .Where(b => b.Deleted == false)
                 .CountAsync();
         }
 
@@ -152,6 +154,7 @@ namespace BulletinBoard.Services
             .ThenInclude(i => i!.Image)
             .Where(g => g.GroupId == group.Id)
             .Where(b => b.Id == bulletin.Id)
+            .Where(b => b.Deleted == false)
             .Select(a => new Bulletin
             {
                 Id = a.Id,
@@ -202,6 +205,7 @@ namespace BulletinBoard.Services
                 .Include(u => u.User)
                 .ThenInclude(i => i!.Image)
                 .Where(g => g.UserId == user!.Id)
+                .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -251,6 +255,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Bulletins
                 .Where(g => g.UserId == user.Id)
+                .Where(b => b.Deleted == false)
                 .CountAsync();
         }
 
@@ -281,6 +286,7 @@ namespace BulletinBoard.Services
                 .Include(x => x.Images)
                 .Include(u => u.User)
                 .ThenInclude(i => i!.Image)
+                .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -330,8 +336,22 @@ namespace BulletinBoard.Services
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.BulletinBookmarks
-                .Where(g => g.UserId == user.Id)
+                .Where(g => g.UserId == user.Id).Include(b=>b.Bulletin)
+                .Where(b => b.Bulletin!.Deleted == false)
                 .CountAsync();
+        }
+
+        public async Task<bool> RemoveBulletin(Bulletin bulletin)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            var dbBulletin = await _dbContext.Bulletins.Where(b=>b.Id == bulletin.Id).FirstOrDefaultAsync();
+            if (dbBulletin == default)
+                return false;
+
+            dbBulletin.Deleted = true;
+            _dbContext.Bulletins.Update(dbBulletin);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }
