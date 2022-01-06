@@ -34,10 +34,6 @@ namespace BulletinBoard.Model
         [ForeignKey("Group")]
         public Guid? GroupId { get; set; }
 
-        // Bulletin Optional Location
-        public float? Longitude { get; set; } = 0;
-        public float? Latitude { get; set; } = 0;
-
         // Bulletin Comments
         public virtual IList<Comment>? Comments { get; set; }
 
