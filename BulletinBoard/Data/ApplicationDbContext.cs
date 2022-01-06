@@ -15,6 +15,7 @@ namespace BulletinBoard.Data
         public virtual DbSet<Comment> Comments { get; set; } = default!;
         public virtual DbSet<BulletinVote> BulletinsVotes { get; set;} = default!;
         public virtual DbSet<BulletinBookmark> BulletinBookmarks { get; set; } = default!;
+        public virtual DbSet<Violation> Violations { get; set; } = default!;
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211121150242_VotesUpdate")]
-    partial class VotesUpdate
+    [Migration("20220103225253_ChangedGorupIdType")]
+    partial class ChangedGorupIdType
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,11 +23,11 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
+                        .HasColumnType("char(36)");
 
-                    b.Property<DateTime?>("Created")
+                    b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
@@ -38,8 +38,8 @@ namespace BulletinBoard.Migrations
                     b.Property<DateTime?>("Expired")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<ulong?>("GroupId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("char(36)");
 
                     b.Property<float?>("Latitude")
                         .HasColumnType("float");
@@ -70,13 +70,28 @@ namespace BulletinBoard.Migrations
                     b.ToTable("Bulletins");
                 });
 
+            modelBuilder.Entity("BulletinBoard.Model.BulletinBookmark", b =>
+                {
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<Guid>("BulletinId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("UserId", "BulletinId");
+
+                    b.HasIndex("BulletinId");
+
+                    b.ToTable("BulletinBookmarks");
+                });
+
             modelBuilder.Entity("BulletinBoard.Model.BulletinVote", b =>
                 {
                     b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("UserId", "BulletinId");
 
@@ -91,13 +106,14 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong?>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Text")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<ulong?>("UserId")
@@ -114,15 +130,18 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.Group", b =>
                 {
-                    b.Property<ulong>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
@@ -131,6 +150,8 @@ namespace BulletinBoard.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
 
                     b.ToTable("Groups");
                 });
@@ -141,8 +162,8 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<ulong>("GroupId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("Joined")
                         .HasColumnType("datetime(6)");
@@ -170,8 +191,8 @@ namespace BulletinBoard.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<ulong?>("BulletinId")
-                        .HasColumnType("bigint unsigned");
+                    b.Property<Guid?>("BulletinId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
@@ -181,19 +202,9 @@ namespace BulletinBoard.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("varchar(5)");
 
-                    b.Property<ulong?>("GroupId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<ulong?>("UserId")
-                        .HasColumnType("bigint unsigned");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BulletinId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Image");
                 });
@@ -427,6 +438,25 @@ namespace BulletinBoard.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BulletinBoard.Model.BulletinBookmark", b =>
+                {
+                    b.HasOne("BulletinBoard.Model.Bulletin", "Bulletin")
+                        .WithMany("Bookmarks")
+                        .HasForeignKey("BulletinId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BulletinBoard.Model.User", "User")
+                        .WithMany("Bookmarks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bulletin");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BulletinBoard.Model.BulletinVote", b =>
                 {
                     b.HasOne("BulletinBoard.Model.Bulletin", "Bulletin")
@@ -461,6 +491,15 @@ namespace BulletinBoard.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BulletinBoard.Model.Group", b =>
+                {
+                    b.HasOne("BulletinBoard.Model.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("BulletinBoard.Model.GroupUser", b =>
                 {
                     b.HasOne("BulletinBoard.Model.Group", "Group")
@@ -491,18 +530,6 @@ namespace BulletinBoard.Migrations
                     b.HasOne("BulletinBoard.Model.Bulletin", null)
                         .WithMany("Images")
                         .HasForeignKey("BulletinId");
-
-                    b.HasOne("BulletinBoard.Model.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId");
-
-                    b.HasOne("BulletinBoard.Model.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.User", b =>
@@ -567,6 +594,8 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
                 {
+                    b.Navigation("Bookmarks");
+
                     b.Navigation("Comments");
 
                     b.Navigation("Images");
@@ -583,6 +612,8 @@ namespace BulletinBoard.Migrations
 
             modelBuilder.Entity("BulletinBoard.Model.User", b =>
                 {
+                    b.Navigation("Bookmarks");
+
                     b.Navigation("GroupUsers");
 
                     b.Navigation("Votes");

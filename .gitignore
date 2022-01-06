@@ -362,8 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-BulletinBoard/wwwroot/images/avatars/*
-!BulletinBoard/wwwroot/images/avatars/no_avatar.png
-BulletinBoard/wwwroot/images/group/*
-BulletinBoard/wwwroot/images/public/*
+BulletinBoard/wwwroot/images/*
+BulletinBoard/wwwroot/bulletin-images
+BulletinBoard/wwwroot/avatar-images
 BulletinBoard/wwwroot/lib

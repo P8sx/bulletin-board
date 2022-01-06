@@ -1,8 +1,12 @@
 ﻿@using BulletinBoard.Model
-@using BulletinBoard.DTOs
+@using BulletinBoard.Services
+@using GEmojiSharp.Blazor
+@using BulletinBoard.Extensions
 @implements IDisposable
 
-@inherits ListPage
+@inject IUserService UserService
+@inject IDialogService DialogService
+
 
 @if (Bulletin != null && Bulletin.User != null)
 {
@@ -10,7 +14,7 @@
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
+                    <MudAvatar Image=@(Bulletin.User.Image==null?Const.DefaultAvatarPath:Bulletin.User.Image.GetUserImagePath()) />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
@@ -19,18 +23,28 @@
                     {
                         <MudText Typo="Typo.body2"><strong>Expiring:</strong> @(((DateTime)Bulletin.Expired).ToString("dd.MM.yyyy"))</MudText>
                     }
+                    @if (GroupInfo)
+                    {
+                        <MudText Typo="Typo.body2" Style="overflow-wrap: break-word;"><strong>Post from group:</strong> @Bulletin.Group!.Name</MudText>
+                    }
                 </CardHeaderContent>
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
-                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
+                        @if (UserService.IsGroupModerator(new Group(){Id = Bulletin.Group!.Id}) || UserService.IsBulletinOwner(Bulletin))
+                        {
+                            <MudMenuItem OnClick=@(async () => await BulletinRemovedCallback.InvokeAsync(Bulletin))><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
+                            <MudMenuItem Link=@($"bulletin/edit?&bulletinid={Bulletin.Id}")><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                        }
                     </MudMenu>
                 </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent Class="pt-0">
                 <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
-                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+                <Emoji>
+                    <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">@Bulletin.Description</MudText>
+                </Emoji>
+
                 @if (Bulletin.Modified != null)
                 {
                     <MudText Typo="Typo.body2" Class="mt-2"><strong>Last modified:</strong> @(((DateTime)Bulletin.Modified).ToString("dd.MM.yyyy"))</MudText>
@@ -41,19 +55,20 @@
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
                     <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
                         <ItemTemplate>
-                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
-                                <MudCardMedia Image=@context.GetPath() />
+                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id)))">
+                                <MudCardMedia Image=@context.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id) />
                             </div>
                         </ItemTemplate>
                     </MudCarousel>
                 </MudHidden>
+
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
                     <MudGrid Class="px-4">
-                        @foreach(var img in Bulletin.Images)
+                        @foreach (var img in Bulletin.Images)
                         {
                             <MudItem xs="4">
-                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetPath()))">
-                                    <MudCardMedia Image=@img.GetPath()/>
+                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id)))">
+                                    <MudCardMedia Image=@img.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id) />
                                 </div>
                             </MudItem>
                         }
@@ -71,7 +86,7 @@
             <AuthorizeView>
                 <Authorized>
                     <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null &&Bulletin.Expired<DateTime.UtcNow)/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted?Color.Secondary:Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null &&Bulletin.Expired<DateTime.UtcNow) />
                     <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
                     <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" />
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark?Color.Warning:Color.Default) OnClick=Bookmark Style="margin-left:auto" />
@@ -84,7 +99,7 @@
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled />
                 </NotAuthorized>
             </AuthorizeView>
-            <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
+            <MudIconButton Link=@($"bulletin?groupid={Bulletin.Group!.Id}&bulletinid={Bulletin.Id}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
 
         </MudCardActions>
     </MudCard>
@@ -94,19 +109,24 @@
 
 @code {
     [Parameter]
-    public BulletinInfoDTO Bulletin { get; set; } = new();
-    private MudCarousel<Image?> _carousel;
-    private bool _updated = false;
+    public Bulletin Bulletin { get; set; } = new();
+    [Parameter]
+    public bool GroupInfo { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<Bulletin> BulletinRemovedCallback { get; set; }
+
+    private MudCarousel<Image>? _carousel;
     private void Vote()
     {
         Bulletin.VotesCount = Bulletin.UserVoted ? Bulletin.VotesCount - 1 : Bulletin.VotesCount + 1;
         Bulletin.UserVoted = !Bulletin.UserVoted;
-        _bulletinService.Vote(new BulletinVote() { UserId = _user.Id, BulletinId = Bulletin.Id });
+        UserService.Vote(Bulletin);
     }
     private void Bookmark()
     {
         Bulletin.UserBookmark = !Bulletin.UserBookmark;
-        _userService.Bookmark(new BulletinBookmark() { UserId = _user.Id, BulletinId = Bulletin.Id });
+        UserService.Bookmark(Bulletin);
     }
     public void Dispose()
     {
@@ -116,7 +136,10 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Path", path);
-        DialogOptions options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large };
-        _dialogService.Show<ImageDialogComponent>("Image", parameters, options);
+        DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+    }
+    private void Delete()
+    {
+        
     }
 }

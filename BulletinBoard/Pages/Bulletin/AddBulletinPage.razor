@@ -1,0 +1,186 @@
+﻿@page "/bulletin/add"
+
+@attribute [Authorize]
+
+@using BulletinBoard.Extensions
+@using BulletinBoard.Model
+@using System.IO
+@using Microsoft.AspNetCore.Identity;
+@using BulletinBoard.Services
+@using System.Linq;
+
+@inject ISnackbar Snackbar
+@inject IWebHostEnvironment env
+@inject IUserService UserService
+@inject IBulletinService BulletinService
+@inject NavigationManager NavigationManager
+
+
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
+<MudPaper Class="mud-width-full py-8" Elevation="1">
+    <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
+        <DataAnnotationsValidator />
+        <MudGrid>
+            <MudItem xs="12" md="12" Class="px-8">
+                <MudText Typo="Typo.h5">Bulletin</MudText>
+                <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)" />
+                <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />
+            </MudItem>
+            <MudItem xs="12" md="8" Class="px-8 d-flex">
+                 <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">Attachments</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudGrid>
+                                @foreach (var img in _files)
+                                {
+                                    <MudItem xs="6" md="6">
+                                        <MudCard>
+                                            <MudCardMedia Image=@img.Item2 Height="200" />
+                                            <MudCardActions Class="d-flex justify-space-between">
+                                                <MudText Typo="Typo.caption">@img.Item1.Name</MudText>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteNewFile(img.Item1))"></MudIconButton >
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+
+                                }
+                            </MudGrid>
+                        </MudItem>
+
+                        <MudItem xs="12" Class="d-flex flex-column">
+                                <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
+                                <InputFile OnChange="@LoadFiles" multiple accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@_uploadLimit FileTooLargeMessage="File is too large" hidden id="imgInput" />
+                                <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
+                        </MudItem>
+
+                    </MudGrid>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="px-8">
+                <MudText Typo="Typo.h5">Additional</MudText>
+                <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
+                <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
+                    @if (UserService.UserGroups is not null)
+                    {
+                        @foreach (var group in UserService.GetUserGroups())
+                        {
+                            <MudSelectItem T="Guid?" Value="@group!.Id">@group!.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+
+        </MudGrid>
+        <MudElement Class="d-flex justify-end mr-6">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+        </MudElement>
+    </EditForm>
+     <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
+        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
+    </MudOverlay>
+</MudPaper>
+
+
+@code {
+    public Bulletin Bulletin { get; set; } = new();
+
+    // Bulletin default values
+    private uint _uploadLimit = 5;
+    private uint _maxFileSize = 5 * 1000000;
+
+    // Bulletin attachments
+    private List<Tuple<IBrowserFile, string>> _files = new();
+
+    private bool _blocked = false;
+    protected override async Task OnInitializedAsync()
+    {
+        Bulletin.GroupId = Const.DefaultGroupId;
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
+
+    // Load, validate, and convert files for preview
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        _files.Clear();
+        List<string> acceptedFormat = new() { "image/jpeg", "image/png", "image/jpg" };
+
+        foreach (var file in e.GetMultipleFiles(5))
+        {
+            if (!acceptedFormat.Contains(file.ContentType))
+            {
+                Snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
+                continue;
+            }
+            if (file.Size >= _maxFileSize)
+            {
+                Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1000000, 2)}MB, max size is {_maxFileSize / 1000000}MB", Severity.Warning);
+                continue;
+            }
+            else
+            {
+                var format = file.Name.Split('.').Last();
+                var resizedImageFile = await file.RequestImageFileAsync($"image/jpeg", 300, 300);
+                var buffer = new byte[resizedImageFile.Size];
+                await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+                _files.Add(new(file, $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
+            }
+        }
+    }
+
+    // Delete file from list
+    private void DeleteNewFile(IBrowserFile file)
+    {
+        if (_files.Any())
+        {
+            _files.RemoveAll(i => i.Item1 == file);
+        }
+
+    }
+
+    // Submit form
+    private async Task ValidFormSubmitted(EditContext editContext)
+    {
+        _blocked = true;
+        // Set bulletin data
+        if (Bulletin.UserId == 0)
+            Bulletin.UserId = UserService.User!.Id;
+        Bulletin.Created = DateTime.UtcNow;
+
+        // Create image entity and add it to bulletin
+        foreach (var file in _files)
+        {
+            var img = new Image().SetExtension(file.Item1.Name);
+            Bulletin.Images.Add(img);
+        }
+        // Try save bulletin in db
+        var result = await BulletinService.AddBulletin(Bulletin);
+        if (!result)
+        {
+            _blocked = false;
+            _files = new();
+            Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
+            return;
+        }
+        // If bulletin succesfuly added save images on server
+        foreach (var file in _files.Select((image, index) => (image, index)))
+        {
+            Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
+            
+            var folder = $"{env.WebRootPath}";
+            if (!Directory.Exists(folder += $"/{Const.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
+
+            FileStream fs = File.Create($"{folder}/{Bulletin.Images[file.index].GetFullName()}");
+            await stream.CopyToAsync(fs);
+            stream.Close();
+            fs.Close();
+        }
+        Snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");
+    }
+}

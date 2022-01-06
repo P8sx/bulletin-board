@@ -9,7 +9,7 @@ namespace BulletinBoard.Model
         public ulong Id { get; set; } 
 
         [ForeignKey("Group")]
-        public ulong GroupId { get; set; }
+        public Guid GroupId { get; set; }
         public virtual Group? Group { get; set; }
         [ForeignKey("User")]
         public ulong UserId { get; set; }
@@ -21,6 +21,9 @@ namespace BulletinBoard.Model
 
         public DateTime? Joined { get; set; }
 
-
+        public GroupUser()
+        {
+            Joined = DateTime.UtcNow;
+        }
     }
 }

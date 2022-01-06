@@ -1,0 +1,182 @@
+﻿@page "/bulletins"
+
+@using BulletinBoard.Services
+@using BulletinBoard.Data
+@using BulletinBoard.Model
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Components;
+@using BulletinBoard.Extensions;
+
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject IBulletinService BulletinService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+@if (_pageState == State.SUCCESS && _group != null && _bulletins != null)
+{
+
+    <MudCard Outlined="true" Class="mb-3">
+        @if (_group.Image != null)
+        {
+            <MudCardMedia Image=@(_group.Image.GetGroupImagePath(_group.Id)) Height="200" />
+        }
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">@_group.Name</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2">@_group.Description</MudText>
+        </MudCardContent>
+    </MudCard>
+
+
+
+    <MudElement Class="d-flex mb-4 justify-end ">
+        <MudElement>
+            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+                {
+                    <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
+                }
+            </MudSelect>
+        </MudElement>
+        <MudElement>
+            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+                {
+                    <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
+                }
+            </MudSelect>
+        </MudElement>
+        <MudElement>
+            <MudSelect T="int" Label="Show" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
+                <MudSelectItem T="int" Value="10" />
+                <MudSelectItem T="int" Value="30" />
+                <MudSelectItem T="int" Value="60" />
+            </MudSelect>
+        </MudElement>
+    </MudElement>
+
+
+
+    <MudElement>
+        @foreach (var bulletin in _bulletins)
+        {
+            <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin"></CardComponent>
+        }
+    </MudElement>
+
+    <MudElement Class="d-flex justify-center">
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
+    </MudElement>
+
+}
+else if (_pageState == State.ACCESS_BLOCKED)
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
+else
+{
+    <LoadingComponent></LoadingComponent>
+}
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? GroupId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; } = 1;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? SortBy { get; set; } = 0;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? OrderBy { get; set; } = 0;
+
+
+
+
+
+    private Group? _group;
+
+    private int _bulletinsPerPage = 10;
+    private int _bulletinsCount = 0;
+
+    private IList<Bulletin> _bulletins = default!;
+    private State _pageState = State.LOADING;
+    private SortBy _sortBy = Services.SortBy.Created;
+    private OrderBy _orderBy = Services.OrderBy.Ascending;
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        GroupId = GroupId ?? Const.DefaultGroupId;
+        Page = Page ?? 1;
+        if (UserService.IsInGroup(new Group(GroupId ?? Const.DefaultGroupId)))
+        {
+            _sortBy = (SortBy)((SortBy??1)%4);
+            _orderBy = (OrderBy)((OrderBy??1)%2);
+            _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Const.DefaultGroupId));
+            _bulletins = await GetBulletins();
+            _bulletinsCount = await GetBulletinsCount();
+            _pageState = State.SUCCESS;
+        }
+        else
+        {
+            _pageState = State.ACCESS_BLOCKED;
+        }
+        StateHasChanged();
+    }
+
+     protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
+
+    protected void PageChanged(int page)
+    {
+        NavigationManager.NavigateTo($"/bulletins?groupid{GroupId}&page={page}");
+    }
+
+    protected async Task<IList<Bulletin>> GetBulletins()
+    {
+        return await BulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, _group!, new BulletinSort(_sortBy, _orderBy));
+    }
+
+    protected async Task<int> GetBulletinsCount()
+    {
+        return await BulletinService.GetBulletinsCountAsyncCached(_group!);
+    }
+
+    protected async Task UpdateBulletins()
+    {
+        _bulletins = await GetBulletins();
+        _bulletinsCount = await GetBulletinsCount();
+        StateHasChanged();
+    }
+
+    private int NumberOfPages()
+    {
+        if (_bulletinsCount == 0) return 0;
+        return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
+    }
+
+    protected async Task RemoveBulletin(Bulletin bulletin)
+    {
+        var result = await BulletinService.RemoveBulletin(bulletin);
+        if (result)
+        {
+            Snackbar.Add($"Bulletin has been removed", Severity.Success);
+            _bulletins.Remove(bulletin);
+            _bulletinsCount--;
+        }
+        else
+            Snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
+    }
+}

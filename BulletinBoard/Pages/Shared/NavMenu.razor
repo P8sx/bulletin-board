@@ -1,20 +1,27 @@
-﻿<MudNavMenu>
-    <AuthorizeView>
-        <Authorized>
-            <MudElement Class="d-flex flex-column justify-center">
-                <MudAvatar Image="/no_avatar.png" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
-                <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
-                <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
-            </MudElement>
-        </Authorized>
-        <NotAuthorized>
-        </NotAuthorized>
-    </AuthorizeView>
+﻿
 
-    <MudText Typo="Typo.h4" Class="mx-6 mt-3">Bullietins</MudText>
+    <MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary" Class="pa-2">
+        <AuthorizeView>
+            <Authorized>
+                <MudElement Class="d-flex flex-column justify-center">
+                    <MudAvatar Image="/no_avatar.png" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
+                    <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
+                    <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
+                </MudElement>
+            </Authorized>
+            <NotAuthorized>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <MudText Typo="Typo.h4" Class="mx-6 mt-3">Bullietins</MudText>
         <MudDivider Class="mt-3 mb-1"></MudDivider>
-        <MudNavLink Href="/bulletin" Match="NavLinkMatch.All" Icon="@Icons.Filled.Dashboard">Bulletins</MudNavLink>
-@*        <MudNavLink Href="/2" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Search</MudNavLink>*@
+
+
+        <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="true">
+            <MudNavLink Href="/bulletins?sortby=0" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
+            <MudNavLink Href="/bulletins?sortby=1" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
+        </MudNavGroup>
+
         <AuthorizeView>
             <Authorized>
                 <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add</MudNavLink>
@@ -32,6 +39,5 @@
             <NotAuthorized>
                 <MudText Class="mx-3 my-3">Log in or Register to be able to use the groups</MudText>
             </NotAuthorized>
-
         </AuthorizeView>
-</MudNavMenu>
+    </MudNavMenu>

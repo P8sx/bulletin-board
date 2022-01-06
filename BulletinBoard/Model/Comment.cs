@@ -13,8 +13,9 @@ namespace BulletinBoard.Model
         public ulong? UserId { get; set; }
         public virtual Bulletin? Bulletin { get; set; }
         [ForeignKey("Bulletin")]
-        public ulong? BulletinId { get; set; }
-
+        public Guid? BulletinId { get; set; }
+        [Required]
+        [StringLength(200, MinimumLength = 1, ErrorMessage = "Comment can't be empty")]
         public string? Text { get; set; }
         public DateTime Created { get; set; }
         public Comment()
