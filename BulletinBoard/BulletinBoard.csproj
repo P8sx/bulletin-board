@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\images\group\**" />
-    <Content Remove="wwwroot\images\group\**" />
-    <EmbeddedResource Remove="wwwroot\images\group\**" />
-    <None Remove="wwwroot\images\group\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Pages\Bulletin\AddBulletin.razor.css" />
   </ItemGroup>
 

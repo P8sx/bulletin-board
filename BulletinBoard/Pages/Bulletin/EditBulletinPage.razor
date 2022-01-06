@@ -17,72 +17,79 @@
 
 
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
-@if(Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
+@if (Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
 {
-    <MudPaper Style="min-height:30rem; position: relative;" Class="mud-width-full py-8" Elevation="1">
-    <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
-        <DataAnnotationsValidator />
-        <MudGrid>
-            <MudItem xs="12" md="12" Class="px-8">
-                <MudText Typo="Typo.h5">Bulletin</MudText>
-                <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)" />
-                <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />
-            </MudItem>
-            <MudItem xs="12" md="8" Class="px-8">
-                <MudText Typo="Typo.h5">Attachments</MudText>
-                @if (_files.Count != 0)
-                {
+    <MudPaper Class="mud-width-full py-8" Elevation="1">
+        <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" md="12" Class="px-8">
+                    <MudText Typo="Typo.h5">Bulletin</MudText>
+                    <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)" />
+                    <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />
+                </MudItem>
+                <MudItem xs="12" md="8" Class="d-flex px-8">
                     <MudGrid>
-                        @foreach (var img in _files)
-                        {
-                            <MudItem xs="6" md="6">
-                                <MudCard>
-                                    <MudCardMedia Image=@img.Item2 Height="200" />
-                                    <MudCardActions>
-                                        <MudButton Class="ma-2" Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteFile(img.Item1))">Delete</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">Attachments</MudText>
+                        </MudItem>
 
-                        }
+                        <MudItem xs="12">
+                            <MudGrid>
+                                @foreach (var img in _files)
+                                {
+                                    <MudItem xs="6" md="6">
+                                        <MudCard>
+                                            <MudCardMedia Image=@img.Item2 Height="200" />
+                                            <MudCardActions Class="d-flex justify-space-between">
+                                                <MudText Typo="Typo.caption">@img.Item1.Name</MudText>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteNewFile(img.Item1))"></MudIconButton >
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+
+                                }
+                                @foreach (var img in Bulletin.Images)
+                                {
+                                    <MudItem xs="6" md="6">
+                                        <MudCard>
+                                            <MudCardMedia Image=@img.GetBulletinImagePath(Bulletin.Group.Id,Bulletin.Id) Height="200" />
+                                            <MudCardActions>
+                                                <MudButton Class="ma-2" Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteExistingFile(img))">Delete</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudItem>
+
+                        <MudItem xs="12" Class="d-flex flex-column">
+                                <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
+                                <InputFile OnChange="@LoadFiles" multiple accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@_uploadLimit FileTooLargeMessage="File is too large" hidden id="imgInput" />
+
+                                <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
+                        </MudItem>
+
                     </MudGrid>
-                }
-                <MudElement Class="d-flex justify-center">
-                    <InputFile OnChange="@LoadFiles" multiple
-                               accept=".jpg, .jpeg, .png"
-                               CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed."
-                               MaxFileSize=@_uploadLimit
-                               FileTooLargeMessage="File is too large"
-                               hidden
-                               id="imgInput" />
-                    <MudFab Class="mt-4"
-                            HtmlTag="label"
-                            Color="Color.Secondary"
-                            Icon="@Icons.Filled.Image"
-                            Label="Load pictures"
-                            for="imgInput" />
-                </MudElement>
-                <MudText Class="d-flex justify-center mt-2">
-                    Max 5 images, 5MB each.
-                </MudText>
-            </MudItem>
-            <MudItem xs="12" md="4" Class="px-8">
-                <MudText Typo="Typo.h5">Additional</MudText>
-                <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                <MudSelect T="Guid?" Label="Group" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin group" @bind-value="Bulletin.GroupId">
-                    <MudSelectItem T="Guid?" Value="@Bulletin.GroupId">@Bulletin.Group!.Name</MudSelectItem>
-                </MudSelect>
-            </MudItem>
+                </MudItem>
 
-        </MudGrid>
-        <MudElement Class="d-flex justify-end mr-6">
-            <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
-        </MudElement>
-    </EditForm>
-     <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
-        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
-    </MudOverlay>
-</MudPaper>
+                <MudItem xs="12" md="4" Class="px-8">
+                    <MudText Typo="Typo.h5">Additional</MudText>
+                    <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
+                    <MudSelect T="Guid?" Label="Group" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin group" @bind-value="Bulletin.GroupId">
+                        <MudSelectItem T="Guid?" Value="@Bulletin.GroupId">@Bulletin.Group!.Name</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+
+            </MudGrid>
+            <MudElement Class="d-flex justify-end mr-6">
+                <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+            </MudElement>
+        </EditForm>
+        <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
+            <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
+        </MudOverlay>
+    </MudPaper>
 }
 else
 {
@@ -93,7 +100,7 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid BulletinId { get; set; } 
+    public Guid BulletinId { get; set; }
 
     public Bulletin? Bulletin { get; set; } = new();
 
@@ -103,7 +110,7 @@ else
 
     // Bulletin attachments
     private List<Tuple<IBrowserFile, string>> _files = new();
-
+    private List<Image> _deletedImages = new();
     private bool _blocked = false;
     protected override async Task OnInitializedAsync()
     {
@@ -145,7 +152,7 @@ else
         }
     }
 
-    private void DeleteFile(IBrowserFile file)
+    private void DeleteNewFile(IBrowserFile file)
     {
         if (_files.Any())
         {
@@ -153,13 +160,18 @@ else
         }
     }
 
+    private void DeleteExistingFile(Image img)
+    {
+        _deletedImages.Add(img);
+        Bulletin!.Images.Remove(img);
+        StateHasChanged();
+    }
+
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _blocked = true;
         // Set bulletin data
-        if (Bulletin.UserId == 0)
-            Bulletin.UserId = UserService.User!.Id;
-        Bulletin.Created = DateTime.UtcNow;
+        Bulletin!.Modified = DateTime.UtcNow;
 
         // Create image entity and add it to bulletin
         foreach (var file in _files)
@@ -180,7 +192,13 @@ else
         foreach (var file in _files.Select((image, index) => (image, index)))
         {
             Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
-            FileStream fs = File.Create($"{env.WebRootPath}/{Bulletin.Images[file.index].GetPath()}");
+
+            var folder = $"{env.WebRootPath}";
+            if (!Directory.Exists(folder += $"/{Const.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
+
+            FileStream fs = File.Create($"{folder}/{Bulletin.Images[file.index].GetFullName()}");
             await stream.CopyToAsync(fs);
             stream.Close();
             fs.Close();

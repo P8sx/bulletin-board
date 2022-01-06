@@ -19,7 +19,7 @@
     <MudCard Outlined="true" Class="mb-3">
         @if (_group.Image != null)
         {
-            <MudCardMedia Image=@(_group.Image.GetPath()) Height="200" />
+            <MudCardMedia Image=@(_group.Image.GetGroupImagePath(_group.Id)) Height="200" />
         }
         <MudCardHeader>
             <CardHeaderContent>

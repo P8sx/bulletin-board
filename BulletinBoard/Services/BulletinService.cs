@@ -93,7 +93,9 @@ namespace BulletinBoard.Services
                     Images = a.Images,
                     Pinned = a.Pinned,
                     User = a.User,
+                    UserId = a.UserId,
                     Group = a.Group,
+                    GroupId = a.Id,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
                     CommentsCount = a.Comments!.Count,
@@ -218,7 +220,9 @@ namespace BulletinBoard.Services
                     Images = a.Images,
                     Pinned = a.Pinned,
                     User = a.User,
+                    UserId = a.UserId,
                     Group = a.Group,
+                    GroupId = a.Id,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
                     CommentsCount = a.Comments!.Count,
@@ -299,7 +303,9 @@ namespace BulletinBoard.Services
                     Images = a.Images,
                     Pinned = a.Pinned,
                     User = a.User,
+                    UserId = a.UserId,
                     Group = a.Group,
+                    GroupId = a.Id,
                     Latitude = a.Latitude,
                     Longitude = a.Longitude,
                     CommentsCount = a.Comments!.Count,
@@ -345,12 +351,22 @@ namespace BulletinBoard.Services
         public async Task<bool> RemoveBulletin(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            var dbBulletin = await _dbContext.Bulletins.Where(b=>b.Id == bulletin.Id).FirstOrDefaultAsync();
+            var dbBulletin = await _dbContext.Bulletins
+                .Where(b=>b.Id == bulletin.Id)
+                .Include(b=>b.Images)
+                .Include(b=>b.Bookmarks)
+                .Include(b=>b.Comments)
+                .Include(b=>b.Votes)
+                .FirstOrDefaultAsync();
             if (dbBulletin == default)
                 return false;
 
+            // Mark as deleted but don't delete
             dbBulletin.Deleted = true;
             _dbContext.Bulletins.Update(dbBulletin);
+
+            //_dbContext.Remove(dbBulletin);
+
             await _dbContext.SaveChangesAsync();
             return true;
         }

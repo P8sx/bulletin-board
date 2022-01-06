@@ -58,6 +58,11 @@ namespace BulletinBoard.Services
                 .ToList();
             return groupUser;
         }
+        public List<Group?> GetUserGroups()
+        {
+            var userGroups = UserGroups!.Select(u => u.Group).Distinct().ToList();
+            return userGroups;
+        }
         public bool IsInGroup(Group group)
         {
             if (group.Id == Const.DefaultGroupId)
