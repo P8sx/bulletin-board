@@ -18,5 +18,6 @@ namespace BulletinBoard.Services
         Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin);
 
         Task<bool> RemoveBulletin(Bulletin bulletin);
+        Task<bool> UpdateBulletin(Bulletin bulletin);
     }
 }

@@ -52,7 +52,7 @@
             </MudCardContent>
             @if (Bulletin.Images.Any())
             {
-                <MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
+                <MudHidden Breakpoint="Breakpoint.Md" Invert="false">
                     <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
                         <ItemTemplate>
                             <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id)))">
@@ -62,7 +62,7 @@
                     </MudCarousel>
                 </MudHidden>
 
-                <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
+                <MudHidden Breakpoint="Breakpoint.Md" Invert="true">
                     <MudGrid Class="px-4">
                         @foreach (var img in Bulletin.Images)
                         {

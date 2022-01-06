@@ -153,6 +153,7 @@
         foreach (var file in _files)
         {
             var img = new Image().SetExtension(file.Item1.Name);
+            img.OrginalName = file.Item1.Name;
             Bulletin.Images.Add(img);
         }
         // Try save bulletin in db

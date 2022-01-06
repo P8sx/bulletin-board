@@ -11,11 +11,11 @@ namespace BulletinBoard.Model
         public Guid Id { get; set; }
         [MaxLength(5)]
         public string Extension { get; set; } = "";
-        public DateTime Created { get; set; } = DateTime.UtcNow; 
-        public Image()
-        {
-            Id = Guid.NewGuid();
-        }
+        public string OrginalName { get; set; } = "";
+        public DateTime Created { get; set; } = DateTime.UtcNow;
+
+        [ForeignKey("Bulletin")]
+        public Guid? BulletinId { get; set; }
 
         public string GetUserImagePath() => $"{Const.DefaultAvatarFolder}/{GetFullName()}";
         public string GetBulletinImagePath(Guid groupId, Guid bulletinId) => $"{Const.DefaultBulletinFolder}/{groupId}/{bulletinId}/{GetFullName()}";
@@ -26,6 +26,10 @@ namespace BulletinBoard.Model
         {
             Extension = fileName.Split('.').Last();
             return this;
+        }
+        public Image()
+        {
+            Id = Guid.NewGuid();
         }
         public Image(Guid id)
         {

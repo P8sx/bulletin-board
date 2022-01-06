@@ -83,7 +83,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("BulletinBookmarks");
+                    b.ToTable("BulletinsBookmarks");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.BulletinVote", b =>
@@ -204,11 +204,15 @@ namespace BulletinBoard.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("varchar(5)");
 
+                    b.Property<string>("OrginalName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Role", b =>

@@ -58,7 +58,6 @@ namespace BulletinBoard.Model
 
         public Bulletin()
         {
-            Id = Guid.NewGuid();
             Created = DateTime.UtcNow;
         }
         public Bulletin(Guid id)

@@ -103,22 +103,22 @@ namespace BulletinBoard.Services
         public async Task Bookmark(BulletinBookmark bookmark)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bookmark.BulletinId && v.UserId == bookmark.UserId);
+            var exist = await _dbContext.BulletinsBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bookmark.BulletinId && v.UserId == bookmark.UserId);
             if (exist == default)
-                await _dbContext.BulletinBookmarks.AddAsync(bookmark);
+                await _dbContext.BulletinsBookmarks.AddAsync(bookmark);
             else
-                _dbContext.BulletinBookmarks.Remove(exist);
+                _dbContext.BulletinsBookmarks.Remove(exist);
 
             await _dbContext.SaveChangesAsync();
         }
         public async Task Bookmark(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            var exist = await _dbContext.BulletinBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
+            var exist = await _dbContext.BulletinsBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
             if (exist == null)
-                await _dbContext.BulletinBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id});
+                await _dbContext.BulletinsBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id});
             else
-                _dbContext.BulletinBookmarks.Remove(exist);
+                _dbContext.BulletinsBookmarks.Remove(exist);
 
             await _dbContext.SaveChangesAsync();
         }

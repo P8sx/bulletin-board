@@ -35,22 +35,6 @@ namespace BulletinBoard.Services
         public BulletinService(IDbContextFactory<ApplicationDbContext> dbFactory,  ILogger<BulletinService> logger, IMemoryCache memoryCache ):base(dbFactory, logger, memoryCache)
         {
         }
-        public async Task<bool> AddBulletin(Bulletin bulletin)
-        {
-            try
-            {
-                using var _dbContext = _dbFactory.CreateDbContext();
-                await _dbContext.Bulletins.AddAsync(bulletin);
-                await _dbContext.SaveChangesAsync();
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-            return true;
-        }
 
         // Request bulletin for specific group
         public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User user, Group group, BulletinSort sort = default)
@@ -143,7 +127,7 @@ namespace BulletinBoard.Services
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Id}", async p =>
             {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
+                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
                 return await GetBulletinInfoAsync(user!,  bulletin);
             });
         }
@@ -342,12 +326,65 @@ namespace BulletinBoard.Services
         private async Task<int> GetUserBookmarkBulletinsCountAsync(User user)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            return await _dbContext.BulletinBookmarks
+            return await _dbContext.BulletinsBookmarks
                 .Where(g => g.UserId == user.Id).Include(b=>b.Bulletin)
                 .Where(b => b.Bulletin!.Deleted == false)
                 .CountAsync();
         }
 
+
+        public async Task<bool> AddBulletin(Bulletin bulletin)
+        {
+            try
+            {
+                using var _dbContext = _dbFactory.CreateDbContext();
+                await _dbContext.Bulletins.AddAsync(bulletin);
+                await _dbContext.SaveChangesAsync();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+            return true;
+        }
+        public async Task<bool> UpdateBulletin(Bulletin bulletin)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            try
+            {
+                var dbBulletin = await _dbContext.Bulletins.Include(b => b.Images).Where(b => b.Id == bulletin.Id).FirstOrDefaultAsync();
+                if (dbBulletin == null) return false;
+
+                _dbContext.Entry(dbBulletin).CurrentValues.SetValues(bulletin);
+                await _dbContext.SaveChangesAsync();
+
+                List<Image>? existingImages = new();
+                existingImages.AddRange(dbBulletin.Images);
+
+                foreach (var existingImage in existingImages)
+                {
+                    if (!bulletin.Images.Any(i => i.Id == existingImage.Id))
+                        _dbContext.Images.Remove(existingImage);
+                }
+                foreach (var image in bulletin.Images)
+                {
+                    if (!dbBulletin.Images.Any(i => i.Id == image.Id))
+                        _dbContext.Images.Add(image);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+            
+        }  
         public async Task<bool> RemoveBulletin(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();

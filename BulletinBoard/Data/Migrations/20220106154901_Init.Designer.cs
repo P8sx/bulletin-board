@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BulletinBoard.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220103225253_ChangedGorupIdType")]
-    partial class ChangedGorupIdType
+    [Migration("20220106154901_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "6.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
@@ -29,6 +29,9 @@ namespace BulletinBoard.Migrations
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -82,7 +85,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("BulletinBookmarks");
+                    b.ToTable("BulletinsBookmarks");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.BulletinVote", b =>
@@ -114,7 +117,8 @@ namespace BulletinBoard.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<ulong?>("UserId")
                         .HasColumnType("bigint unsigned");
@@ -202,11 +206,15 @@ namespace BulletinBoard.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("varchar(5)");
 
+                    b.Property<string>("OrginalName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Role", b =>
@@ -316,6 +324,39 @@ namespace BulletinBoard.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("BulletinBoard.Model.Violation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("BulletinId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<ulong?>("CommentId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<ulong?>("UserId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BulletinId");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Violations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>
@@ -539,6 +580,27 @@ namespace BulletinBoard.Migrations
                         .HasForeignKey("ImageId");
 
                     b.Navigation("Image");
+                });
+
+            modelBuilder.Entity("BulletinBoard.Model.Violation", b =>
+                {
+                    b.HasOne("BulletinBoard.Model.Bulletin", "Bulletin")
+                        .WithMany()
+                        .HasForeignKey("BulletinId");
+
+                    b.HasOne("BulletinBoard.Model.Comment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId");
+
+                    b.HasOne("BulletinBoard.Model.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Bulletin");
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>

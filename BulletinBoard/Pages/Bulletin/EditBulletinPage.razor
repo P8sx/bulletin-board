@@ -16,9 +16,9 @@
 @inject NavigationManager NavigationManager
 
 
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
 @if (Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
 {
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
     <MudPaper Class="mud-width-full py-8" Elevation="1">
         <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
             <DataAnnotationsValidator />
@@ -54,8 +54,9 @@
                                     <MudItem xs="6" md="6">
                                         <MudCard>
                                             <MudCardMedia Image=@img.GetBulletinImagePath(Bulletin.Group.Id,Bulletin.Id) Height="200" />
-                                            <MudCardActions>
-                                                <MudButton Class="ma-2" Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => DeleteExistingFile(img))">Delete</MudButton>
+                                            <MudCardActions Class="d-flex justify-space-between">
+                                                <MudText Typo="Typo.caption">@img.OrginalName</MudText>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteExistingFile(img))"></MudIconButton >
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -91,6 +92,10 @@
         </MudOverlay>
     </MudPaper>
 }
+else if(_pageState == State.LOADING)
+{
+    <LoadingComponent></LoadingComponent>
+}
 else
 {
     <AccessBlockedComponent></AccessBlockedComponent>
@@ -111,7 +116,10 @@ else
     // Bulletin attachments
     private List<Tuple<IBrowserFile, string>> _files = new();
     private List<Image> _deletedImages = new();
+    private List<Image> _newImages = new();
     private bool _blocked = false;
+    private State _pageState = State.LOADING;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -122,6 +130,7 @@ else
     {
         await base.OnParametersSetAsync();
         Bulletin = await BulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId))!;
+        _pageState = State.SUCCESS;
         StateHasChanged();
     }
     private async Task LoadFiles(InputFileChangeEventArgs e)
@@ -129,7 +138,8 @@ else
         _files.Clear();
         List<string> acceptedFormat = new() { "image/jpeg", "image/png", "image/jpg" };
 
-        foreach (var file in e.GetMultipleFiles(5))
+        var maxImages = Convert.ToInt32(_uploadLimit - _deletedImages.Count());
+        foreach (var file in e.GetMultipleFiles(maxImages))
         {
             if (!acceptedFormat.Contains(file.ContentType))
             {
@@ -177,15 +187,22 @@ else
         foreach (var file in _files)
         {
             var img = new Image().SetExtension(file.Item1.Name);
+            img.OrginalName = file.Item1.Name;
             Bulletin.Images.Add(img);
+            _newImages.Add(img);
         }
+        foreach(var img in _deletedImages)
+        {
+            Bulletin.Images.Remove(img);
+        }
+
         // Try save bulletin in db
-        var result = await BulletinService.AddBulletin(Bulletin);
+        foreach (var img in Bulletin.Images) img.BulletinId = Bulletin.Id;
+        var result = await BulletinService.UpdateBulletin(Bulletin);
         if (!result)
         {
             _blocked = false;
-            _files = new();
-            Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
+            Snackbar.Add($"Bulletin has NOT been updated, contact system administrator", Severity.Error);
             return;
         }
         // If bulletin succesfuly added save images on server
@@ -198,12 +215,12 @@ else
             if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
             if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
 
-            FileStream fs = File.Create($"{folder}/{Bulletin.Images[file.index].GetFullName()}");
+            FileStream fs = File.Create($"{folder}/{_newImages[file.index].GetFullName()}");
             await stream.CopyToAsync(fs);
             stream.Close();
             fs.Close();
         }
-        Snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
+        Snackbar.Add($"Bulletin has been modified - redirecting", Severity.Success);
         await Task.Delay(2000);
         NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");
     }

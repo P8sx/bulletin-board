@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BulletinBoard.Migrations
 {
-    public partial class ChangedGorupIdType : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -89,6 +89,7 @@ namespace BulletinBoard.Migrations
                     Modified = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Expired = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Pinned = table.Column<bool>(type: "tinyint(1)", nullable: true),
+                    Deleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
                     GroupId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     Longitude = table.Column<float>(type: "float", nullable: true),
@@ -106,20 +107,22 @@ namespace BulletinBoard.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Image",
+                name: "Images",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Extension = table.Column<string>(type: "varchar(5)", maxLength: 5, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    OrginalName = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Created = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     BulletinId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Image", x => x.Id);
+                    table.PrimaryKey("PK_Images", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Image_Bulletins_BulletinId",
+                        name: "FK_Images_Bulletins_BulletinId",
                         column: x => x.BulletinId,
                         principalTable: "Bulletins",
                         principalColumn: "Id");
@@ -166,15 +169,15 @@ namespace BulletinBoard.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Image_ImageId",
+                        name: "FK_Users_Images_ImageId",
                         column: x => x.ImageId,
-                        principalTable: "Image",
+                        principalTable: "Images",
                         principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "BulletinBookmarks",
+                name: "BulletinsBookmarks",
                 columns: table => new
                 {
                     UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
@@ -182,15 +185,15 @@ namespace BulletinBoard.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BulletinBookmarks", x => new { x.UserId, x.BulletinId });
+                    table.PrimaryKey("PK_BulletinsBookmarks", x => new { x.UserId, x.BulletinId });
                     table.ForeignKey(
-                        name: "FK_BulletinBookmarks_Bulletins_BulletinId",
+                        name: "FK_BulletinsBookmarks_Bulletins_BulletinId",
                         column: x => x.BulletinId,
                         principalTable: "Bulletins",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BulletinBookmarks_Users_UserId",
+                        name: "FK_BulletinsBookmarks_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -231,7 +234,7 @@ namespace BulletinBoard.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
                     BulletinId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
-                    Text = table.Column<string>(type: "longtext", nullable: false)
+                    Text = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Created = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -382,10 +385,39 @@ namespace BulletinBoard.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_BulletinBookmarks_BulletinId",
-                table: "BulletinBookmarks",
-                column: "BulletinId");
+            migrationBuilder.CreateTable(
+                name: "Violations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Created = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Description = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
+                    BulletinId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    CommentId = table.Column<ulong>(type: "bigint unsigned", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Violations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Violations_Bulletins_BulletinId",
+                        column: x => x.BulletinId,
+                        principalTable: "Bulletins",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Violations_Comments_CommentId",
+                        column: x => x.CommentId,
+                        principalTable: "Comments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Violations_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bulletins_GroupId",
@@ -396,6 +428,11 @@ namespace BulletinBoard.Migrations
                 name: "IX_Bulletins_UserId",
                 table: "Bulletins",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BulletinsBookmarks_BulletinId",
+                table: "BulletinsBookmarks",
+                column: "BulletinId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BulletinsVotes_BulletinId",
@@ -433,8 +470,8 @@ namespace BulletinBoard.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Image_BulletinId",
-                table: "Image",
+                name: "IX_Images_BulletinId",
+                table: "Images",
                 column: "BulletinId");
 
             migrationBuilder.CreateIndex(
@@ -479,11 +516,26 @@ namespace BulletinBoard.Migrations
                 column: "NormalizedUserName",
                 unique: true);
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Violations_BulletinId",
+                table: "Violations",
+                column: "BulletinId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Violations_CommentId",
+                table: "Violations",
+                column: "CommentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Violations_UserId",
+                table: "Violations",
+                column: "UserId");
+
             migrationBuilder.AddForeignKey(
-                name: "FK_Groups_Image_ImageId",
+                name: "FK_Groups_Images_ImageId",
                 table: "Groups",
                 column: "ImageId",
-                principalTable: "Image",
+                principalTable: "Images",
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
@@ -498,17 +550,18 @@ namespace BulletinBoard.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Image_Bulletins_BulletinId",
-                table: "Image");
+                name: "FK_Bulletins_Groups_GroupId",
+                table: "Bulletins");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Bulletins_Users_UserId",
+                table: "Bulletins");
 
             migrationBuilder.DropTable(
-                name: "BulletinBookmarks");
+                name: "BulletinsBookmarks");
 
             migrationBuilder.DropTable(
                 name: "BulletinsVotes");
-
-            migrationBuilder.DropTable(
-                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "GroupUsers");
@@ -529,10 +582,13 @@ namespace BulletinBoard.Migrations
                 name: "UserTokens");
 
             migrationBuilder.DropTable(
+                name: "Violations");
+
+            migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Bulletins");
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "Groups");
@@ -541,7 +597,10 @@ namespace BulletinBoard.Migrations
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Image");
+                name: "Images");
+
+            migrationBuilder.DropTable(
+                name: "Bulletins");
         }
     }
 }
