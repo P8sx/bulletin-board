@@ -52,7 +52,7 @@
 
                         <MudItem xs="12" Class="d-flex flex-column">
                                 <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
-                                <InputFile OnChange="@LoadFiles" multiple accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@_uploadLimit FileTooLargeMessage="File is too large" hidden id="imgInput" />
+                                <InputFile OnChange="@LoadFiles" multiple accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@Consts.MaxImagesPerBulletin FileTooLargeMessage="File is too large" hidden id="imgInput" />
                                 <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
                         </MudItem>
 
@@ -86,9 +86,6 @@
 @code {
     public Bulletin Bulletin { get; set; } = new();
 
-    // Bulletin default values
-    private uint _uploadLimit = 5;
-    private uint _maxFileSize = 5 * 1000000;
 
     // Bulletin attachments
     private List<Tuple<IBrowserFile, string>> _files = new();
@@ -96,7 +93,7 @@
     private bool _blocked = false;
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.GroupId = Const.DefaultGroupId;
+        Bulletin.GroupId = Consts.DefaultGroupId;
         await base.OnInitializedAsync();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
@@ -107,16 +104,16 @@
         _files.Clear();
         List<string> acceptedFormat = new() { "image/jpeg", "image/png", "image/jpg" };
 
-        foreach (var file in e.GetMultipleFiles(5))
+        foreach (var file in e.GetMultipleFiles(Consts.MaxImagesPerBulletin))
         {
             if (!acceptedFormat.Contains(file.ContentType))
             {
                 Snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
                 continue;
             }
-            if (file.Size >= _maxFileSize)
+            if (file.Size >= Consts.MaxFileSize)
             {
-                Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1000000, 2)}MB, max size is {_maxFileSize / 1000000}MB", Severity.Warning);
+                Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1024*1024, 2)}MB, max size is {Consts.MaxFileSize / 1024*1024}MB", Severity.Warning);
                 continue;
             }
             else
@@ -168,10 +165,10 @@
         // If bulletin succesfuly added save images on server
         foreach (var file in _files.Select((image, index) => (image, index)))
         {
-            Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
+            Stream stream = file.image.Item1.OpenReadStream(Consts.MaxFileSize);
             
             var folder = $"{env.WebRootPath}";
-            if (!Directory.Exists(folder += $"/{Const.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Consts.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
             if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
             if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
 

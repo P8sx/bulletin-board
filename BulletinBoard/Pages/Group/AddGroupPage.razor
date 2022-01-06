@@ -1,0 +1,55 @@
+﻿@page "/group/add"
+
+@using BulletinBoard.Model
+@using BulletinBoard.Extensions
+
+@attribute [Authorize]
+
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new group</MudText>
+<MudPaper Class="mud-width-full py-8" Elevation="1">
+    <EditForm Model="@Group" OnValidSubmit="ValidFormSubmitted">
+        <DataAnnotationsValidator />
+        <MudGrid>
+            <MudItem xs="12" Class="px-8">
+                <MudText Typo="Typo.h5">Group</MudText>
+                <MudTextField Label="Title" HelperText="Name of your group" Variant="Variant.Outlined" @bind-Value="Group.Name" For="@(() => Group.Name)" />
+                <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="Group.Description" For="@(() => Group.Description)" />
+            </MudItem>
+            <MudItem xs="12" Class="px-8">
+                <MudSwitch @bind-Checked="@Group.Public" Color="Color.Primary">Public</MudSwitch>
+                <MudText Typo="Typo.body2">If checked your group will be available to the public</MudText>
+            </MudItem>
+            <MudItem xs="12" Class="d-flex flex-column px-8">
+                <MudText Typo="Typo.h5">Group image</MudText>
+                <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load picture</MudButton>
+                <InputFile OnChange="@LoadFiles" accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@Consts.MaxFileSize FileTooLargeMessage="File is too large" hidden id="imgInput" />
+            </MudItem>
+        </MudGrid>
+        <MudElement Class="d-flex justify-end mr-6">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+        </MudElement>
+    </EditForm>
+    <MudOverlay DarkBackground="true" Absolute="true">
+        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
+    </MudOverlay>
+</MudPaper>
+
+
+@code {
+    public Group Group { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Group.Public = false;
+        await base.OnInitializedAsync();
+    }
+    private async Task ValidFormSubmitted(EditContext editContext)
+    {
+
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+
+    }
+}

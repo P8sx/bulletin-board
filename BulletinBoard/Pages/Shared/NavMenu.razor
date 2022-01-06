@@ -24,7 +24,7 @@
 
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add</MudNavLink>
+                <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add bulletin</MudNavLink>
                 <MudNavLink Href="/bulletin/bookmark" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Bookmark">Bookmarks</MudNavLink>
                 <MudNavLink Href="/bulletin/mybulletins" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">My Bulletins</MudNavLink>
             </Authorized>
@@ -33,8 +33,8 @@
         <MudDivider Class="mt-3 mb-1"></MudDivider>
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="/group" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
-                <MudNavLink Href="/group/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
+                <MudNavLink Href="/group" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
+                <MudNavLink Href="/group/add" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
             </Authorized>
             <NotAuthorized>
                 <MudText Class="mx-3 my-3">Log in or Register to be able to use the groups</MudText>

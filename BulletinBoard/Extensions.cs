@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BulletinBoard.Extensions
 {
-    static class Const
+    static class Consts
     {
         public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         public static readonly string DefaultBulletinFolder = "bulletin-images";
         public static readonly string DefaultAvatarFolder = "avatar-images";
         public static readonly string DefaultAvatarPath = "avatar-images/no-avatar.png";
+        public static readonly int MaxImagesPerBulletin = 5;
+        public static readonly int MaxFileSize = 5 * 1024 * 1024; 
     }
     public enum State
     {
@@ -45,13 +47,13 @@ namespace BulletinBoard.Extensions
         {
             var serviceProvider = services.BuildServiceProvider();
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-            var img = new Image(Const.DefaultGroupId)
+            var img = new Image(Consts.DefaultGroupId)
             {
                 Extension = "svg",
             };
             var group = new Group()
             {
-                Id = Const.DefaultGroupId,
+                Id = Consts.DefaultGroupId,
                 Name = "Main",
                 Description = "Main application group",
                 Public = true,

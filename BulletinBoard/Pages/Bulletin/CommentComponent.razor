@@ -5,7 +5,7 @@
 <MudCard Outlined="true" Class="mb-3">
 <MudCardHeader>
     <CardHeaderAvatar>
-        <MudAvatar Image=@(Comment.User!.Image==null?Const.DefaultAvatarPath:Comment.User.Image.GetUserImagePath()) />
+        <MudAvatar Image=@(Comment.User!.Image==null?Consts.DefaultAvatarPath:Comment.User.Image.GetUserImagePath()) />
     </CardHeaderAvatar>
     <CardHeaderContent>
         <MudText Typo="Typo.body1">@Comment.User!.UserName</MudText>

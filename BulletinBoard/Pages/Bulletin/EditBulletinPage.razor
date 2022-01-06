@@ -211,7 +211,7 @@ else
             Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
 
             var folder = $"{env.WebRootPath}";
-            if (!Directory.Exists(folder += $"/{Const.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
+            if (!Directory.Exists(folder += $"/{Consts.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
             if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
             if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
 

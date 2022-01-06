@@ -65,7 +65,7 @@ namespace BulletinBoard.Services
         }
         public bool IsInGroup(Group group)
         {
-            if (group.Id == Const.DefaultGroupId)
+            if (group.Id == Consts.DefaultGroupId)
                 return true;
             if (UserGroups == null || UserGroups.Count == 0)
                 return false;

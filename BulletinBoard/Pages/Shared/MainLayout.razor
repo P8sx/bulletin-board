@@ -51,8 +51,8 @@
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Width="16rem">
         <MudDrawerHeader Style="align-items:center">
-            <img src="logo.png" width=50 height=50 class="rounded" />
-            <MudText Typo="Typo.h4">B-Board</MudText>
+            <img src="new-logo.svg" width=50 height=50 class="rounded" style=@_logoColor/>
+            <MudText Class="ps-2" Typo="Typo.h4">Bullet-In</MudText>
         </MudDrawerHeader>
         <NavMenu />
     </MudDrawer>
@@ -75,7 +75,7 @@
     {
         currentTheme = defaultTheme;
     }
-
+    private string _logoColor = "";
     bool darkMode = false;
     void DarkMode()
     {
@@ -83,11 +83,13 @@
         {
             currentTheme = darkTheme;
             darkMode = true;
+            _logoColor = "filter: invert(64%) sepia(0%) saturate(691%) hue-rotate(160deg) brightness(92%) contrast(86%);";
         }
         else
         {
             currentTheme = defaultTheme;
             darkMode = false;
+            _logoColor = "";
         }
     }
 

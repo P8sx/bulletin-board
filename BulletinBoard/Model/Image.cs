@@ -17,9 +17,9 @@ namespace BulletinBoard.Model
         [ForeignKey("Bulletin")]
         public Guid? BulletinId { get; set; }
 
-        public string GetUserImagePath() => $"{Const.DefaultAvatarFolder}/{GetFullName()}";
-        public string GetBulletinImagePath(Guid groupId, Guid bulletinId) => $"{Const.DefaultBulletinFolder}/{groupId}/{bulletinId}/{GetFullName()}";
-        public string GetGroupImagePath(Guid groupId) => $"{Const.DefaultBulletinFolder}/{groupId}/{GetFullName()}";
+        public string GetUserImagePath() => $"{Consts.DefaultAvatarFolder}/{GetFullName()}";
+        public string GetBulletinImagePath(Guid groupId, Guid bulletinId) => $"{Consts.DefaultBulletinFolder}/{groupId}/{bulletinId}/{GetFullName()}";
+        public string GetGroupImagePath(Guid groupId) => $"{Consts.DefaultBulletinFolder}/{groupId}/{GetFullName()}";
         public string GetFullName() => $"{Id}.{Extension}";
 
         public Image SetExtension(string fileName)

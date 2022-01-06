@@ -14,7 +14,7 @@
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Image=@(Bulletin.User.Image==null?Const.DefaultAvatarPath:Bulletin.User.Image.GetUserImagePath()) />
+                    <MudAvatar Image=@(Bulletin.User.Image==null?Consts.DefaultAvatarPath:Bulletin.User.Image.GetUserImagePath()) />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
