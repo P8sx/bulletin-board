@@ -1,6 +1,7 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.Services
 @using GEmojiSharp.Blazor
+@using BulletinBoard.Extensions
 @implements IDisposable
 
 @inject IUserService UserService
@@ -13,7 +14,7 @@
         <div style="position: relative;">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Image=@(Bulletin.User.Image==null?"/images/avatars/no_avatar.png":Bulletin.User.Image.GetPath()) />
+                    <MudAvatar Image=@(Bulletin.User.Image==null?Const.DefaultAvatarPath:Bulletin.User.Image.GetUserImagePath()) />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.body1">@Bulletin.User.UserName</MudText>
@@ -33,7 +34,7 @@
                         @if (UserService.IsGroupModerator(new Group(){Id = Bulletin.Group!.Id}) || UserService.IsBulletinOwner(Bulletin))
                         {
                             <MudMenuItem OnClick=@(async () => await BulletinRemovedCallback.InvokeAsync(Bulletin))><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
-                            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                            <MudMenuItem Link=@($"bulletin/edit?&bulletinid={Bulletin.Id}")><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
                         }
                     </MudMenu>
                 </CardHeaderActions>
@@ -54,19 +55,20 @@
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="false">
                     <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
                         <ItemTemplate>
-                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetPath()))">
-                                <MudCardMedia Image=@context.GetPath() />
+                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id)))">
+                                <MudCardMedia Image=@context.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id) />
                             </div>
                         </ItemTemplate>
                     </MudCarousel>
                 </MudHidden>
+
                 <MudHidden Breakpoint="Breakpoint.Lg" Invert="true">
                     <MudGrid Class="px-4">
                         @foreach (var img in Bulletin.Images)
                         {
                             <MudItem xs="4">
-                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetPath()))">
-                                    <MudCardMedia Image=@img.GetPath() />
+                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id)))">
+                                    <MudCardMedia Image=@img.GetBulletinImagePath(Bulletin.Group!.Id,Bulletin.Id) />
                                 </div>
                             </MudItem>
                         }

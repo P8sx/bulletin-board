@@ -15,5 +15,6 @@ namespace BulletinBoard.Services
         bool IsGroupModerator(Group group);
         bool IsBulletinOwner(Bulletin bulletin);
         bool CanEditBulletin(Group group, Bulletin bulletin);
+        List<Group?> GetUserGroups();
     }
 }

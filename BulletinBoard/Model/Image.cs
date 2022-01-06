@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BulletinBoard.Model
 {
+
     public class Image
     {
         [Key]
@@ -11,15 +12,16 @@ namespace BulletinBoard.Model
         [MaxLength(5)]
         public string Extension { get; set; } = "";
         public DateTime Created { get; set; } = DateTime.UtcNow; 
-
         public Image()
         {
             Id = Guid.NewGuid();
         }
-        public string GetPath()
-        {          
-            return $"/images/{Id}.{Extension}";        
-        }
+
+        public string GetUserImagePath() => $"{Const.DefaultAvatarFolder}/{GetFullName()}";
+        public string GetBulletinImagePath(Guid groupId, Guid bulletinId) => $"{Const.DefaultBulletinFolder}/{groupId}/{bulletinId}/{GetFullName()}";
+        public string GetGroupImagePath(Guid groupId) => $"{Const.DefaultBulletinFolder}/{groupId}/{GetFullName()}";
+        public string GetFullName() => $"{Id}.{Extension}";
+
         public Image SetExtension(string fileName)
         {
             Extension = fileName.Split('.').Last();

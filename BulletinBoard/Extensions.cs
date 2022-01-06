@@ -7,6 +7,9 @@ namespace BulletinBoard.Extensions
     static class Const
     {
         public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        public static readonly string DefaultBulletinFolder = "bulletin-images";
+        public static readonly string DefaultAvatarFolder = "avatar-images";
+        public static readonly string DefaultAvatarPath = "avatar-images/no-avatar.png";
     }
     public enum State
     {
@@ -28,7 +31,7 @@ namespace BulletinBoard.Extensions
                 CreateRole(services, roleName);
             }
         }
-        private static async void CreateRole(IServiceCollection services, string roleName)
+        private static async Task CreateRole(IServiceCollection services, string roleName)
         {
             var serviceProvider = services.BuildServiceProvider();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
@@ -60,5 +63,6 @@ namespace BulletinBoard.Extensions
 
             dbContext.SaveChanges();
         }
+
     }
 }
