@@ -1,0 +1,177 @@
+﻿@page "/group/user"
+
+@attribute [Authorize]
+@using BulletinBoard.Services
+@using BulletinBoard.Model
+@using GEmojiSharp.Blazor
+
+@inject ISnackbar Snackbar
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+
+<MudCard Outlined="true" Class="mb-3">
+
+    <MudCardMedia Image="/group-images/group-page.svg" Height="200" />
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Groups</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent Class="pt-0">
+        <MudText Typo="Typo.body2">This are groups that you belong to.</MudText>
+    </MudCardContent>
+</MudCard>
+
+<MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanel IsInitiallyExpanded=true HideIcon="true">
+        <TitleContent>
+            <div class="d-flex">
+                <MudText Typo="Typo.h5">My groups</MudText>
+                @if (UserGroups.Any())
+                {
+                    <MudBadge Content=@UserGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Default" />
+                    </MudBadge>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Class="d-flex ml-auto" Color="Color.Default" />
+                }
+            </div>
+        </TitleContent>
+        <ChildContent>
+            @if (UserGroups.Any())
+            {
+
+                <MudGrid>
+                    @foreach (var group in UserGroups)
+                    {
+                        <MudItem xs="6" md="4">
+                            <MudCard Outlined="true">
+                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardHeader Class="pb-2">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">@group.Name</MudText>
+
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+                                <MudCardContent Class="py-0">
+                                    <Emoji>
+                                        @group.Description
+                                    </Emoji>
+                                </MudCardContent>
+
+                                <MudCardActions Class="pt-1 d-flex justify-end">
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+
+                </MudGrid>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Align="Align.Center">Sorry but you aren't in any group</MudText>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+
+    
+
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudText Typo="Typo.h5">Invitations</MudText>
+        </TitleContent>
+        <ChildContent>
+
+        </ChildContent>
+    </MudExpansionPanel>
+
+
+    <MudExpansionPanel HideIcon="true">
+        <TitleContent>
+            <div class="d-flex">
+                <MudText Typo="Typo.h5">Awaiting acceptance</MudText>
+                @if (UserAwaitingAcceptanceGroups.Any())
+                {
+                    <MudBadge Content=@UserAwaitingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
+                    </MudBadge>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="d-flex ml-auto" Color="Color.Default" />
+                }
+            </div>
+        </TitleContent>
+        <ChildContent>
+                @if (UserAwaitingAcceptanceGroups.Any())
+                {
+                     <MudGrid>
+                    @foreach (var group in UserAwaitingAcceptanceGroups)
+                    {
+                        <MudItem xs="6" md="4">
+                            <MudCard Outlined="true">
+                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardHeader Class="pb-2">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">@group.Name</MudText>
+
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+                                <MudCardContent Class="py-0">
+                                    <Emoji>
+                                        @group.Description
+                                    </Emoji>
+                                </MudCardContent>
+
+                                <MudCardActions Class="pt-1 d-flex justify-end">
+                                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick=@(()=>CancelJoin(group))>Cancel request</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+
+                </MudGrid>
+                }
+                else
+                {                    
+                    <MudText Typo="Typo.body1" Align="Align.Center">Sorry but you have no invitations</MudText>           
+                }
+        </ChildContent>
+    </MudExpansionPanel>
+
+</MudExpansionPanels>
+
+@code {
+    public List<Group> UserGroups = new();
+    public List<Group> UserAwaitingAcceptanceGroups = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        UpdateGroupsInfo();
+    }
+    private void UpdateGroupsInfo()
+    {
+        UserGroups = UserService.GetUserGroups()!;
+        UserAwaitingAcceptanceGroups = UserService.GetUserAwaitingAcceptanceGroups()!;
+    }
+    private async void CancelJoin(Group group)
+    {
+        var resutl = await GroupService.CancelJoinToGroup(group, UserService.User!);
+        UserService.UpdateUserGroups();
+        UpdateGroupsInfo();
+        StateHasChanged();
+    }
+}

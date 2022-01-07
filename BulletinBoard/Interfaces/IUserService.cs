@@ -5,7 +5,6 @@ namespace BulletinBoard.Services
     public interface IUserService
     {
         User? User { get; }
-        List<GroupUser>? UserGroups { get; }
 
         bool IsInGroup(Group group);
         void UpdateUserGroups();
@@ -15,6 +14,8 @@ namespace BulletinBoard.Services
         bool IsBulletinOwner(Bulletin bulletin);
         bool CanEditBulletin(Group group, Bulletin bulletin);
         List<Group?> GetUserGroups();
-        List<Group?> GetUserAwaitingGroups();
+        List<Group?> GetUserAwaitingAcceptanceGroups();
+        List<Group?> GetUserAwaitingInvitationsGroups();
+        bool AwaitingAcceptance(Group group);
     }
 }

@@ -81,11 +81,25 @@ namespace BulletinBoard.Services
                 .Include(gu => gu.Role)
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupInvited)
+                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
                 .FirstOrDefaultAsync();
             if (result != default) return false;
-            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, RoleId=Convert.ToUInt64(RoleValue.GroupInvited) };
+            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, RoleId=Convert.ToUInt64(RoleValue.GroupAwaitingAcceptance) };
             await _dbContext.GroupUsers.AddAsync(groupUser);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> CancelJoinToGroup(Group group, User user)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            var result = await _dbContext.GroupUsers
+                .Include(gu => gu.Role)
+                .Where(gu => gu.UserId == user.Id)
+                .Where(gu => gu.GroupId == group.Id)
+                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .FirstOrDefaultAsync();
+            if (result == default) return false;
+            _dbContext.GroupUsers.Remove(result);
             await _dbContext.SaveChangesAsync();
             return true;
         }

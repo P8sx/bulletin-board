@@ -11,8 +11,6 @@ namespace BulletinBoard.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public User? User { get; private set; }
-        public List<GroupUser>? UserGroups { get; private set; }
-
         private List<GroupUser> _userGroupsRoles = new();
         private List<Group?> _userGroups = new();
         private List<Group?> _userAwaitingAcceptanceGroups = new();
@@ -22,12 +20,11 @@ namespace BulletinBoard.Services
         {
             _httpContextAccessor = httpContextAccessor;
             User = GetUser();
-            UserGroups = GetUserGroups(User);
-            UpdateUserGroups2();
+            UpdateUserGroups();
         }
 
 
-        public void UpdateUserGroups2()
+        public void UpdateUserGroups()
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             _userGroupsRoles = _dbContext.GroupUsers
@@ -62,10 +59,6 @@ namespace BulletinBoard.Services
                 return false;
             }
         }
-        public void UpdateUserGroups()
-        {
-            UserGroups = GetUserGroups(User);
-        }
         private User? GetUser()
         {
             if (_httpContextAccessor.HttpContext != null && _httpContextAccessor.HttpContext.User.Identity != null && _httpContextAccessor.HttpContext.User.Identity.Name != null)
@@ -75,38 +68,24 @@ namespace BulletinBoard.Services
             }
             return null;
         }
-        private List<GroupUser>? GetUserGroups(User? user)
-        {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            var groupUser = _dbContext.GroupUsers
-                .Include(gu => gu.User)
-                .Include(gu => gu.Role)
-                .Include(gu => gu.Group)
-                .ThenInclude(gu => gu!.Image)
-                .Where(gu => gu.User == user)
-                .ToList();
-            return groupUser;
-        }
-        public List<Group?> GetUserGroups()
-        {
-            var userGroups = UserGroups!.Where(g => g.Role!.RoleValue != RoleValue.GroupInvited).Select(u => u.Group).Distinct().ToList();
-            return userGroups;
-        }
-        public List<Group?> GetUserAwaitingGroups()
-        {
-            return UserGroups!.Where(g => g.Role!.RoleValue == RoleValue.GroupInvited).Select(u => u.Group).Distinct().ToList();
-        }
+
+        // User groups
+        public List<Group?> GetUserGroups() => _userGroups;
+        public List<Group?> GetUserAwaitingAcceptanceGroups() => _userAwaitingAcceptanceGroups;
+        public List<Group?> GetUserAwaitingInvitationsGroups() => _userAwaitingInvitationsGroups;
+
+        // User roles
         public bool IsInGroup(Group group)
         {
             if (group.Id == Consts.DefaultGroupId)
                 return true;
-            if (UserGroups == null || UserGroups.Count == 0)
+            if (_userGroupsRoles == null || _userGroupsRoles.Count == 0)
                 return false;
-            return UserGroups.Any(g => g.GroupId == group.Id);
+            return _userGroups.Any(g => g.Id == group.Id);
         }
         public bool IsGroupModerator(Group group)
         {
-            if (UserGroups!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin)))
                 return true;
             return false;
         }
@@ -116,22 +95,19 @@ namespace BulletinBoard.Services
                 return true;
             return false;
         }
+
+        // User privileges
         public bool CanEditBulletin(Group group, Bulletin bulletin)
         {
             return IsInGroup(group) && (IsBulletinOwner(bulletin) || IsGroupModerator(group));
         }
-        public void AddUserToGroup(Group group)
+        public bool AwaitingAcceptance(Group group)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            try
-            {
-                _dbContext.GroupUsers.Add(new GroupUser { GroupId = group.Id, UserId = User!.Id, Role = new Role("User") });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-            }
+            return _userAwaitingAcceptanceGroups.Any(g=>g.Id == group.Id);
         }
+
+
+
         public async Task Bookmark(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();

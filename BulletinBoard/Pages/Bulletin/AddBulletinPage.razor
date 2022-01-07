@@ -62,13 +62,10 @@
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
                 <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
-                    @if (UserService.UserGroups is not null)
+                    @foreach (var group in UserService.GetUserGroups())
                     {
-                        @foreach (var group in UserService.GetUserGroups())
-                        {
-                            <MudSelectItem T="Guid?" Value="@group!.Id">@group!.Name</MudSelectItem>
-                        }
-                    }
+                        <MudSelectItem T="Guid?" Value="@group!.Id">@group!.Name</MudSelectItem>
+                    }               
                 </MudSelect>
             </MudItem>
 
