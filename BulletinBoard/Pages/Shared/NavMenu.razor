@@ -20,11 +20,17 @@
         <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="true">
             <MudNavLink Href="/bulletins?sortby=0" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
             <MudNavLink Href="/bulletins?sortby=1" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add bulletin</MudNavLink>
+                </Authorized>
+                <NotAuthorized>
+                </NotAuthorized>
+        </AuthorizeView>
         </MudNavGroup>
 
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add bulletin</MudNavLink>
                 <MudNavLink Href="/bulletin/bookmark" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Bookmark">Bookmarks</MudNavLink>
                 <MudNavLink Href="/bulletin/mybulletins" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">My Bulletins</MudNavLink>
             </Authorized>

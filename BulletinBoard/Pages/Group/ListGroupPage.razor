@@ -1,0 +1,62 @@
+﻿@page "/group"
+
+@using BulletinBoard.Services
+@using BulletinBoard.Model
+
+@inject ISnackbar Snackbar
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
+
+<MudCard Outlined="true" Class="mb-3">
+
+    <MudCardMedia Image="/group-images/group-page.svg" Height="200" />
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Groups</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body2">Browse in public group or create your own one.</MudText>
+    </MudCardContent>
+</MudCard>
+
+@if (UserGroups.Any())
+{
+    <MudCard Outlined="true" Class="mb-3">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">Yours groups</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                @foreach (var group in UserGroups)
+                {
+                    <MudItem xs="4">@group.Name</MudItem>
+                }
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+}
+
+
+<MudCard Outlined="true" Class="mb-3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Public groups</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+
+    </MudCardContent>
+
+</MudCard>
+@code {
+    public List<Group> UserGroups;
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        UserGroups = UserService.GetUserGroups();
+    }
+}

@@ -8,7 +8,8 @@ namespace BulletinBoard.Extensions
     {
         public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         public static readonly string DefaultBulletinFolder = "bulletin-images";
-        public static readonly string DefaultAvatarFolder = "avatar-images";
+        public static readonly string DefaultAvatarFolder = "avatar-images"; 
+        public static readonly string DefaultGroupFolder = "group-images"; 
         public static readonly string DefaultAvatarPath = "avatar-images/no-avatar.png";
         public static readonly int MaxImagesPerBulletin = 5;
         public static readonly int MaxFileSize = 5 * 1024 * 1024; 

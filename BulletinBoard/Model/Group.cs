@@ -25,7 +25,6 @@ namespace BulletinBoard.Model
         public virtual IList<Bulletin>? Bulletins { get; set; }
         public Group()
         {
-            Id = Guid.NewGuid();
             Created = DateTime.UtcNow;
         }
         public Group(Guid id)

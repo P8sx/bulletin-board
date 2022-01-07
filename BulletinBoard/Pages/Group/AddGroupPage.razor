@@ -2,8 +2,15 @@
 
 @using BulletinBoard.Model
 @using BulletinBoard.Extensions
+@using BulletinBoard.Services
 
 @attribute [Authorize]
+
+@inject ISnackbar Snackbar
+@inject IWebHostEnvironment env
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject NavigationManager NavigationManager
 
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new group</MudText>
 <MudPaper Class="mud-width-full py-8" Elevation="1">
@@ -21,7 +28,17 @@
             </MudItem>
             <MudItem xs="12" Class="d-flex flex-column px-8">
                 <MudText Typo="Typo.h5">Group image</MudText>
-                <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load picture</MudButton>
+                @if (_file != null)
+                {
+                    <MudCard>
+                        <MudCardMedia Image=@_file!.Item2 Height="200" />
+                        <MudCardActions Class="d-flex justify-space-between">
+                            <MudText Typo="Typo.caption">@_file.Item1.Name</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteNewFile())"></MudIconButton>
+                        </MudCardActions>
+                    </MudCard>
+                }
+                <MudButton Class="mx-auto mt-2" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load picture</MudButton>
                 <InputFile OnChange="@LoadFiles" accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@Consts.MaxFileSize FileTooLargeMessage="File is too large" hidden id="imgInput" />
             </MudItem>
         </MudGrid>
@@ -29,7 +46,7 @@
             <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
         </MudElement>
     </EditForm>
-    <MudOverlay DarkBackground="true" Absolute="true">
+    <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
         <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
     </MudOverlay>
 </MudPaper>
@@ -38,6 +55,8 @@
 @code {
     public Group Group { get; set; } = new();
 
+    private bool _blocked = false;
+    private Tuple<IBrowserFile, string>? _file = null;
     protected override async Task OnInitializedAsync()
     {
         Group.Public = false;
@@ -45,11 +64,66 @@
     }
     private async Task ValidFormSubmitted(EditContext editContext)
     {
+        _blocked = true;
+        if (_file != null)
+        {
+            var img = new Image().SetExtension(_file.Item1.Name);
+            img.OrginalName = _file.Item1.Name;
+            Group.Image = img;
+        }
+        else
+            return;
+        var result = await GroupService.AddGroup(Group);
+        if (!result)
+        {
+            _blocked = false;
+            _file = null;
+            Snackbar.Add($"Group has NOT been created, contact system administrator", Severity.Error);
+            return;
+        }
+        var groupAdmin = await GroupService.AddGroupAdmin(Group, UserService.User!);
+
+        Stream stream = _file.Item1.OpenReadStream(Consts.MaxFileSize);
+        var folder = $"{env.WebRootPath}";
+        if (!Directory.Exists(folder += $"/{Consts.DefaultGroupFolder}")) Directory.CreateDirectory(folder);
+        if (!Directory.Exists(folder += $"/{Group.Id}")) Directory.CreateDirectory(folder);
+
+        FileStream fs = File.Create($"{folder}/{Group.Image.GetFullName()}");
+        await stream.CopyToAsync(fs);
+        stream.Close();
+        fs.Close();
+        UserService.UpdateUserGroups();
+        Snackbar.Add($"Group has been created - redirecting", Severity.Success);
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo($"bulletin?groupid={Group.Id}");
 
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
-
+        List<string> acceptedFormat = new() { "image/jpeg", "image/png", "image/jpg" };
+        var file = e.GetMultipleFiles(1).First();
+        if (!acceptedFormat.Contains(file.ContentType))
+        {
+            Snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
+            return;
+        }
+        if (file.Size >= Consts.MaxFileSize)
+        {
+            Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1024 * 1024, 2)}MB, max size is {Consts.MaxFileSize / 1024 * 1024}MB", Severity.Warning);
+            return;
+        }
+        else
+        {
+            var format = file.Name.Split('.').Last();
+            var resizedImageFile = await file.RequestImageFileAsync($"image/jpeg", 800, 800);
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+            _file = new(file, $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}");
+        }
+    }
+    private void DeleteNewFile()
+    {
+        _file = null!;
     }
 }
