@@ -29,22 +29,21 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             _userGroupsRoles = _dbContext.GroupUsers
                 .Include(gu => gu.User)
-                .Include(gu => gu.Role)
                 .Include(gu => gu.Group)
                 .ThenInclude(gu => gu!.Image)
                 .Where(gu => gu.User == User)
                 .ToList();
             _userGroups = _userGroupsRoles
-                .Where(g => g.Role!.RoleValue != RoleValue.GroupInvited)
-                .Where(g => g.Role!.RoleValue != RoleValue.GroupAwaitingAcceptance)
+                .Where(g => g.Role != GroupRole.Invited)
+                .Where(g => g.Role != GroupRole.AwaitingAcceptance)
                 .Select(u => u.Group).Distinct()
                 .ToList();
             _userAwaitingAcceptanceGroups = _userGroupsRoles
-                .Where(g => g.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .Where(g => g.Role == GroupRole.AwaitingAcceptance)
                 .Select(u => u.Group).Distinct()
                 .ToList();
             _userAwaitingInvitationsGroups = _userGroupsRoles
-                .Where(g => g.Role!.RoleValue == RoleValue.GroupInvited)
+                .Where(g => g.Role == GroupRole.Invited)
                 .Select(u => u.Group).Distinct()
                 .ToList();
         }
@@ -83,13 +82,13 @@ namespace BulletinBoard.Services
         }
         public bool IsGroupModerator(Group group)
         {
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin || a.Role!.RoleValue == RoleValue.Admin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Moderator || a.Role == GroupRole.Admin)))
                 return true;
             return false;
         }
         public bool IsGroupAdmin(Group group)
         {
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.Admin || a.Role!.RoleValue == RoleValue.GroupAdmin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Admin)))
                 return true;
             return false;
         }

@@ -12,5 +12,6 @@ namespace BulletinBoard.Services
         Task<List<GroupUser>> GetGroupUsers(Group group);
         Task<List<Group>> GetPublicGroups();
         Task<bool> JoinToGroup(Group group, User user);
+        Task<bool> SetGroupUser(Group group, User user, GroupRole role);
     }
 }

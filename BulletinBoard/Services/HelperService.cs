@@ -15,7 +15,7 @@ namespace BulletinBoard.Services
         public async Task AddToDefaultGroupAsync(User user, string roleName)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            await _dbContext.GroupUsers.AddAsync(new GroupUser() { GroupId = Consts.DefaultGroupId, RoleId = new Role(roleName).Id, UserId = user.Id });
+            await _dbContext.GroupUsers.AddAsync(new GroupUser() { GroupId = Consts.DefaultGroupId, Role = GroupRole.User, UserId = user.Id });
             await _dbContext.SaveChangesAsync();
         }
     }

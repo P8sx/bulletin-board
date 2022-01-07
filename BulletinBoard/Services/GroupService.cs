@@ -41,7 +41,7 @@ namespace BulletinBoard.Services
                 {
                     UserId = user.Id,
                     GroupId = group.Id,
-                    RoleId = Convert.ToUInt64(RoleValue.GroupAdmin),
+                    Role= GroupRole.Admin,
                     Joined = DateTime.UtcNow,
                 };
                 await _dbContext.GroupUsers.AddAsync(groupUser);
@@ -68,7 +68,6 @@ namespace BulletinBoard.Services
             }         
             return false;
         }
-
         public async Task<List<Group>> GetPublicGroups()
         {
             using var _dbContext = _dbFactory.CreateDbContext();
@@ -77,17 +76,18 @@ namespace BulletinBoard.Services
                 .Where(g => g.Public == true)
                 .ToListAsync();
         }
+
+
         public async Task<bool> JoinToGroup(Group group,User user)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             var result = await _dbContext.GroupUsers
-                .Include(gu => gu.Role)
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .Where(gu => gu.Role == GroupRole.AwaitingAcceptance)
                 .FirstOrDefaultAsync();
             if (result != default) return false;
-            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, RoleId=Convert.ToUInt64(RoleValue.GroupAwaitingAcceptance) };
+            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, Role = GroupRole.AwaitingAcceptance };
             await _dbContext.GroupUsers.AddAsync(groupUser);
             await _dbContext.SaveChangesAsync();
             return true;
@@ -96,25 +96,56 @@ namespace BulletinBoard.Services
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             var result = await _dbContext.GroupUsers
-                .Include(gu => gu.Role)
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .Where(gu => gu.Role == GroupRole.AwaitingAcceptance)
                 .FirstOrDefaultAsync();
             if (result == default) return false;
             _dbContext.GroupUsers.Remove(result);
             await _dbContext.SaveChangesAsync();
             return true;
         }
+        public async Task<bool> SetGroupUser(Group group, User user, GroupRole role)
+        {
+            try
+            {
+                using var _dbContext = _dbFactory.CreateDbContext();
+                var result = await _dbContext.GroupUsers
+                    .Where(gu => gu.GroupId == group.Id)
+                    .Where(gu => gu.UserId == user.Id)
+                    .FirstOrDefaultAsync();
+                if (result == null)
+                {
+                    var groupUser = new GroupUser()
+                    {
+                        GroupId = group.Id,
+                        UserId = user.Id,
+                        Role = role,
+                    };
+                    await _dbContext.GroupUsers.AddAsync(groupUser);
+                    await _dbContext.SaveChangesAsync();
+                    return true;
+                }
+                result.Role = role;
+                _dbContext.GroupUsers.Update(result);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
 
         public async Task<List<User?>> GetAwaitingAcceptanceUsers(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.GroupUsers
                 .Include(gu => gu.User)
-                .Include(gu=>gu.Role)
+                .Include(gu => gu.Group)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu=>gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .Where(gu=>gu.Role == GroupRole.AwaitingAcceptance)
                 .Select(gu => gu.User)
                 .ToListAsync();
         }
@@ -123,16 +154,16 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.GroupUsers
                 .Include(gu => gu.User)
-                .Include(gu => gu.Role)
+                .Include(gu=>gu.Group)
                 .Where(gu => gu.GroupId == _group.Id)
-                .Where(gu => gu.Role!.RoleValue != RoleValue.GroupAwaitingAcceptance)
-                .Where(gu => gu.Role!.RoleValue != RoleValue.GroupInvited)
+                .Where(gu => gu.Role != GroupRole.AwaitingAcceptance)
+                .Where(gu => gu.Role != GroupRole.Invited)
                 .Select(gu => new GroupUser()
                 {
                     Id = gu.Id,
-                    GroupId = _group.Id,
+                    Group = gu.Group,
+                    GroupId = gu.Group!.Id,
                     Role = gu.Role,
-                    RoleId = gu.RoleId,
                     User = gu.User,
                     UserId = gu.UserId,
                 })

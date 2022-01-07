@@ -364,5 +364,6 @@ FodyWeavers.xsd
 
 BulletinBoard/wwwroot/images/*
 BulletinBoard/wwwroot/bulletin-images
+BulletinBoard/wwwroot/group-images
 BulletinBoard/wwwroot/avatar-images
 BulletinBoard/wwwroot/lib

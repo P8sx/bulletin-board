@@ -60,10 +60,10 @@
                         <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
                         <MudTd DataLabel="Joined">@context.Joined</MudTd>
                         <MudTd DataLabel="Role">
-                            <MudSelect T="RoleValue" Label="Role" AnchorOrigin="Origin.BottomCenter">
-                                <MudSelectItem Value="@(RoleValue.GroupUser)" />
-                                <MudSelectItem Value="@(RoleValue.GroupModerator)" />
-                                <MudSelectItem Value="@(RoleValue.GroupAdmin)" />
+                            <MudSelect Class="mt-0" T="GroupRole" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))">
+                                <MudSelectItem Value="@(GroupRole.User)" />
+                                <MudSelectItem Value="@(GroupRole.Moderator)" />
+                                <MudSelectItem Value="@(GroupRole.Admin)" />
                             </MudSelect>
                         </MudTd>
                         <MudTd DataLabel="Action">asd</MudTd>
@@ -88,6 +88,8 @@ else
 {
     <LoadingComponent></LoadingComponent>
 }
+
+
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
@@ -98,6 +100,12 @@ else
     private string _searchString = "";
     private Group? _group;
     private State _pageState = State.LOADING;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+    }
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
@@ -122,8 +130,14 @@ else
             return true;
         if (groupUser.User!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (groupUser.Role!.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
         return false;
+    }
+    private async Task RoleChanged(GroupUser groupUser)
+    {
+        var result = await GroupService.SetGroupUser(groupUser.Group!, groupUser.User!, groupUser.Role);
+        if(!result)
+            Snackbar.Add($"There was an error changing role", Severity.Error);
+        else
+            Snackbar.Add($"Role changed successfully", Severity.Success);
     }
 }

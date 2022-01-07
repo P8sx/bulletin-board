@@ -3,6 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BulletinBoard.Model
 {
+    public enum GroupRole
+    {
+        User = 1,
+        Moderator = 2,
+        Admin = 3,
+        Invited = 4,
+        AwaitingAcceptance = 5,
+    }
     public class GroupUser
     {
         [Key]
@@ -14,11 +22,7 @@ namespace BulletinBoard.Model
         [ForeignKey("User")]
         public ulong UserId { get; set; }
         public virtual User? User { get; set; }
-
-        public virtual Role? Role { get; set; }
-        [ForeignKey("Role")]
-        public ulong? RoleId { get; set; }
-
+        public GroupRole Role { get; set; }
         public DateTime? Joined { get; set; }
 
         public GroupUser()
