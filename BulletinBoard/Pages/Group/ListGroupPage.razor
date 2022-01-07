@@ -2,6 +2,7 @@
 
 @using BulletinBoard.Services
 @using BulletinBoard.Model
+@using GEmojiSharp.Blazor
 
 @inject ISnackbar Snackbar
 @inject IUserService UserService
@@ -16,29 +17,59 @@
             <MudText Typo="Typo.h4">Groups</MudText>
         </CardHeaderContent>
     </MudCardHeader>
-    <MudCardContent>
+    <MudCardContent Class="pt-0">
         <MudText Typo="Typo.body2">Browse in public group or create your own one.</MudText>
     </MudCardContent>
 </MudCard>
 
-@if (UserGroups.Any())
-{
-    <MudCard Outlined="true" Class="mb-3">
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h4">Yours groups</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
+<MudCard Outlined="true" Class="mb-3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Yours groups</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (UserGroups.Any())
+        {
+
             <MudGrid>
                 @foreach (var group in UserGroups)
                 {
-                    <MudItem xs="4">@group.Name</MudItem>
+                    <MudItem xs="6" md="4">
+                        <MudCard Outlined="true">
+                            <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                            <MudCardHeader Class="pb-2">
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h5">@group.Name</MudText>
+
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+
+                            <MudCardContent Class="py-0">
+                                <Emoji>
+                                    @group.Description
+                                </Emoji>
+                            </MudCardContent>
+
+                            <MudCardActions Class="pt-1 d-flex justify-end">
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
                 }
+
             </MudGrid>
-        </MudCardContent>
-    </MudCard>
-}
+        }
+        else
+        {
+            <MudText Typo="Typo.h5" Align="Align.Center">Sorry there are no public groups</MudText>
+        }
+    </MudCardContent>
+</MudCard>
+
 
 
 <MudCard Outlined="true" Class="mb-3">
@@ -48,15 +79,81 @@
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
+        <MudCardContent>
+            @if (PublicGroups.Any())
+            {
+                <MudGrid>
+                    @foreach (var group in PublicGroups)
+                    {
+                        <MudItem xs="6" md="4">
+                            <MudCard Outlined="true">
+                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardHeader Class="pb-2">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">@group.Name</MudText>
 
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+                                <MudCardContent Class="py-0">
+                                    <Emoji>
+                                        @group.Description
+                                    </Emoji>
+                                </MudCardContent>
+
+                                <MudCardActions Class="pt-1 d-flex justify-end">
+                                    @if (UserService.IsInGroup(group))
+                                    {
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
+                                    }
+                                    else if (AwaitingAcceptance(group))
+                                    {
+                                        <MudButton Variant="Variant.Text" Disabled=true Color="Color.Primary">Awaiting</MudButton>                                
+                                    }
+                                    else
+                                    {
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick=@(()=>Join(group))>Join</MudButton>
+                                    }
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center">Sorry there are no public groups</MudText>
+            }
+        </MudCardContent>
     </MudCardContent>
-
 </MudCard>
+
 @code {
-    public List<Group> UserGroups;
+    public List<Group> UserGroups = new();
+    public List<Group> PublicGroups = new();
+    public List<Group> JoinedGroups = new();
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        UserGroups = UserService.GetUserGroups();
+        UserGroups = UserService.GetUserGroups()!;
+        JoinedGroups = UserService.GetUserAwaitingGroups()!;
+        PublicGroups = await GroupService.GetPublicGroups();
+        PublicGroups.RemoveAll(g => UserGroups.Any(z => z.Id == g.Id));
+    }
+    private async void Join(Group group)
+    {
+        if (UserService.User == null)
+        {
+            return;
+        }
+        var resutl = await GroupService.JoinToGroup(group, UserService.User);
+        UserService.UpdateUserGroups();
+    }
+    private bool AwaitingAcceptance(Group group)
+    {
+        return JoinedGroups.Any(g => g.Id == group.Id);
     }
 }

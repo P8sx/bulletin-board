@@ -68,5 +68,26 @@ namespace BulletinBoard.Services
             }         
             return false;
         }
+
+        public async Task<List<Group>> GetPublicGroups()
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.Groups.Include(g=>g.Image).Where(g => g.Public == true).ToListAsync();
+        }
+        public async Task<bool> JoinToGroup(Group group,User user)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            var result = await _dbContext.GroupUsers
+                .Include(gu => gu.Role)
+                .Where(gu => gu.UserId == user.Id)
+                .Where(gu => gu.GroupId == group.Id)
+                .Where(gu => gu.Role!.RoleValue == RoleValue.GroupInvited)
+                .FirstOrDefaultAsync();
+            if (result != default) return false;
+            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, RoleId=Convert.ToUInt64(RoleValue.GroupInvited) };
+            await _dbContext.GroupUsers.AddAsync(groupUser);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

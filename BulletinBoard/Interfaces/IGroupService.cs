@@ -7,5 +7,7 @@ namespace BulletinBoard.Services
         Task<bool> AddGroup(Group group);
         Task<bool> AddGroupAdmin(Group group, User user);
         Task<Group?> GetGroupInfoAsyncCached(Group group);
+        Task<List<Group>> GetPublicGroups();
+        Task<bool> JoinToGroup(Group group, User user);
     }
 }

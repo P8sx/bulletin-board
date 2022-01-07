@@ -7,7 +7,6 @@ namespace BulletinBoard.Services
         User? User { get; }
         List<GroupUser>? UserGroups { get; }
 
-        Task Bookmark(BulletinBookmark bookmark);
         bool IsInGroup(Group group);
         void UpdateUserGroups();
         Task Bookmark(Bulletin bulletin);
@@ -16,5 +15,6 @@ namespace BulletinBoard.Services
         bool IsBulletinOwner(Bulletin bulletin);
         bool CanEditBulletin(Group group, Bulletin bulletin);
         List<Group?> GetUserGroups();
+        List<Group?> GetUserAwaitingGroups();
     }
 }

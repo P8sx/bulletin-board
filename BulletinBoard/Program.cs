@@ -38,7 +38,7 @@ builder.Services.AddTransient<IHelperService,HelperService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
-//builder.Services.RunAppSetup();
+builder.Services.RunAppSetup();
 
 var app = builder.Build();
 

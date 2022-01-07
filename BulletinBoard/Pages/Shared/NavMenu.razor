@@ -39,8 +39,12 @@
         <MudDivider Class="mt-3 mb-1"></MudDivider>
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="/group" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Groups</MudNavLink>
-                <MudNavLink Href="/group/add" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Add">Create Group</MudNavLink>
+            <MudNavLink Href="/group" Match="NavLinkMatch.All" Icon="@Icons.Filled.Groups">Public groups</MudNavLink>
+            <MudNavGroup Title="Groups" Icon="@Icons.Filled.Home" Href="/group" Match="NavLinkMatch.All" Expanded="true">
+                <MudNavLink Href="/group/user" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">My groups</MudNavLink>
+                <MudNavLink Href="/group/add" Match="NavLinkMatch.All" Icon="@Icons.Filled.GroupAdd">Create group</MudNavLink>
+            </MudNavGroup>
+
             </Authorized>
             <NotAuthorized>
                 <MudText Class="mx-3 my-3">Log in or Register to be able to use the groups</MudText>

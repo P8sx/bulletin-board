@@ -8,13 +8,14 @@ namespace BulletinBoard.Model
 {
     public enum RoleValue
     {
-        User,
-        Moderator,
-        Admin,
-        GroupInvited,
-        GroupUser,
-        GroupModerator,
-        GroupAdmin,
+        User = 1,
+        Moderator = 2,
+        Admin = 3,
+        GroupInvited = 4,
+        GroupUser = 5,
+        GroupModerator = 6,
+        GroupAdmin = 7,
+        GroupAwaitingAcceptance = 8,
     }
     public class Role : IdentityRole<ulong>
     {
