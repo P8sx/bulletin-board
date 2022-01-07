@@ -17,5 +17,6 @@ namespace BulletinBoard.Services
         List<Group?> GetUserAwaitingAcceptanceGroups();
         List<Group?> GetUserAwaitingInvitationsGroups();
         bool AwaitingAcceptance(Group group);
+        bool IsGroupAdmin(Group group);
     }
 }

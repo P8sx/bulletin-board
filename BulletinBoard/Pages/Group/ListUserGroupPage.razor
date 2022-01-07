@@ -28,9 +28,9 @@
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">My groups</MudText>
-                @if (UserGroups.Any())
+                @if (_userGroups.Any())
                 {
-                    <MudBadge Content=@UserGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                    <MudBadge Content=@_userGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                         <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Default" />
                     </MudBadge>
                 }
@@ -41,11 +41,11 @@
             </div>
         </TitleContent>
         <ChildContent>
-            @if (UserGroups.Any())
+            @if (_userGroups.Any())
             {
 
                 <MudGrid>
-                    @foreach (var group in UserGroups)
+                    @foreach (var group in _userGroups)
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
@@ -84,12 +84,60 @@
 
     
 
-    <MudExpansionPanel>
-        <TitleContent>
-            <MudText Typo="Typo.h5">Invitations</MudText>
+    <MudExpansionPanel HideIcon="true">
+         <TitleContent>
+            <div class="d-flex">
+                <MudText Typo="Typo.h5">Invitations</MudText>
+                @if (_userAwaitingAcceptanceGroups.Any())
+                {
+                    <MudBadge Content=@_userAwaitingInvitationsGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudIcon Icon="@Icons.Filled.InsertInvitation" Color="Color.Default" />
+                    </MudBadge>
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Filled.InsertInvitation" Class="d-flex ml-auto" Color="Color.Default" />
+                }
+            </div>
         </TitleContent>
         <ChildContent>
+                @if (_userAwaitingInvitationsGroups.Any())
+                {
+                     <MudGrid>
+                    @foreach (var group in _userAwaitingInvitationsGroups)
+                    {
+                        <MudItem xs="6" md="4">
+                            <MudCard Outlined="true">
+                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardHeader Class="pb-2">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h5">@group.Name</MudText>
 
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+
+                                <MudCardContent Class="py-0">
+                                    <Emoji>
+                                        @group.Description
+                                    </Emoji>
+                                </MudCardContent>
+
+                                <MudCardActions Class="pt-1 d-flex justify-end">
+                                    <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(()=>AcceptJoin(group))>Accept</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+
+                </MudGrid>
+                }
+                else
+                {                    
+                    <MudText Typo="Typo.body1" Align="Align.Center">Sorry but you have no invitations</MudText>           
+                }
         </ChildContent>
     </MudExpansionPanel>
 
@@ -98,9 +146,9 @@
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Awaiting acceptance</MudText>
-                @if (UserAwaitingAcceptanceGroups.Any())
+                @if (_userAwaitingAcceptanceGroups.Any())
                 {
-                    <MudBadge Content=@UserAwaitingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                    <MudBadge Content=@_userAwaitingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
                     </MudBadge>
                 }
@@ -111,10 +159,10 @@
             </div>
         </TitleContent>
         <ChildContent>
-                @if (UserAwaitingAcceptanceGroups.Any())
+                @if (_userAwaitingAcceptanceGroups.Any())
                 {
                      <MudGrid>
-                    @foreach (var group in UserAwaitingAcceptanceGroups)
+                    @foreach (var group in _userAwaitingAcceptanceGroups)
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
@@ -146,7 +194,7 @@
                 }
                 else
                 {                    
-                    <MudText Typo="Typo.body1" Align="Align.Center">Sorry but you have no invitations</MudText>           
+                    <MudText Typo="Typo.body1" Align="Align.Center">You have not joined any group</MudText>           
                 }
         </ChildContent>
     </MudExpansionPanel>
@@ -154,8 +202,9 @@
 </MudExpansionPanels>
 
 @code {
-    public List<Group> UserGroups = new();
-    public List<Group> UserAwaitingAcceptanceGroups = new();
+    private List<Group> _userGroups = new();
+    private List<Group> _userAwaitingAcceptanceGroups = new();
+    private List<Group> _userAwaitingInvitationsGroups = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -164,14 +213,22 @@
     }
     private void UpdateGroupsInfo()
     {
-        UserGroups = UserService.GetUserGroups()!;
-        UserAwaitingAcceptanceGroups = UserService.GetUserAwaitingAcceptanceGroups()!;
+        _userGroups = UserService.GetUserGroups()!;
+        _userAwaitingAcceptanceGroups = UserService.GetUserAwaitingAcceptanceGroups()!;
+        _userAwaitingInvitationsGroups = UserService.GetUserAwaitingInvitationsGroups()!;
     }
-    private async void CancelJoin(Group group)
+    private async Task CancelJoin(Group group)
     {
         var resutl = await GroupService.CancelJoinToGroup(group, UserService.User!);
         UserService.UpdateUserGroups();
         UpdateGroupsInfo();
         StateHasChanged();
+    }
+    private async Task AcceptJoin(Group group)
+    {
+        //var resutl = await GroupService.CancelJoinToGroup(group, UserService.User!);
+        //UserService.UpdateUserGroups();
+        //UpdateGroupsInfo();
+        //StateHasChanged();
     }
 }

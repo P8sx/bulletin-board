@@ -79,13 +79,17 @@ namespace BulletinBoard.Services
         {
             if (group.Id == Consts.DefaultGroupId)
                 return true;
-            if (_userGroupsRoles == null || _userGroupsRoles.Count == 0)
-                return false;
             return _userGroups.Any(g => g.Id == group.Id);
         }
         public bool IsGroupModerator(Group group)
         {
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.GroupModerator || a.Role!.RoleValue == RoleValue.GroupAdmin || a.Role!.RoleValue == RoleValue.Admin)))
+                return true;
+            return false;
+        }
+        public bool IsGroupAdmin(Group group)
+        {
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role!.RoleValue == RoleValue.Admin || a.Role!.RoleValue == RoleValue.GroupAdmin)))
                 return true;
             return false;
         }

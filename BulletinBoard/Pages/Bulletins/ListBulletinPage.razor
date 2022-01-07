@@ -26,9 +26,15 @@
                 <MudText Typo="Typo.h4">@_group.Name</MudText>
             </CardHeaderContent>
         </MudCardHeader>
-        <MudCardContent>
+        <MudCardContent Class="pb-0">
             <MudText Typo="Typo.body2">@_group.Description</MudText>
         </MudCardContent>
+        @if (UserService.IsGroupAdmin(_group))
+        {
+        <MudCardActions Class="d-flex justify-end">
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"group/settings?groupid={_group.Id}")>Group settings</MudButton>
+        </MudCardActions>
+        }
     </MudCard>
 
 

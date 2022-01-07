@@ -72,7 +72,10 @@ namespace BulletinBoard.Services
         public async Task<List<Group>> GetPublicGroups()
         {
             using var _dbContext = _dbFactory.CreateDbContext();
-            return await _dbContext.Groups.Include(g=>g.Image).Where(g => g.Public == true).ToListAsync();
+            return await _dbContext.Groups
+                .Include(g=>g.Image)
+                .Where(g => g.Public == true)
+                .ToListAsync();
         }
         public async Task<bool> JoinToGroup(Group group,User user)
         {
@@ -102,6 +105,38 @@ namespace BulletinBoard.Services
             _dbContext.GroupUsers.Remove(result);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<User?>> GetAwaitingAcceptanceUsers(Group group)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.GroupUsers
+                .Include(gu => gu.User)
+                .Include(gu=>gu.Role)
+                .Where(gu => gu.GroupId == group.Id)
+                .Where(gu=>gu.Role!.RoleValue == RoleValue.GroupAwaitingAcceptance)
+                .Select(gu => gu.User)
+                .ToListAsync();
+        }
+        public async Task<List<GroupUser>> GetGroupUsers(Group _group)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.GroupUsers
+                .Include(gu => gu.User)
+                .Include(gu => gu.Role)
+                .Where(gu => gu.GroupId == _group.Id)
+                .Where(gu => gu.Role!.RoleValue != RoleValue.GroupAwaitingAcceptance)
+                .Where(gu => gu.Role!.RoleValue != RoleValue.GroupInvited)
+                .Select(gu => new GroupUser()
+                {
+                    Id = gu.Id,
+                    GroupId = _group.Id,
+                    Role = gu.Role,
+                    RoleId = gu.RoleId,
+                    User = gu.User,
+                    UserId = gu.UserId,
+                })
+                .ToListAsync();
         }
     }
 }

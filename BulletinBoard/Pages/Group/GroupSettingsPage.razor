@@ -1,0 +1,129 @@
+﻿@page "/group/settings"
+
+@using BulletinBoard.Services
+@using BulletinBoard.Data
+@using BulletinBoard.Model
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Components;
+@using BulletinBoard.Extensions;
+
+@inject IUserService UserService
+@inject IGroupService GroupService
+@inject IBulletinService BulletinService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@if (_group != null)
+{
+    <MudCard Outlined="true" Class="mb-3">
+
+        <MudCardMedia Image="/group-images/control-panel.svg" Height="200" Style="background-position:top" />
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4"><strong>@_group.Name</strong> - Group panel</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent Class="pt-0">
+            <MudText Typo="Typo.body2">Manage group users and settings</MudText>
+        </MudCardContent>
+    </MudCard>
+
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Users</MudText>
+                    @if (_groupUsers.Any())
+                    {
+                        <MudBadge Content=@_groupUsers.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Default" />
+                        </MudBadge>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.People" Class="d-flex ml-auto" Color="Color.Default" />
+                    }
+                </div>
+            </TitleContent>
+            <ChildContent>
+
+                <MudTable Items="@_groupUsers" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Joined</MudTh>
+                        <MudTh>Role</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Joined">@context.Joined</MudTd>
+                        <MudTd DataLabel="Role">
+                            <MudSelect T="RoleValue" Label="Role" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="@(RoleValue.GroupUser)" />
+                                <MudSelectItem Value="@(RoleValue.GroupModerator)" />
+                                <MudSelectItem Value="@(RoleValue.GroupAdmin)" />
+                            </MudSelect>
+                        </MudTd>
+                        <MudTd DataLabel="Action">asd</MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
+
+
+
+
+    </MudExpansionPanels>
+}
+else if (_pageState == State.ACCESS_BLOCKED)
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
+else
+{
+    <LoadingComponent></LoadingComponent>
+}
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? GroupId { get; set; }
+
+
+    private List<GroupUser> _groupUsers = new();
+    private string _searchString = "";
+    private Group? _group;
+    private State _pageState = State.LOADING;
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        if (UserService.IsGroupAdmin(new Group(GroupId ?? Consts.DefaultGroupId)))
+        {
+            _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Consts.DefaultGroupId));
+            _groupUsers = await GroupService.GetGroupUsers(_group!);
+        }
+        else
+        {
+            _pageState = State.ACCESS_BLOCKED;
+        }
+        StateHasChanged();
+    }
+
+    private bool FilterFunc1(GroupUser groupUser) => FilterFunc(groupUser, _searchString);
+
+    private bool FilterFunc(GroupUser groupUser, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (groupUser.User!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (groupUser.Role!.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}
