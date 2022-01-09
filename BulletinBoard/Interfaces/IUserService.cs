@@ -18,5 +18,6 @@ namespace BulletinBoard.Services
         List<Group?> GetUserPendingInvitationsGroups();
         bool PendingAcceptance(Group group);
         bool IsGroupAdmin(Group group);
+        Task<IEnumerable<User>> Search(string userName);
     }
 }

@@ -116,7 +116,14 @@ namespace BulletinBoard.Services
         }
 
 
-
+        public async Task<IEnumerable<User>> Search(string userName)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.Users
+                .Where(obj => EF.Functions.Like(obj.UserName, $"{userName}%"))
+                .Take(10)
+                .ToListAsync();
+        }
         public async Task Bookmark(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
@@ -139,7 +146,6 @@ namespace BulletinBoard.Services
 
             await _dbContext.SaveChangesAsync();
         }
-
         private void RolesValid()
         {
             if (_validatorService.CheckValidRoles(User!))

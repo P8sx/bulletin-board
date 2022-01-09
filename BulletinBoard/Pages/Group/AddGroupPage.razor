@@ -23,13 +23,14 @@
                 <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="Group.Description" For="@(() => Group.Description)" />
             </MudItem>
             <MudItem xs="12" Class="px-8">
-                <MudSwitch @bind-Checked="@Group.PublicListed" Label="Publicly listed" Color="Color.Primary">
-                    <MudText Class="pl-3"Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
-                </MudSwitch>
-                <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary">
-                    <MudText Class="pl-3"Typo="Typo.caption">No acceptance required</MudText>
-                </MudSwitch>
-
+                <MudContainer Class="px-0">
+                <MudSwitch @bind-Checked="@Group.PublicListed" Label="Listed" Color="Color.Primary" />
+                <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                </MudContainer>
+                <MudContainer Class="px-0">
+                <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary" />
+                <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
+                </MudContainer>
                 <MudText Typo="Typo.body2"></MudText>
             </MudItem>
             <MudItem xs="12" Class="d-flex flex-column px-8">

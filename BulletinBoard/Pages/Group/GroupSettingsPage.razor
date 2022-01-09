@@ -124,8 +124,65 @@ else if (_group != null)
             </ChildContent>
         </MudExpansionPanel>
 
-    </MudExpansionPanels>
+        @*Invited users panel*@
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_invited.Any()">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Invited</MudText>
+                    @if (_invited.Any())
+                    {
+                        <MudBadge Content=@_invited.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Color="Color.Default" />
+                        </MudBadge>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Class="d-flex ml-auto" Color="Color.Default" />
+                    }
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="@_invited" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Action">
+                            <MudButton Color="Color.Success" OnClick="@(async() => await AcceptUser(@context))">Accept</MudButton>
+                            <MudButton Color="Color.Error" OnClick="@(async() => await RejectUser(@context))">Reject</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
 
+        @*Search users panel*@
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Add new users</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Class="d-flex ml-auto" Color="Color.Default" />
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudAutocomplete AutoFocus="true" @ref="_searchAutocomplete" T="User" Placeholder="Search" SearchFunc="Search" ValueChanged="OnSearchResult" Class="docs-search-bar mx-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search">
+                    <ItemTemplate Context="result">
+                        <MudText>@result.UserName</MudText>
+                    </ItemTemplate>
+                </MudAutocomplete>
+            </ChildContent>
+        </MudExpansionPanel>
+
+
+    </MudExpansionPanels>
 }
 else
 {
@@ -141,11 +198,13 @@ else
 
     private List<GroupUser> _groupUsers = new();
     private List<GroupUser> _pendingApproval = new();
+    private List<GroupUser> _invited = new();
 
 
     private string _searchString = "";
     private Group? _group;
     private State _pageState = State.LOADING;
+    private MudAutocomplete<User> _searchAutocomplete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,6 +238,7 @@ else
             return true;
         return false;
     }
+
     private async Task RoleChanged(GroupUser groupUser)
     {
         var result = await GroupService.ChangeRole(groupUser.Group!, groupUser.User!, groupUser.Role);
@@ -187,6 +247,7 @@ else
         else
             Snackbar.Add($"Role changed successfully", Severity.Success);
     }
+
     private async Task RemoveUser(GroupUser groupUser)
     {
         var parameters = new DialogParameters();
@@ -226,8 +287,8 @@ else
         }
         else
             Snackbar.Add($"There was an error accepting '{groupUser.User!.UserName}' user", Severity.Error);
-
     }
+
     private async Task RejectUser(GroupUser groupUser)
     {
         var result = await GroupService.RejectUser(groupUser.Group!, groupUser.User!);
@@ -239,5 +300,14 @@ else
         }
         else
             Snackbar.Add($"There was an error rejecting '{groupUser.User!.UserName}' user", Severity.Error);
+    }
+
+    private async void OnSearchResult(User entry)
+    {
+        await _searchAutocomplete.Clear();
+    }
+    private Task<IEnumerable<User>> Search(string userName)
+    {
+        return UserService.Search(userName);
     }
 }
