@@ -23,8 +23,14 @@
                 <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="Group.Description" For="@(() => Group.Description)" />
             </MudItem>
             <MudItem xs="12" Class="px-8">
-                <MudSwitch @bind-Checked="@Group.Public" Color="Color.Primary">Public</MudSwitch>
-                <MudText Typo="Typo.body2">If checked your group will be available to the public</MudText>
+                <MudSwitch @bind-Checked="@Group.PublicListed" Label="Publicly listed" Color="Color.Primary">
+                    <MudText Class="pl-3"Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                </MudSwitch>
+                <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary">
+                    <MudText Class="pl-3"Typo="Typo.caption">No acceptance required</MudText>
+                </MudSwitch>
+
+                <MudText Typo="Typo.body2"></MudText>
             </MudItem>
             <MudItem xs="12" Class="d-flex flex-column px-8">
                 <MudText Typo="Typo.h5">Group image</MudText>
@@ -59,7 +65,7 @@
     private Tuple<IBrowserFile, string>? _file = null;
     protected override async Task OnInitializedAsync()
     {
-        Group.Public = false;
+        Group.PublicListed = false;
         await base.OnInitializedAsync();
     }
     private async Task ValidFormSubmitted(EditContext editContext)
@@ -73,7 +79,7 @@
         }
         else
             return;
-        var result = await GroupService.AddGroup(Group);
+        var result = await GroupService.AddGroup(Group, UserService.User!);
         if (!result)
         {
             _blocked = false;
@@ -81,8 +87,6 @@
             Snackbar.Add($"Group has NOT been created, contact system administrator", Severity.Error);
             return;
         }
-        var groupAdmin = await GroupService.AddGroupAdmin(Group, UserService.User!);
-
         Stream stream = _file.Item1.OpenReadStream(Consts.MaxFileSize);
         var folder = $"{env.WebRootPath}";
         if (!Directory.Exists(folder += $"/{Consts.DefaultGroupFolder}")) Directory.CreateDirectory(folder);

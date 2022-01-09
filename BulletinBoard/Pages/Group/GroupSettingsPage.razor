@@ -15,7 +15,12 @@
 @inject NavigationManager NavigationManager
 
 
-@if (_group != null)
+
+@if (_pageState == State.ACCESS_BLOCKED)
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
+else if (_group != null)
 {
     <MudCard Outlined="true" Class="mb-3">
 
@@ -108,8 +113,8 @@
                     <RowTemplate>
                         <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
                         <MudTd DataLabel="Action">
-                            <MudButton Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Accept</MudButton>
-                            <MudButton Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Reject</MudButton>
+                            <MudButton Color="Color.Success" OnClick="@(async() => await AcceptUser(@context))">Accept</MudButton>
+                            <MudButton Color="Color.Error" OnClick="@(async() => await RejectUser(@context))">Reject</MudButton>
                         </MudTd>
                     </RowTemplate>
                     <PagerContent>
@@ -121,10 +126,6 @@
 
     </MudExpansionPanels>
 
-}
-else if (_pageState == State.ACCESS_BLOCKED)
-{
-    <AccessBlockedComponent></AccessBlockedComponent>
 }
 else
 {
@@ -159,6 +160,7 @@ else
         {
             _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Consts.DefaultGroupId));
             _groupUsers = await GroupService.GetGroupUsers(_group!);
+            _pendingApproval = await GroupService.GetPendingApprovalUsers(_group!);
         }
         else
         {
@@ -179,7 +181,7 @@ else
     }
     private async Task RoleChanged(GroupUser groupUser)
     {
-        var result = await GroupService.SetGroupUser(groupUser.Group!, groupUser.User!, groupUser.Role);
+        var result = await GroupService.ChangeRole(groupUser.Group!, groupUser.User!, groupUser.Role);
         if (!result)
             Snackbar.Add($"There was an error changing role", Severity.Error);
         else
@@ -199,7 +201,7 @@ else
 
         if (!result.Cancelled)
         {
-            var removeUserResult = await GroupService.RemoveGroupUser(groupUser);
+            var removeUserResult = await GroupService.RemoveGroupUser(groupUser.Group!, groupUser.User!);
             if (!removeUserResult)
             {
                 Snackbar.Add($"There was an error removing '{groupUser.User!.UserName}' user", Severity.Error);
@@ -209,5 +211,33 @@ else
             Snackbar.Add($"User '{groupUser.User!.UserName}' deleted successfully", Severity.Success);
             StateHasChanged();
         }
+    }
+
+    private async Task AcceptUser(GroupUser groupUser)
+    {
+        var result = await GroupService.AcceptUser(groupUser.Group!, groupUser.User!);
+        if (result)
+        {
+            Snackbar.Add($"User '{groupUser.User!.UserName}' accepted", Severity.Success);
+            _pendingApproval.Remove(groupUser);
+            groupUser.Role = GroupRole.User;
+            _groupUsers.Add(groupUser);
+            StateHasChanged();
+        }
+        else
+            Snackbar.Add($"There was an error accepting '{groupUser.User!.UserName}' user", Severity.Error);
+
+    }
+    private async Task RejectUser(GroupUser groupUser)
+    {
+        var result = await GroupService.RejectUser(groupUser.Group!, groupUser.User!);
+        if (result)
+        {
+            Snackbar.Add($"User '{groupUser.User!.UserName}' rejected", Severity.Warning);
+            _pendingApproval.Remove(groupUser);
+            StateHasChanged();
+        }
+        else
+            Snackbar.Add($"There was an error rejecting '{groupUser.User!.UserName}' user", Severity.Error);
     }
 }

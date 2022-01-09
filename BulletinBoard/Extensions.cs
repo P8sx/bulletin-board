@@ -57,7 +57,7 @@ namespace BulletinBoard.Extensions
                 Id = Consts.DefaultGroupId,
                 Name = "Main",
                 Description = "Main application group",
-                Public = true,
+                PublicListed = true,
                 Image = img
             };   // Group 0 by default is main group (can be accesed by anyone)
 

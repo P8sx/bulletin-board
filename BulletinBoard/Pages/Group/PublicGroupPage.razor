@@ -4,6 +4,7 @@
 
 @using BulletinBoard.Services
 @using BulletinBoard.Model
+@using BulletinBoard.Extensions
 @using GEmojiSharp.Blazor
 
 @inject ISnackbar Snackbar
@@ -24,6 +25,16 @@
     </MudCardContent>
 </MudCard>
 
+@if (_pageState == State.ACCESS_BLOCKED)
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
+else if (_pageState == State.LOADING)
+{
+    <LoadingComponent></LoadingComponent>
+}
+else
+{
 <MudCard Outlined="true" Class="mb-3">
     <MudCardHeader>
         <CardHeaderContent>
@@ -82,14 +93,17 @@
         </MudCardContent>
     </MudCardContent>
 </MudCard>
-
+    
+}
 @code {
     public List<Group> PublicGroups = new();
+    private State _pageState = State.LOADING;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         await UpdateGroupsInfo();
+        _pageState = State.SUCCESS;
     }
     private async Task UpdateGroupsInfo()
     {

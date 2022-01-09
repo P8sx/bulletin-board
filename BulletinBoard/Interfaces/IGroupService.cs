@@ -4,15 +4,16 @@ namespace BulletinBoard.Services
 {
     public interface IGroupService
     {
-        Task<bool> AddGroup(Group group);
-        Task<bool> AddGroupAdmin(Group group, User user);
+        Task<bool> AddGroup(Group group, User user);
         Task<bool> CancelJoinToGroup(Group group, User user);
-        Task<List<User?>> GetPendingAcceptanceUsers(Group group);
+        Task<List<GroupUser>> GetPendingApprovalUsers(Group group);
         Task<Group?> GetGroupInfoAsyncCached(Group group);
         Task<List<GroupUser>> GetGroupUsers(Group group);
         Task<List<Group>> GetPublicGroups();
         Task<bool> JoinToGroup(Group group, User user);
-        Task<bool> RemoveGroupUser(GroupUser groupUser);
-        Task<bool> SetGroupUser(Group group, User user, GroupRole role);
+        Task<bool> RemoveGroupUser(Group group, User user);
+        Task<bool> ChangeRole(Group group, User user, GroupRole role);
+        Task<bool> AcceptUser(Group group, User user);
+        Task<bool> RejectUser(Group group, User user);
     }
 }
