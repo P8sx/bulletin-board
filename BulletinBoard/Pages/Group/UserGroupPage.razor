@@ -24,6 +24,7 @@
 </MudCard>
 
 <MudExpansionPanels MultiExpansion="true">
+    @*User groups panel*@
     <MudExpansionPanel IsInitiallyExpanded=true HideIcon="true">
         <TitleContent>
             <div class="d-flex">
@@ -80,15 +81,14 @@
                 <MudText Typo="Typo.body2" Align="Align.Center">Sorry but you aren't in any group</MudText>
             }
         </ChildContent>
-    </MudExpansionPanel>
+    </MudExpansionPanel> 
 
-    
-
-    <MudExpansionPanel HideIcon="true">
+    @*Invitations panel*@
+    <MudExpansionPanel HideIcon="true" Disabled="!_userAwaitingInvitationsGroups.Any()">
          <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Invitations</MudText>
-                @if (_userAwaitingAcceptanceGroups.Any())
+                @if (_userAwaitingInvitationsGroups.Any())
                 {
                     <MudBadge Content=@_userAwaitingInvitationsGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                         <MudIcon Icon="@Icons.Filled.InsertInvitation" Color="Color.Default" />
@@ -141,8 +141,8 @@
         </ChildContent>
     </MudExpansionPanel>
 
-
-    <MudExpansionPanel HideIcon="true">
+    @*Awaiting acceptance panel*@
+    <MudExpansionPanel HideIcon="true" Disabled="!_userAwaitingAcceptanceGroups.Any()">
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Awaiting acceptance</MudText>

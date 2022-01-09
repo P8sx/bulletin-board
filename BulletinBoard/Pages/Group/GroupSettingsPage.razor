@@ -11,7 +11,10 @@
 @inject IGroupService GroupService
 @inject IBulletinService BulletinService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
+
+
 @if (_group != null)
 {
     <MudCard Outlined="true" Class="mb-3">
@@ -28,6 +31,7 @@
     </MudCard>
 
     <MudExpansionPanels MultiExpansion="true">
+        @*User panel*@
         <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
             <TitleContent>
                 <div class="d-flex">
@@ -66,7 +70,7 @@
                                 <MudSelectItem Value="@(GroupRole.Admin)" />
                             </MudSelect>
                         </MudTd>
-                        <MudTd DataLabel="Action">asd</MudTd>
+                        <MudTd DataLabel="Action"><MudButton Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Delete</MudButton></MudTd>
                     </RowTemplate>
                     <PagerContent>
                         <MudTablePager />
@@ -75,10 +79,48 @@
             </ChildContent>
         </MudExpansionPanel>
 
-
-
+        @*Pending approval panel*@
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_pendingApproval.Any()">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Pending approval</MudText>
+                    @if (_pendingApproval.Any())
+                    {
+                        <MudBadge Content=@_pendingApproval.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
+                        </MudBadge>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="d-flex ml-auto" Color="Color.Default" />
+                    }
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="@_pendingApproval" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Action">
+                            <MudButton Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Accept</MudButton>
+                            <MudButton Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Reject</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
 
     </MudExpansionPanels>
+
 }
 else if (_pageState == State.ACCESS_BLOCKED)
 {
@@ -97,6 +139,9 @@ else
 
 
     private List<GroupUser> _groupUsers = new();
+    private List<GroupUser> _pendingApproval = new();
+
+
     private string _searchString = "";
     private Group? _group;
     private State _pageState = State.LOADING;
@@ -135,9 +180,34 @@ else
     private async Task RoleChanged(GroupUser groupUser)
     {
         var result = await GroupService.SetGroupUser(groupUser.Group!, groupUser.User!, groupUser.Role);
-        if(!result)
+        if (!result)
             Snackbar.Add($"There was an error changing role", Severity.Error);
         else
             Snackbar.Add($"Role changed successfully", Severity.Success);
+    }
+    private async Task RemoveUser(GroupUser groupUser)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", $"Do you really want to delete '{groupUser.User!.UserName}' user?");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<ConfirmationDialogTemplate>("Delete", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var removeUserResult = await GroupService.RemoveGroupUser(groupUser);
+            if (!removeUserResult)
+            {
+                Snackbar.Add($"There was an error removing '{groupUser.User!.UserName}' user", Severity.Error);
+                return;
+            }
+            _groupUsers.Remove(groupUser);
+            Snackbar.Add($"User '{groupUser.User!.UserName}' deleted successfully", Severity.Success);
+            StateHasChanged();
+        }
     }
 }

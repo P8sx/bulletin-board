@@ -5,17 +5,15 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace BulletinBoard.Services
 {
-    public class GroupService : IGroupService
+    public class GroupService : BaseService, IGroupService
     {
 
         private readonly ILogger _logger;
-        private readonly IMemoryCache _memoryCache;
-        private readonly IDbContextFactory<ApplicationDbContext> _dbFactory;
-        public GroupService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache)
+        private readonly IValidatorService _validatorService;
+
+        public GroupService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<ValidatorService> logger, IMemoryCache memoryCache, IValidatorService validatorService) : base(dbFactory, logger, memoryCache)
         {
-            _dbFactory = dbFactory;
-            _logger = logger;
-            _memoryCache = memoryCache;
+            _validatorService = validatorService;
         }
 
         public async Task<Group?> GetGroupInfoAsyncCached(Group group)
@@ -46,11 +44,12 @@ namespace BulletinBoard.Services
                 };
                 await _dbContext.GroupUsers.AddAsync(groupUser);
                 await _dbContext.SaveChangesAsync();
+                _validatorService.InvalidateUserRoles(user);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
             }
             return false;
         }
@@ -64,7 +63,7 @@ namespace BulletinBoard.Services
                 return true;
             }catch(Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
             }         
             return false;
         }
@@ -90,6 +89,7 @@ namespace BulletinBoard.Services
             var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, Role = GroupRole.AwaitingAcceptance };
             await _dbContext.GroupUsers.AddAsync(groupUser);
             await _dbContext.SaveChangesAsync();
+            _validatorService.InvalidateUserRoles(user);
             return true;
         }
         public async Task<bool> CancelJoinToGroup(Group group, User user)
@@ -103,6 +103,7 @@ namespace BulletinBoard.Services
             if (result == default) return false;
             _dbContext.GroupUsers.Remove(result);
             await _dbContext.SaveChangesAsync();
+            _validatorService.InvalidateUserRoles(user);
             return true;
         }
         public async Task<bool> SetGroupUser(Group group, User user, GroupRole role)
@@ -124,17 +125,34 @@ namespace BulletinBoard.Services
                     };
                     await _dbContext.GroupUsers.AddAsync(groupUser);
                     await _dbContext.SaveChangesAsync();
+                    _validatorService.InvalidateUserRoles(user);
                     return true;
                 }
                 result.Role = role;
                 _dbContext.GroupUsers.Update(result);
                 await _dbContext.SaveChangesAsync();
+                _validatorService.InvalidateUserRoles(user);
                 return true;
             }catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
                 return false;
             }
+        }
+        public async Task<bool> RemoveGroupUser(GroupUser groupUser)
+        {
+            try
+            {
+                using var _dbContext = _dbFactory.CreateDbContext();
+                _dbContext.GroupUsers.Remove(groupUser);
+                await _dbContext.SaveChangesAsync();
+            }catch(Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return false;
+            }
+            _validatorService.InvalidateUserRoles(groupUser.User!);
+            return true;
         }
 
 

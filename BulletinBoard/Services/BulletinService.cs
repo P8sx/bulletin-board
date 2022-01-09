@@ -336,7 +336,7 @@ namespace BulletinBoard.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
                 return false;
             }
             return true;
@@ -372,7 +372,7 @@ namespace BulletinBoard.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
                 return false;
             }
             

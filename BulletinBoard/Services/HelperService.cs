@@ -8,7 +8,7 @@ namespace BulletinBoard.Services
 {
     public class HelperService : BaseService, IHelperService
     {
-        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
+        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
         {
 
         }

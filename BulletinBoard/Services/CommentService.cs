@@ -8,7 +8,7 @@ namespace BulletinBoard.Services
     public class CommentService : BaseService, ICommentService
     {
 
-        public CommentService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
+        public CommentService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<CommentService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
         {
 
         }
@@ -22,7 +22,7 @@ namespace BulletinBoard.Services
                 return true;
             }catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex.Message, ex);
                 return false;
             }
                   

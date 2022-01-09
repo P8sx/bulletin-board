@@ -9,6 +9,7 @@ namespace BulletinBoard.Services
     public class UserService : BaseService, IUserService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IValidatorService _validatorService;
 
         public User? User { get; private set; }
         private List<GroupUser> _userGroupsRoles = new();
@@ -16,9 +17,10 @@ namespace BulletinBoard.Services
         private List<Group?> _userAwaitingAcceptanceGroups = new();
         private List<Group?> _userAwaitingInvitationsGroups = new();
 
-        public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor) : base(dbFactory, logger, memoryCache)
+        public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<UserService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor, IValidatorService validatorService) : base(dbFactory, logger, memoryCache)
         {
             _httpContextAccessor = httpContextAccessor;
+            _validatorService = validatorService;
             User = GetUser();
             UpdateUserGroups();
         }
@@ -76,24 +78,28 @@ namespace BulletinBoard.Services
         // User roles
         public bool IsInGroup(Group group)
         {
+            RolesValid();
             if (group.Id == Consts.DefaultGroupId)
                 return true;
             return _userGroups.Any(g => g.Id == group.Id);
         }
         public bool IsGroupModerator(Group group)
         {
+            RolesValid();
             if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Moderator || a.Role == GroupRole.Admin)))
                 return true;
             return false;
         }
         public bool IsGroupAdmin(Group group)
         {
+            RolesValid();
             if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Admin)))
                 return true;
             return false;
         }
         public bool IsBulletinOwner(Bulletin bulletin)
         {
+            RolesValid();
             if (User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User!.Id))
                 return true;
             return false;
@@ -132,6 +138,12 @@ namespace BulletinBoard.Services
                 _dbContext.BulletinsVotes.Remove(exist);
 
             await _dbContext.SaveChangesAsync();
+        }
+
+        private void RolesValid()
+        {
+            if (_validatorService.CheckValidRoles(User!))
+                UpdateUserGroups();
         }
     }
 }
