@@ -84,13 +84,13 @@
     </MudExpansionPanel> 
 
     @*Invitations panel*@
-    <MudExpansionPanel HideIcon="true" Disabled="!_userAwaitingInvitationsGroups.Any()">
+    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingInvitationsGroups.Any()">
          <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Invitations</MudText>
-                @if (_userAwaitingInvitationsGroups.Any())
+                @if (_userPendingInvitationsGroups.Any())
                 {
-                    <MudBadge Content=@_userAwaitingInvitationsGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                    <MudBadge Content=@_userPendingInvitationsGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                         <MudIcon Icon="@Icons.Filled.InsertInvitation" Color="Color.Default" />
                     </MudBadge>
                 }
@@ -101,10 +101,10 @@
             </div>
         </TitleContent>
         <ChildContent>
-                @if (_userAwaitingInvitationsGroups.Any())
+                @if (_userPendingInvitationsGroups.Any())
                 {
                      <MudGrid>
-                    @foreach (var group in _userAwaitingInvitationsGroups)
+                    @foreach (var group in _userPendingInvitationsGroups)
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
@@ -141,14 +141,14 @@
         </ChildContent>
     </MudExpansionPanel>
 
-    @*Awaiting acceptance panel*@
-    <MudExpansionPanel HideIcon="true" Disabled="!_userAwaitingAcceptanceGroups.Any()">
+    @*Pending acceptance panel*@
+    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingAcceptanceGroups.Any()">
         <TitleContent>
             <div class="d-flex">
-                <MudText Typo="Typo.h5">Awaiting acceptance</MudText>
-                @if (_userAwaitingAcceptanceGroups.Any())
+                <MudText Typo="Typo.h5">Pending acceptance</MudText>
+                @if (_userPendingAcceptanceGroups.Any())
                 {
-                    <MudBadge Content=@_userAwaitingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                    <MudBadge Content=@_userPendingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                         <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
                     </MudBadge>
                 }
@@ -159,10 +159,10 @@
             </div>
         </TitleContent>
         <ChildContent>
-                @if (_userAwaitingAcceptanceGroups.Any())
+                @if (_userPendingAcceptanceGroups.Any())
                 {
                      <MudGrid>
-                    @foreach (var group in _userAwaitingAcceptanceGroups)
+                    @foreach (var group in _userPendingAcceptanceGroups)
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
@@ -203,8 +203,8 @@
 
 @code {
     private List<Group> _userGroups = new();
-    private List<Group> _userAwaitingAcceptanceGroups = new();
-    private List<Group> _userAwaitingInvitationsGroups = new();
+    private List<Group> _userPendingAcceptanceGroups = new();
+    private List<Group> _userPendingInvitationsGroups = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -214,8 +214,8 @@
     private void UpdateGroupsInfo()
     {
         _userGroups = UserService.GetUserGroups()!;
-        _userAwaitingAcceptanceGroups = UserService.GetUserAwaitingAcceptanceGroups()!;
-        _userAwaitingInvitationsGroups = UserService.GetUserAwaitingInvitationsGroups()!;
+        _userPendingAcceptanceGroups = UserService.GetUserPendingAcceptanceGroups()!;
+        _userPendingInvitationsGroups = UserService.GetUserPendingInvitationsGroups()!;
     }
     private async Task CancelJoin(Group group)
     {

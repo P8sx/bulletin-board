@@ -9,7 +9,7 @@ namespace BulletinBoard.Model
         Moderator = 2,
         Admin = 3,
         Invited = 4,
-        AwaitingAcceptance = 5,
+        PendingAcceptance = 5,
     }
     public class GroupUser
     {

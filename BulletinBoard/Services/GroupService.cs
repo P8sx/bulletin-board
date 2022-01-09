@@ -83,10 +83,10 @@ namespace BulletinBoard.Services
             var result = await _dbContext.GroupUsers
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu => gu.Role == GroupRole.AwaitingAcceptance)
+                .Where(gu => gu.Role == GroupRole.PendingAcceptance)
                 .FirstOrDefaultAsync();
             if (result != default) return false;
-            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, Role = GroupRole.AwaitingAcceptance };
+            var groupUser = new GroupUser() { GroupId = group.Id, UserId = user.Id, Role = GroupRole.PendingAcceptance };
             await _dbContext.GroupUsers.AddAsync(groupUser);
             await _dbContext.SaveChangesAsync();
             _validatorService.InvalidateUserRoles(user);
@@ -98,7 +98,7 @@ namespace BulletinBoard.Services
             var result = await _dbContext.GroupUsers
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu => gu.Role == GroupRole.AwaitingAcceptance)
+                .Where(gu => gu.Role == GroupRole.PendingAcceptance)
                 .FirstOrDefaultAsync();
             if (result == default) return false;
             _dbContext.GroupUsers.Remove(result);
@@ -156,14 +156,14 @@ namespace BulletinBoard.Services
         }
 
 
-        public async Task<List<User?>> GetAwaitingAcceptanceUsers(Group group)
+        public async Task<List<User?>> GetPendingAcceptanceUsers(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.GroupUsers
                 .Include(gu => gu.User)
                 .Include(gu => gu.Group)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu=>gu.Role == GroupRole.AwaitingAcceptance)
+                .Where(gu=>gu.Role == GroupRole.PendingAcceptance)
                 .Select(gu => gu.User)
                 .ToListAsync();
         }
@@ -174,7 +174,7 @@ namespace BulletinBoard.Services
                 .Include(gu => gu.User)
                 .Include(gu=>gu.Group)
                 .Where(gu => gu.GroupId == _group.Id)
-                .Where(gu => gu.Role != GroupRole.AwaitingAcceptance)
+                .Where(gu => gu.Role != GroupRole.PendingAcceptance)
                 .Where(gu => gu.Role != GroupRole.Invited)
                 .Select(gu => new GroupUser()
                 {

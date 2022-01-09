@@ -61,9 +61,9 @@
                                     {
                                         <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
                                     }
-                                    else if (AwaitingAcceptance(group))
+                                    else if (PendingAcceptance(group))
                                     {
-                                        <MudButton Variant="Variant.Text" Disabled=true Color="Color.Primary">Awaiting acceptance</MudButton>
+                                        <MudButton Variant="Variant.Text" Disabled=true Color="Color.Primary">Pending acceptance</MudButton>
                                     }
                                     else
                                     {
@@ -104,8 +104,8 @@
         StateHasChanged();
     }
 
-    private bool AwaitingAcceptance(Group group)
+    private bool PendingAcceptance(Group group)
     {
-        return UserService.AwaitingAcceptance(group);
+        return UserService.PendingAcceptance(group);
     }
 }

@@ -14,8 +14,8 @@ namespace BulletinBoard.Services
         public User? User { get; private set; }
         private List<GroupUser> _userGroupsRoles = new();
         private List<Group?> _userGroups = new();
-        private List<Group?> _userAwaitingAcceptanceGroups = new();
-        private List<Group?> _userAwaitingInvitationsGroups = new();
+        private List<Group?> _userPendingAcceptanceGroups = new();
+        private List<Group?> _userPendingInvitationsGroups = new();
 
         public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<UserService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor, IValidatorService validatorService) : base(dbFactory, logger, memoryCache)
         {
@@ -37,14 +37,14 @@ namespace BulletinBoard.Services
                 .ToList();
             _userGroups = _userGroupsRoles
                 .Where(g => g.Role != GroupRole.Invited)
-                .Where(g => g.Role != GroupRole.AwaitingAcceptance)
+                .Where(g => g.Role != GroupRole.PendingAcceptance)
                 .Select(u => u.Group).Distinct()
                 .ToList();
-            _userAwaitingAcceptanceGroups = _userGroupsRoles
-                .Where(g => g.Role == GroupRole.AwaitingAcceptance)
+            _userPendingAcceptanceGroups = _userGroupsRoles
+                .Where(g => g.Role == GroupRole.PendingAcceptance)
                 .Select(u => u.Group).Distinct()
                 .ToList();
-            _userAwaitingInvitationsGroups = _userGroupsRoles
+            _userPendingInvitationsGroups = _userGroupsRoles
                 .Where(g => g.Role == GroupRole.Invited)
                 .Select(u => u.Group).Distinct()
                 .ToList();
@@ -72,8 +72,8 @@ namespace BulletinBoard.Services
 
         // User groups
         public List<Group?> GetUserGroups() => _userGroups;
-        public List<Group?> GetUserAwaitingAcceptanceGroups() => _userAwaitingAcceptanceGroups;
-        public List<Group?> GetUserAwaitingInvitationsGroups() => _userAwaitingInvitationsGroups;
+        public List<Group?> GetUserPendingAcceptanceGroups() => _userPendingAcceptanceGroups;
+        public List<Group?> GetUserPendingInvitationsGroups() => _userPendingInvitationsGroups;
 
         // User roles
         public bool IsInGroup(Group group)
@@ -110,9 +110,9 @@ namespace BulletinBoard.Services
         {
             return IsInGroup(group) && (IsBulletinOwner(bulletin) || IsGroupModerator(group));
         }
-        public bool AwaitingAcceptance(Group group)
+        public bool PendingAcceptance(Group group)
         {
-            return _userAwaitingAcceptanceGroups.Any(g=>g.Id == group.Id);
+            return _userPendingAcceptanceGroups.Any(g=>g.Id == group.Id);
         }
 
 

@@ -14,9 +14,9 @@ namespace BulletinBoard.Services
         bool IsBulletinOwner(Bulletin bulletin);
         bool CanEditBulletin(Group group, Bulletin bulletin);
         List<Group?> GetUserGroups();
-        List<Group?> GetUserAwaitingAcceptanceGroups();
-        List<Group?> GetUserAwaitingInvitationsGroups();
-        bool AwaitingAcceptance(Group group);
+        List<Group?> GetUserPendingAcceptanceGroups();
+        List<Group?> GetUserPendingInvitationsGroups();
+        bool PendingAcceptance(Group group);
         bool IsGroupAdmin(Group group);
     }
 }
