@@ -25,7 +25,7 @@ else if (_group != null)
 {
     <MudCard Outlined="true" Class="mb-3">
 
-        <MudCardMedia Image="/group-images/control-panel.svg" Height="200" Style="background-position:top" />
+        <MudCardMedia Image="/control_panel.svg" Height="200" Style="background-position:top" />
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h4"><strong>@_group.Name</strong> - Group panel</MudText>
@@ -179,9 +179,33 @@ else if (_group != null)
                         <MudText>@result.UserName</MudText>
                     </ItemTemplate>
                 </MudAutocomplete>
+                <MudCard Elevation="0" Class="mx-3 mt-6 d-flex">
+                    @if (_searchResultUser != null)
+                    {
+                        <MudAvatar Image=@Avatar(_searchResultUser.Image)></MudAvatar>
+                        <MudText Class="pl-3 mr-auto">@_searchResultUser.UserName</MudText>
+                        @if(_searchResultGroupUser == null)
+                        {
+                            <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => await InviteUser(@_searchResultUser!))">Invite to group</MudButton>
+                        }
+                        else if (_searchResultGroupUser.Role == GroupRole.PendingAcceptance)
+                        {
+                            <MudButton Size="Size.Small" Color="Color.Success" Variant="Variant.Filled" OnClick="@(async() => await AcceptUser(@_searchResultGroupUser!))">Accept invite</MudButton>                          
+                            <MudButton Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => await RejectUser(@_searchResultGroupUser!))">Reject invite</MudButton>                          
+                        }
+                        else if (_searchResultGroupUser.Role == GroupRole.Invited)
+                        {
+                            <MudButton Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => await CancelInviteUser(@_searchResultGroupUser!))">Cancel invite</MudButton>                          
+                        }
+                        else
+                        {
+                            <MudButton Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => await RemoveUser(@_searchResultGroupUser!))">Remove user</MudButton>                          
+                        }
+                    }
+                </MudCard>
+
             </ChildContent>
         </MudExpansionPanel>
-
 
     </MudExpansionPanels>
 }
@@ -205,7 +229,11 @@ else
     private string _searchString = "";
     private Group? _group;
     private State _pageState = State.LOADING;
-    private MudAutocomplete<User> _searchAutocomplete;
+    private MudAutocomplete<User> _searchAutocomplete = new();
+
+    private User? _searchResultUser;
+    private GroupUser? _searchResultGroupUser;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -302,9 +330,18 @@ else
         else
             Snackbar.Add($"There was an error rejecting '{groupUser.User!.UserName}' user", Severity.Error);
     }
+    private async Task InviteUser(User user){
+
+    }
+    private async Task CancelInviteUser(GroupUser groupUser){
+
+    }
 
     private async void OnSearchResult(User entry)
     {
+        _searchResultUser = await UserService.GetUserInfoAsync(entry);
+        _searchResultGroupUser = await GroupService.GetGroupUserAsync(_group!,entry);
+        StateHasChanged();
         await _searchAutocomplete.Clear();
     }
     private Task<IEnumerable<User>> Search(string userName)

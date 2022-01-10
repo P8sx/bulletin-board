@@ -42,13 +42,13 @@ namespace BulletinBoard.Services
                 .Where(gu=>gu.Role == GroupRole.PendingAcceptance)
                 .ToListAsync();
         }
-        public async Task<List<GroupUser>> GetGroupUsers(Group _group)
+        public async Task<List<GroupUser>> GetGroupUsers(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.GroupUsers
                 .Include(gu => gu.User)
                 .Include(gu=>gu.Group)
-                .Where(gu => gu.GroupId == _group.Id)
+                .Where(gu => gu.GroupId == group.Id)
                 .Where(gu => gu.Role != GroupRole.PendingAcceptance)
                 .Where(gu => gu.Role != GroupRole.Invited)
                 .Select(gu => new GroupUser()
@@ -62,7 +62,14 @@ namespace BulletinBoard.Services
                 })
                 .ToListAsync();
         }
-
+        public async Task<GroupUser?> GetGroupUserAsync(Group group, User user)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.GroupUsers
+                .Where(gu => gu.UserId == user.Id)
+                .Where(gu => gu.GroupId == group.Id)
+                .FirstOrDefaultAsync(); 
+        }
 
         public async Task<bool> AddGroup(Group group, User user)
         {

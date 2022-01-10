@@ -19,5 +19,6 @@ namespace BulletinBoard.Services
         bool PendingAcceptance(Group group);
         bool IsGroupAdmin(Group group);
         Task<IEnumerable<User>> Search(string userName);
+        Task<User?> GetUserInfoAsync(User user);
     }
 }

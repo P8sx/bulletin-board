@@ -15,5 +15,6 @@ namespace BulletinBoard.Services
         Task<bool> ChangeRole(Group group, User user, GroupRole role);
         Task<bool> AcceptUser(Group group, User user);
         Task<bool> RejectUser(Group group, User user);
+        Task<GroupUser?> GetGroupUserAsync(Group group, User user);
     }
 }

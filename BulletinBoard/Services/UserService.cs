@@ -121,6 +121,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Users
                 .Where(obj => EF.Functions.Like(obj.UserName, $"{userName}%"))
+                .Where(u=>u.Id != User!.Id)
                 .Take(10)
                 .ToListAsync();
         }
@@ -145,6 +146,11 @@ namespace BulletinBoard.Services
                 _dbContext.BulletinsVotes.Remove(exist);
 
             await _dbContext.SaveChangesAsync();
+        }
+        public async Task<User?> GetUserInfoAsync(User user)
+        {
+            using var _dbContext = _dbFactory.CreateDbContext();
+            return await _dbContext.Users.Include(u => u.Image).Where(u => u.Id == user.Id).FirstOrDefaultAsync();
         }
         private void RolesValid()
         {
