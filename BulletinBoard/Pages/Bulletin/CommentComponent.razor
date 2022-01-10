@@ -1,11 +1,12 @@
 ﻿@using BulletinBoard.Model
 @using GEmojiSharp.Blazor
-@using BulletinBoard.Extensions
+@using static BulletinBoard.Extensions.ExtensionsMethod
+
 
 <MudCard Outlined="true" Class="mb-3">
 <MudCardHeader>
     <CardHeaderAvatar>
-        <MudAvatar Image=@(Comment.User!.Image==null?Consts.DefaultAvatarPath:Comment.User.Image.GetUserImagePath()) />
+        <MudAvatar Image=@(Avatar(Comment.User!.Image)) />
     </CardHeaderAvatar>
     <CardHeaderContent>
         <MudText Typo="Typo.body1">@Comment.User!.UserName</MudText>

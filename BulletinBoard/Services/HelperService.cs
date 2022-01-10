@@ -1,5 +1,5 @@
 ﻿using BulletinBoard.Data;
-using BulletinBoard.Extensions;
+using static BulletinBoard.Extensions.ExtensionsMethod;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;

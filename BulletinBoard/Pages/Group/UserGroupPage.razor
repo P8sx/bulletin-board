@@ -4,6 +4,9 @@
 @using BulletinBoard.Services
 @using BulletinBoard.Model
 @using GEmojiSharp.Blazor
+@using static BulletinBoard.Extensions.ExtensionsMethod
+
+
 
 @inject ISnackbar Snackbar
 @inject IUserService UserService
@@ -50,7 +53,7 @@
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
-                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
                                         <MudText Typo="Typo.h5">@group.Name</MudText>
@@ -108,7 +111,7 @@
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
-                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
                                         <MudText Typo="Typo.h5">@group.Name</MudText>
@@ -166,7 +169,7 @@
                     {
                         <MudItem xs="6" md="4">
                             <MudCard Outlined="true">
-                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
                                         <MudText Typo="Typo.h5">@group.Name</MudText>

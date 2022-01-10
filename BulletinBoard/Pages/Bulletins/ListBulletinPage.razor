@@ -5,7 +5,8 @@
 @using BulletinBoard.Model
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
-@using BulletinBoard.Extensions;
+@using static BulletinBoard.Extensions.ExtensionsMethod
+
 
 @inject IUserService UserService
 @inject IGroupService GroupService
@@ -17,10 +18,7 @@
 {
 
     <MudCard Outlined="true" Class="mb-3">
-        @if (_group.Image != null)
-        {
-            <MudCardMedia Image=@(_group.Image.GetGroupImagePath(_group.Id)) Height="200" />
-        }
+        <MudCardMedia Image=@(GroupImage(_group.Image)) Height="200" />        
         <MudCardHeader Class="pb-0">
             <CardHeaderContent>
                 <MudText Typo="Typo.h4">@_group.Name</MudText>

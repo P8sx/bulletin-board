@@ -2,7 +2,7 @@
 
 @attribute [Authorize]
 
-@using BulletinBoard.Extensions
+@using static BulletinBoard.Extensions.ExtensionsMethod
 @using BulletinBoard.Model
 @using System.IO
 @using Microsoft.AspNetCore.Identity;
@@ -18,7 +18,7 @@
 
 @if (Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
 {
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
     <MudPaper Class="mud-width-full py-8" Elevation="1">
         <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
             <DataAnnotationsValidator />
@@ -36,27 +36,26 @@
 
                         <MudItem xs="12">
                             <MudGrid>
-                                @foreach (var img in _files)
+                                @foreach (var img in _imageUpload!.Images)
                                 {
                                     <MudItem xs="6" md="6">
                                         <MudCard>
-                                            <MudCardMedia Image=@img.Item2 Height="200" />
+                                            <MudCardMedia Image=@img.base64Image Height="200" />
                                             <MudCardActions Class="d-flex justify-space-between">
-                                                <MudText Typo="Typo.caption">@img.Item1.Name</MudText>
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteNewFile(img.Item1))"></MudIconButton >
+                                                <MudText Typo="Typo.caption">@img.browserFile.Name</MudText>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => _imageUpload.RemoveImage(img))"></MudIconButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
-
                                 }
                                 @foreach (var img in Bulletin.Images)
                                 {
                                     <MudItem xs="6" md="6">
                                         <MudCard>
-                                            <MudCardMedia Image=@img.GetBulletinImagePath(Bulletin.Group.Id,Bulletin.Id) Height="200" />
+                                            <MudCardMedia Image=@img.Path() Height="200" />
                                             <MudCardActions Class="d-flex justify-space-between">
                                                 <MudText Typo="Typo.caption">@img.OrginalName</MudText>
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteExistingFile(img))"></MudIconButton >
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteExistingFile(img))"></MudIconButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -65,10 +64,8 @@
                         </MudItem>
 
                         <MudItem xs="12" Class="d-flex flex-column">
-                                <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
-                                <InputFile OnChange="@LoadFiles" multiple accept=".jpg, .jpeg, .png" CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." MaxFileSize=@_uploadLimit FileTooLargeMessage="File is too large" hidden id="imgInput" />
-
-                                <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
+                            <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
+                            <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
                         </MudItem>
 
                     </MudGrid>
@@ -92,7 +89,7 @@
         </MudOverlay>
     </MudPaper>
 }
-else if(_pageState == State.LOADING)
+else if (_pageState == State.LOADING)
 {
     <LoadingComponent></LoadingComponent>
 }
@@ -114,11 +111,14 @@ else
     private uint _maxFileSize = 5 * 1000000;
 
     // Bulletin attachments
-    private List<Tuple<IBrowserFile, string>> _files = new();
     private List<Image> _deletedImages = new();
     private List<Image> _newImages = new();
     private bool _blocked = false;
     private State _pageState = State.LOADING;
+
+    private ImageUploadComponent? _imageUpload;
+    protected async Task UpdateImages(bool update) => await InvokeAsync(() => StateHasChanged());
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,42 +132,6 @@ else
         Bulletin = await BulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId))!;
         _pageState = State.SUCCESS;
         StateHasChanged();
-    }
-    private async Task LoadFiles(InputFileChangeEventArgs e)
-    {
-        _files.Clear();
-        List<string> acceptedFormat = new() { "image/jpeg", "image/png", "image/jpg" };
-
-        var maxImages = Convert.ToInt32(_uploadLimit - _deletedImages.Count());
-        foreach (var file in e.GetMultipleFiles(maxImages))
-        {
-            if (!acceptedFormat.Contains(file.ContentType))
-            {
-                Snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
-                continue;
-            }
-            if (file.Size >= _maxFileSize)
-            {
-                Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1000000, 2)}MB, max size is {_maxFileSize / 1000000}MB", Severity.Warning);
-                continue;
-            }
-            else
-            {
-                var format = file.Name.Split('.').Last();
-                var resizedImageFile = await file.RequestImageFileAsync($"image/jpeg", 300, 300);
-                var buffer = new byte[resizedImageFile.Size];
-                await resizedImageFile.OpenReadStream().ReadAsync(buffer);
-                _files.Add(new(file, $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
-            }
-        }
-    }
-
-    private void DeleteNewFile(IBrowserFile file)
-    {
-        if (_files.Any())
-        {
-            _files.RemoveAll(i => i.Item1 == file);
-        }
     }
 
     private void DeleteExistingFile(Image img)
@@ -183,22 +147,18 @@ else
         // Set bulletin data
         Bulletin!.Modified = DateTime.UtcNow;
 
-        // Create image entity and add it to bulletin
-        foreach (var file in _files)
-        {
-            var img = new Image().SetExtension(file.Item1.Name);
-            img.OrginalName = file.Item1.Name;
-            Bulletin.Images.Add(img);
-            _newImages.Add(img);
-        }
-        foreach(var img in _deletedImages)
+        foreach (var img in _deletedImages)
         {
             Bulletin.Images.Remove(img);
         }
 
         // Try save bulletin in db
-        foreach (var img in Bulletin.Images) img.BulletinId = Bulletin.Id;
+        var uploadedImages = _imageUpload!.GetImages().Take(_imageUpload.NumberOfFiles-Bulletin.Images.Count).ToList();
+        Bulletin.Images.AddRange(uploadedImages);
+        
+
         var result = await BulletinService.UpdateBulletin(Bulletin);
+
         if (!result)
         {
             _blocked = false;
@@ -206,20 +166,7 @@ else
             return;
         }
         // If bulletin succesfuly added save images on server
-        foreach (var file in _files.Select((image, index) => (image, index)))
-        {
-            Stream stream = file.image.Item1.OpenReadStream(_maxFileSize);
-
-            var folder = $"{env.WebRootPath}";
-            if (!Directory.Exists(folder += $"/{Consts.DefaultBulletinFolder}")) Directory.CreateDirectory(folder);
-            if (!Directory.Exists(folder += $"/{Bulletin.GroupId}")) Directory.CreateDirectory(folder);
-            if (!Directory.Exists(folder += $"/{Bulletin.Id}")) Directory.CreateDirectory(folder);
-
-            FileStream fs = File.Create($"{folder}/{_newImages[file.index].GetFullName()}");
-            await stream.CopyToAsync(fs);
-            stream.Close();
-            fs.Close();
-        }
+        await _imageUpload.SaveFilesAsync();
         Snackbar.Add($"Bulletin has been modified - redirecting", Severity.Success);
         await Task.Delay(2000);
         NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");

@@ -1,4 +1,4 @@
-﻿using BulletinBoard.Extensions;
+﻿using static BulletinBoard.Extensions.ExtensionsMethod;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,10 +17,13 @@ namespace BulletinBoard.Model
         [ForeignKey("Bulletin")]
         public Guid? BulletinId { get; set; }
 
-        public string GetUserImagePath() => $"{Consts.DefaultAvatarFolder}/{GetFullName()}";
-        public string GetBulletinImagePath(Guid groupId, Guid bulletinId) => $"{Consts.DefaultBulletinFolder}/{groupId}/{bulletinId}/{GetFullName()}";
-        public string GetGroupImagePath(Guid groupId) => $"{Consts.DefaultGroupFolder}/{groupId}/{GetFullName()}";
         public string GetFullName() => $"{Id}.{Extension}";
+        public string GetSubFolder()
+        {
+            var subFolder = $"{Created:yyyyMMdd}";
+            return subFolder;
+        }
+        public string Path() => $"{Consts.DefaultImageFolder}/{GetSubFolder()}/{GetFullName()}";
 
         public Image SetExtension(string fileName)
         {
@@ -30,6 +33,12 @@ namespace BulletinBoard.Model
         public Image()
         {
             Id = Guid.NewGuid();
+        }
+        public Image(string file)
+        {
+            Id = Guid.NewGuid();
+            Extension = file.Split('.').Last();
+            OrginalName = file.Split('.').First();
         }
         public Image(Guid id)
         {

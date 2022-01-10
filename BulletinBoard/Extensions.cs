@@ -4,24 +4,31 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BulletinBoard.Extensions
 {
-    static class Consts
+    public static class ExtensionsMethod
     {
-        public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-        public static readonly string DefaultBulletinFolder = "bulletin-images";
-        public static readonly string DefaultAvatarFolder = "avatar-images"; 
-        public static readonly string DefaultGroupFolder = "group-images"; 
-        public static readonly string DefaultAvatarPath = "avatar-images/no-avatar.png";
-        public static readonly int MaxImagesPerBulletin = 5;
-        public static readonly int MaxFileSize = 5 * 1024 * 1024; 
+        public enum State
+        {
+            LOADING,
+            SUCCESS,
+            ACCESS_BLOCKED
+        }
+        public static class Consts
+        {
+            public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            public static readonly string DefaultImageFolder = "images";
+            public static readonly string DefaultAvatarPath = "no_avatar.png";
+            public static readonly string DefaultGroupAvatarPath = "no_group.svg";
+            public static readonly int MaxImagesPerBulletin = 5;
+            public static readonly int MaxFileSize = 5 * 1024 * 1024;
+        }
+        public static string Avatar(Image? img) => img == null ? Consts.DefaultAvatarPath : img.Path();
+        public static string GroupImage(Image? img) => img == null ? Consts.DefaultGroupAvatarPath : img.Path();
     }
-    public enum State
-    {
-        LOADING,
-        SUCCESS,
-        ACCESS_BLOCKED
-    }
+
+
     public static class Extensions
     {
+
         public static void RunAppSetup(this IServiceCollection services)
         {
             CreateRoles(services);
@@ -31,7 +38,7 @@ namespace BulletinBoard.Extensions
         {
             foreach (var roleName in Enum.GetNames(typeof(RoleValue)))
             {
-                CreateRole(services, roleName);
+                _ = CreateRole(services, roleName);
             }
         }
         private static async Task CreateRole(IServiceCollection services, string roleName)
@@ -48,13 +55,13 @@ namespace BulletinBoard.Extensions
         {
             var serviceProvider = services.BuildServiceProvider();
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-            var img = new Image(Consts.DefaultGroupId)
+            var img = new Image(ExtensionsMethod.Consts.DefaultGroupId)
             {
                 Extension = "svg",
             };
             var group = new Group()
             {
-                Id = Consts.DefaultGroupId,
+                Id = ExtensionsMethod.Consts.DefaultGroupId,
                 Name = "Main",
                 Description = "Main application group",
                 PublicListed = true,

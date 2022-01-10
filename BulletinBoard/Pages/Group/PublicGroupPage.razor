@@ -4,7 +4,8 @@
 
 @using BulletinBoard.Services
 @using BulletinBoard.Model
-@using BulletinBoard.Extensions
+@using static BulletinBoard.Extensions.ExtensionsMethod
+
 @using GEmojiSharp.Blazor
 
 @inject ISnackbar Snackbar
@@ -50,7 +51,7 @@ else
                     {
                         <MudItem xs="6" md="6" lg="4">
                             <MudCard Outlined="true">
-                                <MudCardMedia Image="@group.Image!.GetGroupImagePath(group.Id)" Height="200" />
+                                <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
                                         <MudText Typo="Typo.h5">@group.Name</MudText>

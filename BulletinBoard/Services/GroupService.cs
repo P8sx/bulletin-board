@@ -7,8 +7,6 @@ namespace BulletinBoard.Services
 {
     public class GroupService : BaseService, IGroupService
     {
-
-        private readonly ILogger _logger;
         private readonly IValidatorService _validatorService;
 
         public GroupService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<ValidatorService> logger, IMemoryCache memoryCache, IValidatorService validatorService) : base(dbFactory, logger, memoryCache)

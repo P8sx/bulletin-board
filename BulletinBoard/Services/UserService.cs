@@ -1,5 +1,5 @@
 ﻿using BulletinBoard.Data;
-using BulletinBoard.Extensions;
+using static BulletinBoard.Extensions.ExtensionsMethod;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -81,7 +81,7 @@ namespace BulletinBoard.Services
             RolesValid();
             if (group.Id == Consts.DefaultGroupId)
                 return true;
-            return _userGroups.Any(g => g.Id == group.Id);
+            return _userGroups.Any(g => g!.Id == group.Id);
         }
         public bool IsGroupModerator(Group group)
         {
@@ -112,7 +112,7 @@ namespace BulletinBoard.Services
         }
         public bool PendingAcceptance(Group group)
         {
-            return _userPendingAcceptanceGroups.Any(g=>g.Id == group.Id);
+            return _userPendingAcceptanceGroups.Any(g=>g!.Id == group.Id);
         }
 
 

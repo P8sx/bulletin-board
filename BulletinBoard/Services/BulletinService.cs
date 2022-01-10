@@ -346,6 +346,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             try
             {
+                bulletin.Images.ForEach(i => i.BulletinId = bulletin.Id);
                 var dbBulletin = await _dbContext.Bulletins.Include(b => b.Images).Where(b => b.Id == bulletin.Id).FirstOrDefaultAsync();
                 if (dbBulletin == null) return false;
 
