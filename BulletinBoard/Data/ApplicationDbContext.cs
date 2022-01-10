@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Text.Json;
 
 namespace BulletinBoard.Data
 {
@@ -13,7 +11,7 @@ namespace BulletinBoard.Data
         public virtual DbSet<GroupUser> GroupUsers { get; set; } = default!;
         public virtual DbSet<Bulletin> Bulletins { get; set; } = default!;
         public virtual DbSet<Comment> Comments { get; set; } = default!;
-        public virtual DbSet<BulletinVote> BulletinsVotes { get; set;} = default!;
+        public virtual DbSet<BulletinVote> BulletinsVotes { get; set; } = default!;
         public virtual DbSet<BulletinBookmark> BulletinsBookmarks { get; set; } = default!;
         public virtual DbSet<Violation> Violations { get; set; } = default!;
         public virtual DbSet<Image> Images { get; set; } = default!;
@@ -21,7 +19,7 @@ namespace BulletinBoard.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            
+
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -1,8 +1,8 @@
 ﻿using BulletinBoard.Data;
-using static BulletinBoard.Extensions.ExtensionsMethod;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using static BulletinBoard.Extensions.ExtensionsMethod;
 
 namespace BulletinBoard.Services
 {

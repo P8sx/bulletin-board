@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace BulletinBoard.Services
-{   
+{
     public abstract class BaseService
     {
         protected readonly IDbContextFactory<ApplicationDbContext> _dbFactory;

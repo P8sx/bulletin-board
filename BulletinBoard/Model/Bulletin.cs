@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BulletinBoard.Model
 {
@@ -13,7 +9,7 @@ namespace BulletinBoard.Model
         [Key]
         public Guid Id { get; set; }
         [Required]
-        [StringLength(50,MinimumLength = 3, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
         public string? Title { get; set; }
         [Required]
         [StringLength(1000, MinimumLength = 10, ErrorMessage = "Description must be at least 10 characters long (max 1000)")]

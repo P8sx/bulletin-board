@@ -1,6 +1,6 @@
-﻿using static BulletinBoard.Extensions.ExtensionsMethod;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static BulletinBoard.Extensions.ExtensionsMethod;
 
 namespace BulletinBoard.Model
 {
@@ -42,7 +42,7 @@ namespace BulletinBoard.Model
         }
         public Image(Guid id)
         {
-            Id = id; 
+            Id = id;
         }
 
     }

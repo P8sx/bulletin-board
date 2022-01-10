@@ -28,7 +28,7 @@ namespace BulletinBoard.Services
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Groups
-                .Include(g=>g.Image)
+                .Include(g => g.Image)
                 .Where(g => g.PublicListed == true)
                 .ToListAsync();
         }
@@ -39,7 +39,7 @@ namespace BulletinBoard.Services
                 .Include(gu => gu.User)
                 .Include(gu => gu.Group)
                 .Where(gu => gu.GroupId == group.Id)
-                .Where(gu=>gu.Role == GroupRole.PendingAcceptance)
+                .Where(gu => gu.Role == GroupRole.PendingAcceptance)
                 .ToListAsync();
         }
         public async Task<List<GroupUser>> GetGroupUsers(Group group)
@@ -47,7 +47,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.GroupUsers
                 .Include(gu => gu.User)
-                .Include(gu=>gu.Group)
+                .Include(gu => gu.Group)
                 .Where(gu => gu.GroupId == group.Id)
                 .Where(gu => gu.Role != GroupRole.PendingAcceptance)
                 .Where(gu => gu.Role != GroupRole.Invited)
@@ -68,7 +68,7 @@ namespace BulletinBoard.Services
             return await _dbContext.GroupUsers
                 .Where(gu => gu.UserId == user.Id)
                 .Where(gu => gu.GroupId == group.Id)
-                .FirstOrDefaultAsync(); 
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> AddGroup(Group group, User user)
@@ -80,13 +80,14 @@ namespace BulletinBoard.Services
                 await _dbContext.SaveChangesAsync();
                 await SetGroupUser(group, user, GroupRole.Admin);
                 return true;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
-            }         
+            }
             return false;
         }
-        public async Task<bool> JoinToGroup(Group group,User user)
+        public async Task<bool> JoinToGroup(Group group, User user)
         {
             if (group.AcceptAnyone == true)
                 return await SetGroupUser(group, user, GroupRole.User);
@@ -94,7 +95,7 @@ namespace BulletinBoard.Services
         }
         public async Task<bool> CancelJoinToGroup(Group group, User user)
         {
-            return await SetGroupUser(group, user,null);
+            return await SetGroupUser(group, user, null);
         }
         public async Task<bool> RemoveGroupUser(Group group, User user)
         {
@@ -112,8 +113,8 @@ namespace BulletinBoard.Services
         {
             return await SetGroupUser(group, user, null);
         }
-       
-        
+
+
         private async Task<Group?> GetGroupAsync(Group group)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
@@ -129,10 +130,10 @@ namespace BulletinBoard.Services
                     .Where(gu => gu.UserId == user.Id)
                     .FirstOrDefaultAsync();
                 // if groupuser not found in db
-                if (result == null)     
+                if (result == null)
                 {
                     // if role null return true
-                    if (role == null)    
+                    if (role == null)
                         return true;
                     // else create new groupuser and assign role
                     var groupUser = new GroupUser()
@@ -159,7 +160,7 @@ namespace BulletinBoard.Services
                 _validatorService.InvalidateUserRoles(user);
                 await _dbContext.SaveChangesAsync();
                 return true;
-                
+
             }
             catch (Exception ex)
             {

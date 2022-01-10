@@ -1,8 +1,8 @@
 ﻿using BulletinBoard.Data;
-using static BulletinBoard.Extensions.ExtensionsMethod;
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using static BulletinBoard.Extensions.ExtensionsMethod;
 
 namespace BulletinBoard.Services
 {
@@ -112,7 +112,7 @@ namespace BulletinBoard.Services
         }
         public bool PendingAcceptance(Group group)
         {
-            return _userPendingAcceptanceGroups.Any(g=>g!.Id == group.Id);
+            return _userPendingAcceptanceGroups.Any(g => g!.Id == group.Id);
         }
 
 
@@ -121,7 +121,7 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.Users
                 .Where(obj => EF.Functions.Like(obj.UserName, $"{userName}%"))
-                .Where(u=>u.Id != User!.Id)
+                .Where(u => u.Id != User!.Id)
                 .Take(10)
                 .ToListAsync();
         }

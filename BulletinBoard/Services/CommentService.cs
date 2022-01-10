@@ -20,16 +20,17 @@ namespace BulletinBoard.Services
                 _dbContext.Comments.Add(Comment);
                 await _dbContext.SaveChangesAsync();
                 return true;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
                 return false;
             }
-                  
+
         }
         public async Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin, bool forceReload = false)
         {
-            if(forceReload) return await GetCommentsAsync(bulletin);
+            if (forceReload) return await GetCommentsAsync(bulletin);
             var result = await _memoryCache.GetOrCreateAsync($"Comments{bulletin.Id}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
@@ -42,8 +43,8 @@ namespace BulletinBoard.Services
             using var _dbContext = _dbFactory.CreateDbContext();
             var comments = _dbContext.Comments
                 .Where(c => c.BulletinId == bulletin.Id)
-                .Include(c=>c.User)
-                .OrderByDescending(c=>c.Created)
+                .Include(c => c.User)
+                .OrderByDescending(c => c.Created)
                 .Select(c => new Comment
                 {
                     Id = c.Id,

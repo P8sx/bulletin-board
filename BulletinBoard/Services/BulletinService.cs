@@ -2,7 +2,6 @@
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Linq;
 
 namespace BulletinBoard.Services
 {
@@ -10,7 +9,7 @@ namespace BulletinBoard.Services
     {
         public SortBy SortBy { get; set; } = SortBy.Created;
         public OrderBy OrderBy { get; set; } = OrderBy.Ascending;
-        
+
         public BulletinSort(SortBy sortBy, OrderBy orderBy)
         {
             this.OrderBy = orderBy;
@@ -32,7 +31,7 @@ namespace BulletinBoard.Services
 
     public class BulletinService : BaseService, IBulletinService
     {
-        public BulletinService(IDbContextFactory<ApplicationDbContext> dbFactory,  ILogger<BulletinService> logger, IMemoryCache memoryCache ):base(dbFactory, logger, memoryCache)
+        public BulletinService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<BulletinService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
         {
         }
 
@@ -65,7 +64,7 @@ namespace BulletinBoard.Services
                 .Include(u => u.User)
                 .ThenInclude(i => i!.Image)
                 .Where(g => g.GroupId == group.Id)
-                .Where(b=>b.Deleted == false)
+                .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
                     Id = a.Id,
@@ -126,7 +125,7 @@ namespace BulletinBoard.Services
             return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Id}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
-                return await GetBulletinInfoAsync(user!,  bulletin);
+                return await GetBulletinInfoAsync(user!, bulletin);
             });
         }
         public async Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin)
@@ -160,7 +159,7 @@ namespace BulletinBoard.Services
         }
 
         // Request bulletin for specific user
-        public async Task<IList<Bulletin>> GetUserBulletinsAsyncCached(int page, int limit, User user,  BulletinSort sort = default)
+        public async Task<IList<Bulletin>> GetUserBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
             var result = await _memoryCache.GetOrCreateAsync($"UserBulletins{page}{limit}{uId}{sort.OrderBy}{sort.SortBy}", async p =>
@@ -289,7 +288,7 @@ namespace BulletinBoard.Services
                     UserVoted = user != null && a.Votes.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1,
                     UserBookmark = user != null && a.Bookmarks!.Where(v => v.BulletinId == a.Id && v.UserId == user.Id).Count() == 1
                 })
-                .Where(a=>a.UserBookmark == true);
+                .Where(a => a.UserBookmark == true);
 
             if (sort.SortBy == SortBy.Popular)
                 bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
@@ -319,7 +318,7 @@ namespace BulletinBoard.Services
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             return await _dbContext.BulletinsBookmarks
-                .Where(g => g.UserId == user.Id).Include(b=>b.Bulletin)
+                .Where(g => g.UserId == user.Id).Include(b => b.Bulletin)
                 .Where(b => b.Bulletin!.Deleted == false)
                 .CountAsync();
         }
@@ -376,17 +375,17 @@ namespace BulletinBoard.Services
                 _logger.LogError(ex.Message, ex);
                 return false;
             }
-            
-        }  
+
+        }
         public async Task<bool> RemoveBulletin(Bulletin bulletin)
         {
             using var _dbContext = _dbFactory.CreateDbContext();
             var dbBulletin = await _dbContext.Bulletins
-                .Where(b=>b.Id == bulletin.Id)
-                .Include(b=>b.Images)
-                .Include(b=>b.Bookmarks)
-                .Include(b=>b.Comments)
-                .Include(b=>b.Votes)
+                .Where(b => b.Id == bulletin.Id)
+                .Include(b => b.Images)
+                .Include(b => b.Bookmarks)
+                .Include(b => b.Comments)
+                .Include(b => b.Votes)
                 .FirstOrDefaultAsync();
             if (dbBulletin == default)
                 return false;

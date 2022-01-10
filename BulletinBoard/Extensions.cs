@@ -32,7 +32,7 @@ namespace BulletinBoard.Extensions
         public static void RunAppSetup(this IServiceCollection services)
         {
             CreateRoles(services);
-            AddGroups(services); 
+            AddGroups(services);
         }
         private static void CreateRoles(this IServiceCollection services)
         {

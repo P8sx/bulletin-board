@@ -14,7 +14,7 @@ namespace BulletinBoard.Services
         Task<IList<Bulletin>> GetUserBookmarkBulletinsAsyncCached(int page, int limit, User user, BulletinSort sort = default);
         Task<int> GetUserBookmarkBulletinsCountAsyncCached(User user);
 
-        Task<Bulletin?> GetBulletinInfoAsyncCached(User? user,  Bulletin bulletin);
+        Task<Bulletin?> GetBulletinInfoAsyncCached(User? user, Bulletin bulletin);
         Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin);
 
         Task<bool> RemoveBulletin(Bulletin bulletin);

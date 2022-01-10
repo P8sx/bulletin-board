@@ -14,7 +14,7 @@ namespace BulletinBoard.Model
     public class GroupUser
     {
         [Key]
-        public ulong Id { get; set; } 
+        public ulong Id { get; set; }
 
         [ForeignKey("Group")]
         public Guid GroupId { get; set; }

@@ -1,8 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BulletinBoard.Model
 {
@@ -23,13 +19,13 @@ namespace BulletinBoard.Model
 
         public Role(string name) : base(name)
         {
-            if(Enum.TryParse(name, out RoleValue roleValue))
+            if (Enum.TryParse(name, out RoleValue roleValue))
             {
                 RoleValue = roleValue;
                 NormalizedName = name.ToUpper();
                 Id = Convert.ToUInt64(roleValue);
             }
-                
+
         }
     }
 }

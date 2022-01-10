@@ -1,11 +1,11 @@
-using BulletinBoard.Model;
 using BulletinBoard.Areas.Identity;
 using BulletinBoard.Data;
+using BulletinBoard.Extensions;
+using BulletinBoard.Model;
 using BulletinBoard.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using BulletinBoard.Extensions;
 using MudBlazor.Services;
 using System.Net;
 
@@ -30,12 +30,12 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddScoped<IBulletinService,BulletinService>();
-builder.Services.AddScoped<IUserService,UserService>();
-builder.Services.AddScoped<IGroupService,GroupService>();
-builder.Services.AddScoped<ICommentService,CommentService>();
-builder.Services.AddTransient<IHelperService,HelperService>();
-builder.Services.AddSingleton<IValidatorService,ValidatorService>();   
+builder.Services.AddScoped<IBulletinService, BulletinService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddTransient<IHelperService, HelperService>();
+builder.Services.AddSingleton<IValidatorService, ValidatorService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
@@ -57,11 +57,11 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles( new StaticFileOptions
+app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        if(ctx.Context.Request.Path.StartsWithSegments("/images/group"))
+        if (ctx.Context.Request.Path.StartsWithSegments("/images/group"))
         {
             ctx.Context.Response.Headers.Add("Cache-Control", "no-store");
             ctx.Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
