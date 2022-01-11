@@ -1,5 +1,6 @@
 ﻿@page "/group/settings"
 
+@using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Data
 @using BulletinBoard.Model
@@ -299,7 +300,7 @@ else
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<ConfirmationDialogTemplate>("Delete", parameters, options);
+        var dialog = DialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Cancelled)

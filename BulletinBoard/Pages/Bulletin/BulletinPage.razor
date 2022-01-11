@@ -2,9 +2,9 @@
 @using static BulletinBoard.Extensions.ExtensionsMethod
 
 @using BulletinBoard.Model
-@using BulletinBoard.Pages.Bulletins
+@using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
-
+@using BulletinBoard.Pages.Bulletin.Components
 
 @inject IBulletinService BulletinService
 @inject IDialogService DialogService
@@ -23,9 +23,7 @@
     <MudPaper Outlined="true" Class="py-5 mb-5">
         <AuthorizeView Context="authorizedView">
             <Authorized>
-
                 <AddCommentComponent Bulletin="_bulletin" CommentUpdateCallback="UpdateComments"></AddCommentComponent>
-
             </Authorized>
             <NotAuthorized>
 

@@ -5,9 +5,11 @@
 </MudDialog>
 
 @code {
-    [Parameter] public string Path { get; set; } = default!;
+    [Parameter] 
+    public string Path { get; set; } = default!;
 
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; } = default!;
 
     void Submit() => MudDialog.Close(DialogResult.Ok(true));
     void Cancel() => MudDialog.Cancel();

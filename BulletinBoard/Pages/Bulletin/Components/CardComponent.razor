@@ -1,4 +1,5 @@
 ﻿@using BulletinBoard.Model
+@using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using GEmojiSharp.Blazor
 @using static BulletinBoard.Extensions.ExtensionsMethod
@@ -56,7 +57,7 @@
                 <MudHidden Breakpoint="Breakpoint.Md" Invert="false">
                     <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
                         <ItemTemplate>
-                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context.Path()))">
+                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(@context))">
                                 <MudCardMedia Image=@context.Path()/>
                             </div>
                         </ItemTemplate>
@@ -68,7 +69,7 @@
                         @foreach (var img in Bulletin.Images)
                         {
                             <MudItem xs="4">
-                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img.Path()))">
+                                <div class="d-flex flex-column flex-column justify-center" @onclick="@(e=>OpenDialog(img))">
                                     <MudCardMedia Image=@img.Path() />
                                 </div>
                             </MudItem>
@@ -133,11 +134,11 @@
     {
 
     }
-    private void OpenDialog(string path)
+    private void OpenDialog(Image image)
     {
         var parameters = new DialogParameters();
-        parameters.Add("Path", path);
-        DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+        parameters.Add("Path", image.Path());
+        DialogService.Show<ImageDialogComponent>($"Image - {image.OrginalName}", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
     private void Delete()
     {

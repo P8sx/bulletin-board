@@ -1,14 +1,16 @@
-﻿@page "/bulletin/mybulletins"
+﻿@page "/bulletin/bookmark"
 
 @attribute [Authorize]
-@using BulletinBoard.Pages.Bulletins
+@using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Data
 @using BulletinBoard.Model
+@using BulletinBoard.Pages.Bulletin.Components
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
-@using static BulletinBoard.Extensions.ExtensionsMethod
 
+
+@using static BulletinBoard.Extensions.ExtensionsMethod
 
 @inject IUserService UserService
 @inject IGroupService GroupService
@@ -21,11 +23,11 @@
     <MudCard Outlined="true" Class="mb-3">
         <MudCardHeader>
             <CardHeaderContent>
-                <MudText Typo="Typo.h4">Your bulletin</MudText>
+                <MudText Typo="Typo.h4">Your bookmarks</MudText>
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent Class="pt-0">
-            <MudText Typo="Typo.body2">These are all your bulletins that you have published</MudText>
+            <MudText Typo="Typo.body2">These are all your bulletins that you added to bookmarks</MudText>
         </MudCardContent>
     </MudCard>
 
@@ -119,11 +121,11 @@ else
 
     protected async Task<IList<Bulletin>> GetBulletins()
     {
-        return await BulletinService.GetUserBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, new BulletinSort(_sortBy, _orderBy));
+        return await BulletinService.GetUserBookmarkBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, new BulletinSort(_sortBy, _orderBy));
     }
     protected async Task<int> GetBulletinsCount()
     {
-        return await BulletinService.GetUserBulletinsCountAsyncCached(UserService.User!);
+        return await BulletinService.GetUserBookmarkBulletinsCountAsyncCached(UserService.User!);
     }
 
     protected async Task UpdateBulletins()
