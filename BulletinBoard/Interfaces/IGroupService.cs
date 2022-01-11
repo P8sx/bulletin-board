@@ -16,5 +16,8 @@ namespace BulletinBoard.Services
         Task<bool> AcceptUser(Group group, User user);
         Task<bool> RejectUser(Group group, User user);
         Task<GroupUser?> GetGroupUserAsync(Group group, User user);
+        Task<bool> CancelInviteUser(Group group, User user);
+        Task<bool> InviteUser(Group group, User user);
+        Task<List<GroupUser>> GetInvitedUsers(Group group);
     }
 }

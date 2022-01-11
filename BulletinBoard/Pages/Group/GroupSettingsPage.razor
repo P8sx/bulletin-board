@@ -154,8 +154,7 @@ else if (_group != null)
                     <RowTemplate>
                         <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
                         <MudTd DataLabel="Action">
-                            <MudButton Color="Color.Success" OnClick="@(async() => await AcceptUser(@context))">Accept</MudButton>
-                            <MudButton Color="Color.Error" OnClick="@(async() => await RejectUser(@context))">Reject</MudButton>
+                            <MudButton Color="Color.Error" OnClick="@(async() => await CancelInviteUser(@context))">Cancel</MudButton>
                         </MudTd>
                     </RowTemplate>
                     <PagerContent>
@@ -184,22 +183,34 @@ else if (_group != null)
                     {
                         <MudAvatar Image=@Avatar(_searchResultUser.Image)></MudAvatar>
                         <MudText Class="pl-3 mr-auto">@_searchResultUser.UserName</MudText>
-                        @if(_searchResultGroupUser == null)
+                        @if (_searchResultGroupUser == null)
                         {
-                            <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => await InviteUser(@_searchResultUser!))">Invite to group</MudButton>
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await InviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Invite to group</ProcessingButtonComponent>
+                            </MudButton>
                         }
                         else if (_searchResultGroupUser.Role == GroupRole.PendingAcceptance)
                         {
-                            <MudButton Size="Size.Small" Color="Color.Success" Variant="Variant.Filled" OnClick="@(async() => await AcceptUser(@_searchResultGroupUser!))">Accept invite</MudButton>                          
-                            <MudButton Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => await RejectUser(@_searchResultGroupUser!))">Reject invite</MudButton>                          
+                            <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Success" OnClick="@(async() => {_searchProcessing=true; await AcceptUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                    <ProcessingButtonComponent Processing=@_searchProcessing>Accept invite</ProcessingButtonComponent>
+                                </MudButton>
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Error" OnClick="@(async() => {_searchProcessing=true;await RejectUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                    <ProcessingButtonComponent Processing=@_searchProcessing>Reject invite</ProcessingButtonComponent>
+                                </MudButton>
+                            </MudButtonGroup>
                         }
                         else if (_searchResultGroupUser.Role == GroupRole.Invited)
                         {
-                            <MudButton Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => await CancelInviteUser(@_searchResultGroupUser!))">Cancel invite</MudButton>                          
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await CancelInviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Cancel invite</ProcessingButtonComponent>
+                            </MudButton>
                         }
                         else
                         {
-                            <MudButton Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => await RemoveUser(@_searchResultGroupUser!))">Remove user</MudButton>                          
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await RemoveUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Remove user</ProcessingButtonComponent>
+                            </MudButton>
                         }
                     }
                 </MudCard>
@@ -234,6 +245,7 @@ else
     private User? _searchResultUser;
     private GroupUser? _searchResultGroupUser;
 
+    private bool _searchProcessing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -249,6 +261,7 @@ else
             _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Consts.DefaultGroupId));
             _groupUsers = await GroupService.GetGroupUsers(_group!);
             _pendingApproval = await GroupService.GetPendingApprovalUsers(_group!);
+            _invited = await GroupService.GetInvitedUsers(_group!);
         }
         else
         {
@@ -268,6 +281,7 @@ else
         return false;
     }
 
+
     private async Task RoleChanged(GroupUser groupUser)
     {
         var result = await GroupService.ChangeRole(groupUser.Group!, groupUser.User!, groupUser.Role);
@@ -276,7 +290,6 @@ else
         else
             Snackbar.Add($"Role changed successfully", Severity.Success);
     }
-
     private async Task RemoveUser(GroupUser groupUser)
     {
         var parameters = new DialogParameters();
@@ -302,7 +315,6 @@ else
             StateHasChanged();
         }
     }
-
     private async Task AcceptUser(GroupUser groupUser)
     {
         var result = await GroupService.AcceptUser(groupUser.Group!, groupUser.User!);
@@ -317,7 +329,6 @@ else
         else
             Snackbar.Add($"There was an error accepting '{groupUser.User!.UserName}' user", Severity.Error);
     }
-
     private async Task RejectUser(GroupUser groupUser)
     {
         var result = await GroupService.RejectUser(groupUser.Group!, groupUser.User!);
@@ -330,19 +341,45 @@ else
         else
             Snackbar.Add($"There was an error rejecting '{groupUser.User!.UserName}' user", Severity.Error);
     }
-    private async Task InviteUser(User user){
-
+    private async Task InviteUser(User user)
+    {
+        var result = await GroupService.InviteUser(_group!, user);
+        if (result)
+        {
+            Snackbar.Add($"User '{user.UserName}' invited", Severity.Success);
+            _invited.Add(new GroupUser() { Group = _group, User = user });
+            StateHasChanged();
+        }
+        else
+            Snackbar.Add($"There was an error inviting '{user.UserName}' user", Severity.Error);
     }
-    private async Task CancelInviteUser(GroupUser groupUser){
-
+    private async Task CancelInviteUser(GroupUser groupUser)
+    {
+        await CancelInviteUser(groupUser.User!);
     }
-
-    private async void OnSearchResult(User entry)
+    private async Task CancelInviteUser(User user)
+    {
+        var result = await GroupService.CancelInviteUser(_group!, user);
+        if (result)
+        {
+            Snackbar.Add($"User '{user.UserName}' invited cancelled", Severity.Warning);
+            _invited.Remove(_invited.Where(u => u.User!.Id == user.Id).FirstOrDefault()!);
+            StateHasChanged();
+        }
+        else
+            Snackbar.Add($"There was an error canceling ivnitation for '{user.UserName}' user", Severity.Error);
+    }
+    private async Task OnSearchResult(User entry)
     {
         _searchResultUser = await UserService.GetUserInfoAsync(entry);
-        _searchResultGroupUser = await GroupService.GetGroupUserAsync(_group!,entry);
+        await UpdateSearchResultGroupUser();
         StateHasChanged();
         await _searchAutocomplete.Clear();
+    }
+    private async Task UpdateSearchResultGroupUser()
+    {
+        if (_searchResultUser != null)
+            _searchResultGroupUser = await GroupService.GetGroupUserAsync(_group!, _searchResultUser);
     }
     private Task<IEnumerable<User>> Search(string userName)
     {
