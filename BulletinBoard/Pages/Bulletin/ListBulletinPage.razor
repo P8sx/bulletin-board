@@ -26,13 +26,13 @@
                 <MudText Typo="Typo.h4">@_group.Name</MudText>
             </CardHeaderContent>
         </MudCardHeader>
-        <MudCardContent Class="pb-0">
+        <MudCardContent>
             <MudText Typo="Typo.body2">@_group.Description</MudText>
         </MudCardContent>
         @if (UserService.IsGroupAdmin(_group))
         {
         <MudCardActions Class="d-flex justify-end">
-            <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"group/settings?groupid={_group.Id}")>Group settings</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"group/settings?groupid={_group.Id}")>Group panel</MudButton>
         </MudCardActions>
         }
     </MudCard>
@@ -77,7 +77,7 @@
     <MudElement Class="d-flex justify-center">
         <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
     </MudElement>
-    <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link="/bulletin/add"/>
+    <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?groupId={GroupId}")/>
 }
 else if (_pageState == State.ACCESS_BLOCKED)
 {

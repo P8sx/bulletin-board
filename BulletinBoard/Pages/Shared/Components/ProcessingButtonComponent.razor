@@ -5,13 +5,13 @@
 }
 else
 {
-    <MudText>@ChildContent</MudText>
+    <MudText>@if (ChildContent != null) { @ChildContent }</MudText>
 }
 
 @code {
     [Parameter]
     public bool Processing { get; set; } = false;
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public RenderFragment? ChildContent { get; set; }
 
 }

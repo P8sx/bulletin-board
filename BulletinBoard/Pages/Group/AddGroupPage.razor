@@ -76,7 +76,8 @@
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _processing = true;
-        Group.Image = _imageUpload!.GetImages().First();
+        if(_imageUpload!.GetImages().Any())
+            Group.Image = _imageUpload!.GetImages().First();
         var result = await GroupService.AddGroup(Group, UserService.User!);
         if (!result)
         {
@@ -84,11 +85,12 @@
             Snackbar.Add($"Group has NOT been created, contact system administrator", Severity.Error);
             return;
         }
-        await _imageUpload!.SaveFilesAsync();
+        if(_imageUpload!.GetImages().Any())
+            await _imageUpload!.SaveFilesAsync();
         UserService.UpdateUserGroups();
         Snackbar.Add($"Group has been created - redirecting", Severity.Success);
         await Task.Delay(2000);
-        NavigationManager.NavigateTo($"bulletin?groupid={Group.Id}");
+        NavigationManager.NavigateTo($"bulletins?groupid={Group.Id}");
 
     }
 }

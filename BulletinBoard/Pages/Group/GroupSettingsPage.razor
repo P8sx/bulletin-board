@@ -20,25 +20,27 @@
 
 @if (_pageState == State.ACCESS_BLOCKED)
 {
-        <AccessBlockedComponent></AccessBlockedComponent>
+    <AccessBlockedComponent></AccessBlockedComponent>
 }
 else if (_group != null)
 {
-        <MudCard Outlined="true" Class="mb-3">
+    <MudCard Outlined="true" Class="mb-3">
 
-            <MudCardMedia Image="/control_panel.svg" Height="200" Style="background-position:top" />
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h4"><strong>@_group.Name</strong> - Group panel</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent Class="pt-0">
-                <MudText Typo="Typo.body2">Manage group users and settings</MudText>
-            </MudCardContent>
-        </MudCard>
+        <MudCardMedia Image="/control_panel.svg" Height="200" Style="background-position:top" />
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4"><strong>@_group.Name</strong> - Group panel</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent Class="pt-0">
+            <MudText Typo="Typo.body2">Manage group users and settings</MudText>
+        </MudCardContent>
+    </MudCard>
 
-        <MudExpansionPanels MultiExpansion="true">
-        @*User panel*@
+    <MudExpansionPanels MultiExpansion="true">
+        @*GroupSettings*@
+        @if (UserService.IsGroupOwner(_group))
+        {
             <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
                 <TitleContent>
                     <div class="d-flex">
@@ -48,219 +50,221 @@ else if (_group != null)
                 </TitleContent>
                 <ChildContent>
                     <EditForm Model="@_group" OnValidSubmit="ValidFormSubmitted">
-                    <DataAnnotationsValidator />
-                    <MudGrid>
-                        <MudItem xs="12" Class="px-8">
-                            <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="_group.Description" For="@(() => _group.Description)" />
-                        </MudItem>
-                        <MudItem xs="12" Class="px-8">
-                            <MudContainer Class="px-0">
-                                <MudSwitch @bind-Checked="@_group.PublicListed" Label="Listed" Color="Color.Primary" />
-                                <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
-                            </MudContainer>
-                            <MudContainer Class="px-0">
-                                <MudSwitch @bind-Checked="@_group.AcceptAnyone" Label="Public" Color="Color.Primary" />
-                                <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
-                            </MudContainer>
-                            <MudText Typo="Typo.body2"></MudText>
-                        </MudItem>
-                    </MudGrid>
-                    <MudElement Class="d-flex justify-end mr-6">
-                        <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
-                            <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
-                        </MudButton>
-                    </MudElement>
-                </EditForm>
+                        <DataAnnotationsValidator />
+                        <MudGrid>
+                            <MudItem xs="12" Class="px-8">
+                                <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="_group.Description" For="@(() => _group.Description)" />
+                            </MudItem>
+                            <MudItem xs="12" Class="px-8">
+                                <MudContainer Class="px-0">
+                                    <MudSwitch @bind-Checked="@_group.PublicListed" Label="Listed" Color="Color.Primary" />
+                                    <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                                </MudContainer>
+                                <MudContainer Class="px-0">
+                                    <MudSwitch @bind-Checked="@_group.AcceptAnyone" Label="Public" Color="Color.Primary" />
+                                    <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
+                                </MudContainer>
+                                <MudText Typo="Typo.body2"></MudText>
+                            </MudItem>
+                        </MudGrid>
+                        <MudElement Class="d-flex justify-end mr-6">
+                            <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
+                                <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
+                            </MudButton>
+                        </MudElement>
+                    </EditForm>
 
                 </ChildContent>
             </MudExpansionPanel>
+        }
+
 
         @*User panel*@
-            <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
-                <TitleContent>
-                    <div class="d-flex">
-                        <MudText Typo="Typo.h5">Users</MudText>
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Users</MudText>
                     @if (_groupUsers.Any())
                     {
-                                <MudBadge Content=@_groupUsers.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
-                                    <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Default" />
-                                </MudBadge>
+                        <MudBadge Content=@_groupUsers.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Default" />
+                        </MudBadge>
                     }
                     else
                     {
-                                <MudIcon Icon="@Icons.Material.Filled.People" Class="d-flex ml-auto" Color="Color.Default" />
+                        <MudIcon Icon="@Icons.Material.Filled.People" Class="d-flex ml-auto" Color="Color.Default" />
                     }
-                    </div>
-                </TitleContent>
-                <ChildContent>
+                </div>
+            </TitleContent>
+            <ChildContent>
 
-                    <MudTable Items="@_groupUsers" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
-                        <ToolBarContent>
-                            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>Username</MudTh>
-                            <MudTh>Joined</MudTh>
-                            <MudTh>Role</MudTh>
-                            <MudTh>Action</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
-                            <MudTd DataLabel="Joined">@context.Joined</MudTd>
-                            <MudTd DataLabel="Role">
-                                <MudSelect Disabled="@(@context.Role==GroupRole.Owner)" Class="mt-0" T="GroupRole" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))">
-                                    <MudSelectItem Value="@(GroupRole.User)" />
-                                    <MudSelectItem Value="@(GroupRole.Moderator)" />
-                                    <MudSelectItem Value="@(GroupRole.Admin)" />
-                                </MudSelect>
-                            </MudTd>
-                            <MudTd DataLabel="Action"><MudButton Disabled="@(@context.Role==GroupRole.Owner)" Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Delete</MudButton></MudTd>
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager />
-                        </PagerContent>
-                    </MudTable>
-                </ChildContent>
-            </MudExpansionPanel>
+                <MudTable Items="@_groupUsers" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Joined</MudTh>
+                        <MudTh>Role</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Joined">@context.Joined</MudTd>
+                        <MudTd DataLabel="Role">
+                            <MudSelect Disabled="@(@context.Role==GroupRole.Owner)" Class="mt-0" T="GroupRole" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))">
+                                <MudSelectItem Value="@(GroupRole.User)" />
+                                <MudSelectItem Value="@(GroupRole.Moderator)" />
+                                <MudSelectItem Value="@(GroupRole.Admin)" />
+                            </MudSelect>
+                        </MudTd>
+                        <MudTd DataLabel="Action"><MudButton Disabled="@(@context.Role==GroupRole.Owner)" Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Delete</MudButton></MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
 
         @*Pending approval panel*@
-            <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_pendingApproval.Any()">
-                <TitleContent>
-                    <div class="d-flex">
-                        <MudText Typo="Typo.h5">Pending approval</MudText>
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_pendingApproval.Any()">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Pending approval</MudText>
                     @if (_pendingApproval.Any())
                     {
-                                <MudBadge Content=@_pendingApproval.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
-                                    <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
-                                </MudBadge>
+                        <MudBadge Content=@_pendingApproval.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
+                        </MudBadge>
                     }
                     else
                     {
-                                <MudIcon Icon="@Icons.Material.Filled.Email" Class="d-flex ml-auto" Color="Color.Default" />
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="d-flex ml-auto" Color="Color.Default" />
                     }
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <MudTable Items="@_pendingApproval" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
-                        <ToolBarContent>
-                            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>Username</MudTh>
-                            <MudTh>Action</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
-                            <MudTd DataLabel="Action">
-                                <MudButton Color="Color.Success" OnClick="@(async() => await AcceptUser(@context))">Accept</MudButton>
-                                <MudButton Color="Color.Error" OnClick="@(async() => await RejectUser(@context))">Reject</MudButton>
-                            </MudTd>
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager />
-                        </PagerContent>
-                    </MudTable>
-                </ChildContent>
-            </MudExpansionPanel>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="@_pendingApproval" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Action">
+                            <MudButton Color="Color.Success" OnClick="@(async() => await AcceptUser(@context))">Accept</MudButton>
+                            <MudButton Color="Color.Error" OnClick="@(async() => await RejectUser(@context))">Reject</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
 
         @*Invited users panel*@
-            <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_invited.Any()">
-                <TitleContent>
-                    <div class="d-flex">
-                        <MudText Typo="Typo.h5">Invited</MudText>
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true" Disabled="!_invited.Any()">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Invited</MudText>
                     @if (_invited.Any())
                     {
-                                <MudBadge Content=@_invited.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
-                                    <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Color="Color.Default" />
-                                </MudBadge>
+                        <MudBadge Content=@_invited.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                            <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Color="Color.Default" />
+                        </MudBadge>
                     }
                     else
                     {
-                                <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Class="d-flex ml-auto" Color="Color.Default" />
+                        <MudIcon Icon="@Icons.Material.Filled.InsertInvitation" Class="d-flex ml-auto" Color="Color.Default" />
                     }
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <MudTable Items="@_invited" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
-                        <ToolBarContent>
-                            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>Username</MudTh>
-                            <MudTh>Action</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
-                            <MudTd DataLabel="Action">
-                                <MudButton Color="Color.Error" OnClick="@(async() => await CancelInviteUser(@context))">Cancel</MudButton>
-                            </MudTd>
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager />
-                        </PagerContent>
-                    </MudTable>
-                </ChildContent>
-            </MudExpansionPanel>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudTable Items="@_invited" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
+                        <MudTd DataLabel="Action">
+                            <MudButton Color="Color.Error" OnClick="@(async() => await CancelInviteUser(@context))">Cancel</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </ChildContent>
+        </MudExpansionPanel>
 
         @*Search users panel*@
-            <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
-                <TitleContent>
-                    <div class="d-flex">
-                        <MudText Typo="Typo.h5">Add new users</MudText>
-                        <MudIcon Icon="@Icons.Material.Filled.Search" Class="d-flex ml-auto" Color="Color.Default" />
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <MudAutocomplete AutoFocus="true" @ref="_searchAutocomplete" T="User" Placeholder="Search" SearchFunc="Search" ValueChanged="OnSearchResult" Class="docs-search-bar mx-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search">
-                        <ItemTemplate Context="result">
-                            <MudText>@result.UserName</MudText>
-                        </ItemTemplate>
-                    </MudAutocomplete>
-                    <MudCard Elevation="0" Class="mx-3 mt-6 d-flex">
+        <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
+            <TitleContent>
+                <div class="d-flex">
+                    <MudText Typo="Typo.h5">Add new users</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Class="d-flex ml-auto" Color="Color.Default" />
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudAutocomplete AutoFocus="true" @ref="_searchAutocomplete" T="User" Placeholder="Search" SearchFunc="Search" ValueChanged="OnSearchResult" Class="docs-search-bar mx-4" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search">
+                    <ItemTemplate Context="result">
+                        <MudText>@result.UserName</MudText>
+                    </ItemTemplate>
+                </MudAutocomplete>
+                <MudCard Elevation="0" Class="mx-3 mt-6 d-flex">
                     @if (_searchResultUser != null)
                     {
-                                <MudAvatar Image=@Avatar(_searchResultUser.Image)></MudAvatar>
-                                <MudText Class="pl-3 mr-auto">@_searchResultUser.UserName</MudText>
+                        <MudAvatar Image=@Avatar(_searchResultUser.Image)></MudAvatar>
+                        <MudText Class="pl-3 mr-auto">@_searchResultUser.UserName</MudText>
                         @if (_searchResultGroupUser == null)
                         {
-                                        <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await InviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                            <ProcessingButtonComponent Processing=@_searchProcessing>Invite to group</ProcessingButtonComponent>
-                                        </MudButton>
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await InviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Invite to group</ProcessingButtonComponent>
+                            </MudButton>
                         }
                         else if (_searchResultGroupUser.Role == GroupRole.PendingAcceptance)
                         {
-                                        <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                                            <MudButton Disabled="@_searchProcessing" Color="Color.Success" OnClick="@(async() => {_searchProcessing=true; await AcceptUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                                <ProcessingButtonComponent Processing=@_searchProcessing>Accept invite</ProcessingButtonComponent>
-                                            </MudButton>
-                                            <MudButton Disabled="@_searchProcessing" Color="Color.Error" OnClick="@(async() => {_searchProcessing=true;await RejectUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                                <ProcessingButtonComponent Processing=@_searchProcessing>Reject invite</ProcessingButtonComponent>
-                                            </MudButton>
-                                        </MudButtonGroup>
+                            <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Success" OnClick="@(async() => {_searchProcessing=true; await AcceptUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                    <ProcessingButtonComponent Processing=@_searchProcessing>Accept invite</ProcessingButtonComponent>
+                                </MudButton>
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Error" OnClick="@(async() => {_searchProcessing=true;await RejectUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                    <ProcessingButtonComponent Processing=@_searchProcessing>Reject invite</ProcessingButtonComponent>
+                                </MudButton>
+                            </MudButtonGroup>
                         }
                         else if (_searchResultGroupUser.Role == GroupRole.Invited)
                         {
-                                        <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await CancelInviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                            <ProcessingButtonComponent Processing=@_searchProcessing>Cancel invite</ProcessingButtonComponent>
-                                        </MudButton>
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await CancelInviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Cancel invite</ProcessingButtonComponent>
+                            </MudButton>
                         }
                         else
                         {
-                                        <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await RemoveUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                            <ProcessingButtonComponent Processing=@_searchProcessing>Remove user</ProcessingButtonComponent>
-                                        </MudButton>
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await RemoveUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Remove user</ProcessingButtonComponent>
+                            </MudButton>
                         }
                     }
-                    </MudCard>
+                </MudCard>
 
-                </ChildContent>
-            </MudExpansionPanel>
+            </ChildContent>
+        </MudExpansionPanel>
 
-        </MudExpansionPanels>
+    </MudExpansionPanels>
 }
 else
 {
-        <LoadingComponent></LoadingComponent>
+    <LoadingComponent></LoadingComponent>
 }
 
 
@@ -434,6 +438,6 @@ else
         }
         Snackbar.Add($"Group has been updated - reloading", Severity.Success);
         await Task.Delay(1000);
-        NavigationManager.NavigateTo($"group/settings?groupid={_group!.Id}",true);
+        NavigationManager.NavigateTo($"group/settings?groupid={_group!.Id}", true);
     }
 }

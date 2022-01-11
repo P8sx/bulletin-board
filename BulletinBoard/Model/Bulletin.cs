@@ -5,7 +5,6 @@ namespace BulletinBoard.Model
 {
     public class Bulletin
     {
-        // Bulletin Basic Info
         [Key]
         public Guid Id { get; set; }
         [Required]
@@ -19,24 +18,19 @@ namespace BulletinBoard.Model
         public DateTime? Expired { get; set; }
         public List<Image> Images { get; set; } = new();
         public bool? Pinned { get; set; }
-        public bool Deleted { get; set; } = false;
-        // Bulletin Creator
+        public bool? Deleted { get; set; } = false;
+
+
         public virtual User? User { get; set; }
         [ForeignKey("User")]
         public ulong UserId { get; set; }
 
-        // Bulletin Group
         public virtual Group? Group { get; set; }
         [ForeignKey("Group")]
         public Guid? GroupId { get; set; }
 
-        // Bulletin Comments
         public virtual IList<Comment>? Comments { get; set; }
-
-        // Bulletin Votes
         public virtual IList<BulletinVote>? Votes { get; set; }
-
-        // Bulletin Bookmark
         public virtual IList<BulletinBookmark>? Bookmarks { get; set; }
 
         [NotMapped]

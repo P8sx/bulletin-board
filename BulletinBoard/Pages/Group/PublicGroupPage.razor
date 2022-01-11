@@ -50,8 +50,8 @@ else
                 <MudGrid>
                     @foreach (var group in PublicGroups)
                     {
-                        <MudItem xs="6" md="6" lg="4">
-                            <MudCard Outlined="true">
+                        <MudItem xs="6" md="6" lg="4" Class="d-flex">
+                            <MudCard Outlined="true" Style="width:100%" Class="d-flex flex-column">
                                 <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
@@ -71,7 +71,24 @@ else
                                     </Emoji>
                                 </MudCardContent>
 
-                                <MudCardActions Class="pt-1 d-flex justify-end">
+                                <MudCardActions Class="pt-1 mt-auto d-flex justify-end">
+                                    @if (UserService.IsGroupOwner(group))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Secondary">OWNER</MudText>
+                                    }
+                                    else if (UserService.IsGroupAdmin(group))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Warning">ADMIN</MudText>
+                                    }
+                                    else if (UserService.IsGroupModerator(group))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Info">MODERATOR</MudText>
+                                    }
+                                    else if (UserService.IsInGroup(group))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="pl-2 mr-auto">USER</MudText>
+                                    }
+
                                     @if (UserService.IsInGroup(group))
                                     {
                                         <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>

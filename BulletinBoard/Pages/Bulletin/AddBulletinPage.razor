@@ -79,6 +79,10 @@
 </MudPaper>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? GroupId { get; set; }
+
     public Bulletin Bulletin { get; set; } = new();
 
     private ImageUploadComponent? _imageUpload;
@@ -89,7 +93,7 @@
     private bool _processing = false;
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.GroupId = Consts.DefaultGroupId;
+        Bulletin.GroupId = GroupId==null?Consts.DefaultGroupId:GroupId;
         await base.OnInitializedAsync();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }

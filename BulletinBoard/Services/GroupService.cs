@@ -126,14 +126,7 @@ namespace BulletinBoard.Services
         {
             return await SetGroupUser(group, user, null);
         }
-        public async Task<bool> RemoveGroupUser(Group group, User user)
-        {
-            return await SetGroupUser(group, user, null);
-        }
-        public async Task<bool> ChangeRole(Group group, User user, GroupRole role)
-        {
-            return await SetGroupUser(group, user, role);
-        }
+
         public async Task<bool> AcceptUser(Group group, User user)
         {
             return await SetGroupUser(group, user, GroupRole.User);
@@ -142,15 +135,25 @@ namespace BulletinBoard.Services
         {
             return await SetGroupUser(group, user, null);
         }
+
+        public async Task<bool> ChangeRole(Group group, User user, GroupRole role)
+        {
+            return await SetGroupUser(group, user, role);
+        }
+        
         public async Task<bool> InviteUser(Group group, User user)
         {
             return await SetGroupUser(group, user, GroupRole.Invited);
         }
+        public async Task<bool> RemoveGroupUser(Group group, User user)
+        {
+            return await SetGroupUser(group, user, null);
+        }
+       
         public async Task<bool> AcceptInvitation(Group group, User user)
         {
             return await SetGroupUser(group, user, GroupRole.User);
         }
-
         public async Task<bool> CancelInviteUser(Group group, User user)
         {
             return await SetGroupUser(group, user, null);
@@ -191,12 +194,11 @@ namespace BulletinBoard.Services
                     // if role null remove grouprole from db
                     if (role == null)
                         _dbContext.GroupUsers.Remove(result);
-                    // update groupuser role
+                    else if(role == GroupRole.Invited && result.Role == GroupRole.PendingAcceptance)
+                        result.Role = GroupRole.User;
                     else
-                    {
                         result.Role = role.Value;
-                        _dbContext.GroupUsers.Update(result);
-                    }
+                    _dbContext.GroupUsers.Update(result);
                 }
                 _validatorService.InvalidateUserRoles(user);
                 await _dbContext.SaveChangesAsync();
