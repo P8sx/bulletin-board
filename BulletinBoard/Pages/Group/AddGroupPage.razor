@@ -26,12 +26,12 @@
             </MudItem>
             <MudItem xs="12" Class="px-8">
                 <MudContainer Class="px-0">
-                <MudSwitch @bind-Checked="@Group.PublicListed" Label="Listed" Color="Color.Primary" />
-                <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                    <MudSwitch @bind-Checked="@Group.PublicListed" Label="Listed" Color="Color.Primary" />
+                    <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
                 </MudContainer>
                 <MudContainer Class="px-0">
-                <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary" />
-                <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
+                    <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary" />
+                    <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
                 </MudContainer>
                 <MudText Typo="Typo.body2"></MudText>
             </MudItem>
@@ -52,19 +52,18 @@
             </MudItem>
         </MudGrid>
         <MudElement Class="d-flex justify-end mr-6">
-            <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+            <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
+                <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
+            </MudButton>
         </MudElement>
     </EditForm>
-    <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
-        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
-    </MudOverlay>
 </MudPaper>
 
 
 @code {
     public Group Group { get; set; } = new();
 
-    private bool _blocked = false;
+    private bool _processing = false;
     private ImageUploadComponent? _imageUpload;
     protected async Task UpdateImages(bool update) => await InvokeAsync(() => StateHasChanged());
 
@@ -76,12 +75,12 @@
     }
     private async Task ValidFormSubmitted(EditContext editContext)
     {
-        _blocked = true;
+        _processing = true;
         Group.Image = _imageUpload!.GetImages().First();
         var result = await GroupService.AddGroup(Group, UserService.User!);
         if (!result)
         {
-            _blocked = false;
+            _processing = false;
             Snackbar.Add($"Group has NOT been created, contact system administrator", Severity.Error);
             return;
         }

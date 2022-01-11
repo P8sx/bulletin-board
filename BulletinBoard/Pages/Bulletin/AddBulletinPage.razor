@@ -71,12 +71,11 @@
 
         </MudGrid>
         <MudElement Class="d-flex justify-end mr-6">
-            <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+            <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
+                <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
+            </MudButton>
         </MudElement>
     </EditForm>
-    <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
-        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
-    </MudOverlay>
 </MudPaper>
 
 @code {
@@ -87,7 +86,7 @@
 
 
 
-    private bool _blocked = false;
+    private bool _processing = false;
     protected override async Task OnInitializedAsync()
     {
         Bulletin.GroupId = Consts.DefaultGroupId;
@@ -99,7 +98,7 @@
     // Submit form
     private async Task ValidFormSubmitted(EditContext editContext)
     {
-        _blocked = true;
+        _processing = true;
         // Set bulletin data
         if (Bulletin.UserId == 0)
             Bulletin.UserId = UserService.User!.Id;
@@ -110,7 +109,7 @@
         var result = await BulletinService.AddBulletin(Bulletin);
         if (!result)
         {
-            _blocked = false;
+            _processing = false;
             Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
             return;
         }

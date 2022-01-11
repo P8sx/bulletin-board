@@ -86,14 +86,21 @@ namespace BulletinBoard.Services
         public bool IsGroupModerator(Group group)
         {
             RolesValid();
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Moderator || a.Role == GroupRole.Admin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Moderator || a.Role == GroupRole.Admin || a.Role == GroupRole.Owner)))
                 return true;
             return false;
         }
         public bool IsGroupAdmin(Group group)
         {
             RolesValid();
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Admin)))
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Admin || a.Role == GroupRole.Owner)))
+                return true;
+            return false;
+        }
+        public bool IsGroupOwner(Group group)
+        {
+            RolesValid();
+            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Owner)))
                 return true;
             return false;
         }
@@ -114,7 +121,10 @@ namespace BulletinBoard.Services
         {
             return _userPendingAcceptanceGroups.Any(g => g!.Id == group.Id);
         }
-
+        public bool PendingInvitations(Group group)
+        {           
+            return _userPendingInvitationsGroups.Any(g => g!.Id == group.Id);
+        }
 
         public async Task<IEnumerable<User>> Search(string userName)
         {

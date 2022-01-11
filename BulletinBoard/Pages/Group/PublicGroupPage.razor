@@ -58,8 +58,10 @@ else
                                         <MudText Typo="Typo.h5">@group.Name</MudText>
 
                                     </CardHeaderContent>
-                                    <CardHeaderActions>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                     <CardHeaderActions>
+                                            <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
+                                                <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
+                                            </MudMenu>
                                     </CardHeaderActions>
                                 </MudCardHeader>
 
@@ -74,13 +76,17 @@ else
                                     {
                                         <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
                                     }
-                                    else if (PendingAcceptance(group))
+                                    else if (UserService.PendingAcceptance(group))
                                     {
                                         <MudButton Variant="Variant.Text" Disabled=true Color="Color.Primary">Pending acceptance</MudButton>
                                     }
+                                    else if (UserService.PendingInvitations(group))
+                                    {
+                                        <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(async() => await AcceptInvitation(group))>Accept invitation</MudButton>
+                                    }
                                     else
                                     {
-                                        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick=@(()=>Join(group))>Join</MudButton>
+                                        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick=@(() => Join(group))>Join</MudButton>
                                     }
                                 </MudCardActions>
                             </MudCard>
@@ -120,8 +126,11 @@ else
         StateHasChanged();
     }
 
-    private bool PendingAcceptance(Group group)
+    private async Task AcceptInvitation(Group group)
     {
-        return UserService.PendingAcceptance(group);
+        var result = await GroupService.AcceptInvitation(group, UserService.User!);
+        UserService.UpdateUserGroups();
+        await UpdateGroupsInfo();
+        StateHasChanged();
     }
 }

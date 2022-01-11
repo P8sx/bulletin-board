@@ -20,5 +20,7 @@ namespace BulletinBoard.Services
         bool IsGroupAdmin(Group group);
         Task<IEnumerable<User>> Search(string userName);
         Task<User?> GetUserInfoAsync(User user);
+        bool IsGroupOwner(Group group);
+        bool PendingInvitations(Group group);
     }
 }

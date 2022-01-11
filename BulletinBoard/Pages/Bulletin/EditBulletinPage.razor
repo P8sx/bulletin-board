@@ -82,12 +82,11 @@
 
             </MudGrid>
             <MudElement Class="d-flex justify-end mr-6">
-                <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">Submit</MudButton>
+                <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
+                <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
+            </MudButton>
             </MudElement>
         </EditForm>
-        <MudOverlay Visible="_blocked" DarkBackground="true" Absolute="true">
-            <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
-        </MudOverlay>
     </MudPaper>
 }
 else if (_pageState == State.LOADING)
@@ -112,7 +111,7 @@ else
     private List<Image> _deletedImages = new();
     private List<Image> _newImages = new();
 
-    private bool _blocked = false;
+    private bool _processing = false;
     private State _pageState = State.LOADING;
 
     private ImageUploadComponent? _imageUpload;
@@ -142,7 +141,7 @@ else
 
     private async Task ValidFormSubmitted(EditContext editContext)
     {
-        _blocked = true;
+        _processing = true;
         // Set bulletin data
         Bulletin!.Modified = DateTime.UtcNow;
 
@@ -160,7 +159,7 @@ else
 
         if (!result)
         {
-            _blocked = false;
+            _processing = false;
             Snackbar.Add($"Bulletin has NOT been updated, contact system administrator", Severity.Error);
             return;
         }

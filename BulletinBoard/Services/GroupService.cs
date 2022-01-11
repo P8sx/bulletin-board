@@ -89,7 +89,7 @@ namespace BulletinBoard.Services
                 using var _dbContext = _dbFactory.CreateDbContext();
                 await _dbContext.Groups.AddAsync(group);
                 await _dbContext.SaveChangesAsync();
-                await SetGroupUser(group, user, GroupRole.Admin);
+                await SetGroupUser(group, user, GroupRole.Owner);
                 return true;
             }
             catch (Exception ex)
@@ -98,6 +98,24 @@ namespace BulletinBoard.Services
             }
             return false;
         }
+        public async Task<bool> UpdateGroup(Group group)
+        {
+            try
+            {
+                using var _dbContext = _dbFactory.CreateDbContext();
+                var dbGroup = await _dbContext.Groups.Where(g => g.Id == group.Id).FirstOrDefaultAsync();
+                if (dbGroup == null) return false;
+                _dbContext.Entry(dbGroup).CurrentValues.SetValues(group);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+            }
+            return false;
+        }
+
         public async Task<bool> JoinToGroup(Group group, User user)
         {
             if (group.AcceptAnyone == true)
@@ -128,6 +146,11 @@ namespace BulletinBoard.Services
         {
             return await SetGroupUser(group, user, GroupRole.Invited);
         }
+        public async Task<bool> AcceptInvitation(Group group, User user)
+        {
+            return await SetGroupUser(group, user, GroupRole.User);
+        }
+
         public async Task<bool> CancelInviteUser(Group group, User user)
         {
             return await SetGroupUser(group, user, null);
