@@ -1,42 +1,39 @@
-﻿@page "/group/add"
+﻿@page "/board/add"
 
 @using BulletinBoard.Model
-@using static BulletinBoard.Extensions.ExtensionsMethod
 
 @using BulletinBoard.Pages.Shared.Components
-@using BulletinBoard.Services
 
 @attribute [Authorize]
 
-@inject ISnackbar Snackbar
-@inject IWebHostEnvironment env
-@inject IUserService UserService
-@inject IGroupService GroupService
-@inject NavigationManager NavigationManager
+@inject ISnackbar _snackbar
+@inject IWebHostEnvironment _env
+@inject IBoardService _boardService
+@inject NavigationManager _navigationManager
 
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new group</MudText>
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new board</MudText>
 <MudPaper Class="mud-width-full py-8" Elevation="1">
-    <EditForm Model="@Group" OnValidSubmit="ValidFormSubmitted">
+    <EditForm Model="@Board" OnValidSubmit="ValidFormSubmitted">
         <DataAnnotationsValidator />
         <MudGrid>
             <MudItem xs="12" Class="px-8">
-                <MudText Typo="Typo.h5">Group</MudText>
-                <MudTextField Label="Title" HelperText="Name of your group" Variant="Variant.Outlined" @bind-Value="Group.Name" For="@(() => Group.Name)" />
-                <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="Group.Description" For="@(() => Group.Description)" />
+                <MudText Typo="Typo.h5">Board</MudText>
+                <MudTextField Label="Title" HelperText="Name of your board" Variant="Variant.Outlined" @bind-Value="Board.Name" For="@(() => Board.Name)" />
+                <MudTextField T="string" Label="Description" HelperText="Short description about your board (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="Board.Description" For="@(() => Board.Description)" />
             </MudItem>
             <MudItem xs="12" Class="px-8">
                 <MudContainer Class="px-0">
-                    <MudSwitch @bind-Checked="@Group.PublicListed" Label="Listed" Color="Color.Primary" />
-                    <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                    <MudSwitch @bind-Checked="@Board.PublicListed" Label="Listed" Color="Color.Primary" />
+                    <MudText Class="pl-3" Typo="Typo.caption">Your board will be publicly listed, any user can view info or request to join.</MudText>
                 </MudContainer>
                 <MudContainer Class="px-0">
-                    <MudSwitch @bind-Checked="@Group.AcceptAnyone" Label="Public" Color="Color.Primary" />
+                    <MudSwitch @bind-Checked="@Board.AcceptAnyone" Label="Public" Color="Color.Primary" />
                     <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
                 </MudContainer>
                 <MudText Typo="Typo.body2"></MudText>
             </MudItem>
             <MudItem xs="12" Class="d-flex flex-column px-8">
-                <MudText Typo="Typo.h5">Group image</MudText>
+                <MudText Typo="Typo.h5">Board image</MudText>
                 @if (_imageUpload != null && _imageUpload!.Images.Any())
                 {
                     <MudCard>
@@ -61,36 +58,35 @@
 
 
 @code {
-    public Group Group { get; set; } = new();
-
-    private bool _processing = false;
+    private Board Board { get; set; } = new();
+    private bool _processing;
     private ImageUploadComponent? _imageUpload;
-    protected async Task UpdateImages(bool update) => await InvokeAsync(() => StateHasChanged());
+    private async Task UpdateImages(bool update) => await InvokeAsync(StateHasChanged);
 
 
     protected override async Task OnInitializedAsync()
     {
-        Group.PublicListed = false;
+        Board.PublicListed = false;
         await base.OnInitializedAsync();
     }
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _processing = true;
         if(_imageUpload!.GetImages().Any())
-            Group.Image = _imageUpload!.GetImages().First();
-        var result = await GroupService.AddGroup(Group, UserService.User!);
+            Board.Image = _imageUpload!.GetImages().First();
+        var result = await _boardService.AddBoard(Board, _userService.User!);
         if (!result)
         {
             _processing = false;
-            Snackbar.Add($"Group has NOT been created, contact system administrator", Severity.Error);
+            _snackbar.Add($"Board has NOT been created, contact system administrator", Severity.Error);
             return;
         }
         if(_imageUpload!.GetImages().Any())
             await _imageUpload!.SaveFilesAsync();
-        UserService.UpdateUserGroups();
-        Snackbar.Add($"Group has been created - redirecting", Severity.Success);
+        _userService.UpdateUserBoards();
+        _snackbar.Add($"Board has been created - redirecting", Severity.Success);
         await Task.Delay(2000);
-        NavigationManager.NavigateTo($"bulletins?groupid={Group.Id}");
+        _navigationManager.NavigateTo($"bulletins?boardId={Board.Id}");
 
     }
 }

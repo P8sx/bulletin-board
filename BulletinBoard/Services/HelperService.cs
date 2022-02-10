@@ -2,21 +2,21 @@
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using static BulletinBoard.Extensions.ExtensionsMethod;
+using static BulletinBoard.Services.GlobalService;
 
 namespace BulletinBoard.Services
 {
     public class HelperService : BaseService, IHelperService
     {
-        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
+        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache, GlobalService globalService) : base(dbFactory, logger, memoryCache, globalService)
         {
 
         }
         public async Task AddToDefaultGroupAsync(User user, string roleName)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            await _dbContext.GroupUsers.AddAsync(new GroupUser() { GroupId = Consts.DefaultGroupId, Role = GroupRole.User, UserId = user.Id });
-            await _dbContext.SaveChangesAsync();
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            await dbContext.BoardUsers.AddAsync(new BoardUser() { BoardId = GlobalService.DefaultBoardId, Role = BoardRole.User, UserId = user.Id });
+            await dbContext.SaveChangesAsync();
         }
     }
 }

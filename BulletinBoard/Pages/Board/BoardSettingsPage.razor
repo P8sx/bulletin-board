@@ -1,67 +1,64 @@
-﻿@page "/group/settings"
+﻿@page "/board/settings"
 
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
-@using BulletinBoard.Data
 @using BulletinBoard.Model
-@using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
 
-@inject IUserService UserService
-@inject IGroupService GroupService
-@inject IBulletinService BulletinService
-@inject ISnackbar Snackbar
-@inject IDialogService DialogService
-@inject NavigationManager NavigationManager
+@inject IBoardService _boardService
+@inject IBulletinService _bulletinService
+@inject ISnackbar _snackbar
+@inject IDialogService _dialogService
+@inject NavigationManager _navigationManager
 
 
 
-@if (_pageState == State.ACCESS_BLOCKED)
+@if (_pageState == State.AccessBlocked)
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
-else if (_group != null)
+else if (_board != null)
 {
     <MudCard Outlined="true" Class="mb-3">
 
         <MudCardMedia Image="/control_panel.svg" Height="200" Style="background-position:top" />
         <MudCardHeader>
             <CardHeaderContent>
-                <MudText Typo="Typo.h4"><strong>@_group.Name</strong> - Group panel</MudText>
+                <MudText Typo="Typo.h4"><strong>@_board.Name</strong> - Boad panel</MudText>
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent Class="pt-0">
-            <MudText Typo="Typo.body2">Manage group users and settings</MudText>
+            <MudText Typo="Typo.body2">Manage board users and settings</MudText>
         </MudCardContent>
     </MudCard>
 
     <MudExpansionPanels MultiExpansion="true">
-        @*GroupSettings*@
-        @if (UserService.IsGroupOwner(_group))
+        @*BoardSettings*@
+        @if (_userService.IsBoardOwner(_board))
         {
             <MudExpansionPanel IsInitiallyExpanded=false HideIcon="true">
                 <TitleContent>
                     <div class="d-flex">
-                        <MudText Typo="Typo.h5">Group settings</MudText>
+                        <MudText Typo="Typo.h5">Board settings</MudText>
                         <MudIcon Icon="@Icons.Material.Filled.Settings" Class="d-flex ml-auto" Color="Color.Default" />
                     </div>
                 </TitleContent>
                 <ChildContent>
-                    <EditForm Model="@_group" OnValidSubmit="ValidFormSubmitted">
+                    <EditForm Model="@_board" OnValidSubmit="ValidFormSubmitted">
                         <DataAnnotationsValidator />
                         <MudGrid>
                             <MudItem xs="12" Class="px-8">
-                                <MudTextField T="string" Label="Description" HelperText="Short description about your group (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="_group.Description" For="@(() => _group.Description)" />
+                                <MudTextField T="string" Label="Description" HelperText="Short description about your board (Github Emoji are supported)" Lines="5" Variant="Variant.Outlined" @bind-Value="_board.Description" For="@(() => _board.Description)" />
                             </MudItem>
                             <MudItem xs="12" Class="px-8">
                                 <MudContainer Class="px-0">
-                                    <MudSwitch @bind-Checked="@_group.PublicListed" Label="Listed" Color="Color.Primary" />
-                                    <MudText Class="pl-3" Typo="Typo.caption">Your group will be publicly listed, any user can view info or request to join.</MudText>
+                                    <MudSwitch @bind-Checked="@_board.PublicListed" Label="Listed" Color="Color.Primary" />
+                                    <MudText Class="pl-3" Typo="Typo.caption">Your board will be publicly listed, any user can view info or request to join.</MudText>
                                 </MudContainer>
                                 <MudContainer Class="px-0">
-                                    <MudSwitch @bind-Checked="@_group.AcceptAnyone" Label="Public" Color="Color.Primary" />
+                                    <MudSwitch @bind-Checked="@_board.AcceptAnyone" Label="Public" Color="Color.Primary" />
                                     <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
                                 </MudContainer>
                                 <MudText Typo="Typo.body2"></MudText>
@@ -84,9 +81,9 @@ else if (_group != null)
             <TitleContent>
                 <div class="d-flex">
                     <MudText Typo="Typo.h5">Users</MudText>
-                    @if (_groupUsers.Any())
+                    @if (_boardUsers.Any())
                     {
-                        <MudBadge Content=@_groupUsers.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudBadge Content=@_boardUsers.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                             <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Default" />
                         </MudBadge>
                     }
@@ -98,7 +95,7 @@ else if (_group != null)
             </TitleContent>
             <ChildContent>
 
-                <MudTable Items="@_groupUsers" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                <MudTable Items="@_boardUsers" Hover=true Striped=true Filter="new Func<BoardUser,bool>(FilterFunc1)" Elevation="0">
                     <ToolBarContent>
                         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
@@ -112,13 +109,13 @@ else if (_group != null)
                         <MudTd DataLabel="Username">@context.User!.UserName</MudTd>
                         <MudTd DataLabel="Joined">@context.Joined</MudTd>
                         <MudTd DataLabel="Role">
-                            <MudSelect Disabled="@(@context.Role==GroupRole.Owner)" Class="mt-0" T="GroupRole" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))">
-                                <MudSelectItem Value="@(GroupRole.User)" />
-                                <MudSelectItem Value="@(GroupRole.Moderator)" />
-                                <MudSelectItem Value="@(GroupRole.Admin)" />
+                            <MudSelect Disabled="@(@context.Role==BoardRole.Owner)" Class="mt-0" T="BoardRole" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))">
+                                <MudSelectItem Value="@(BoardRole.User)" />
+                                <MudSelectItem Value="@(BoardRole.Moderator)" />
+                                <MudSelectItem Value="@(BoardRole.Admin)" />
                             </MudSelect>
                         </MudTd>
-                        <MudTd DataLabel="Action"><MudButton Disabled="@(@context.Role==GroupRole.Owner)" Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Delete</MudButton></MudTd>
+                        <MudTd DataLabel="Action"><MudButton Disabled="@(@context.Role==BoardRole.Owner)" Color="Color.Error" OnClick="@(async() => await RemoveUser(@context))">Delete</MudButton></MudTd>
                     </RowTemplate>
                     <PagerContent>
                         <MudTablePager />
@@ -145,7 +142,7 @@ else if (_group != null)
                 </div>
             </TitleContent>
             <ChildContent>
-                <MudTable Items="@_pendingApproval" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                <MudTable Items="@_pendingApproval" Hover=true Striped=true Filter="new Func<BoardUser,bool>(FilterFunc1)" Elevation="0">
                     <ToolBarContent>
                         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
@@ -185,7 +182,7 @@ else if (_group != null)
                 </div>
             </TitleContent>
             <ChildContent>
-                <MudTable Items="@_invited" Hover=true Striped=true Filter="new Func<GroupUser,bool>(FilterFunc1)" Elevation="0">
+                <MudTable Items="@_invited" Hover=true Striped=true Filter="new Func<BoardUser,bool>(FilterFunc1)" Elevation="0">
                     <ToolBarContent>
                         <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     </ToolBarContent>
@@ -223,34 +220,34 @@ else if (_group != null)
                 <MudCard Elevation="0" Class="mx-3 mt-6 d-flex">
                     @if (_searchResultUser != null)
                     {
-                        <MudAvatar Image=@Avatar(_searchResultUser.Image)></MudAvatar>
+                        <MudAvatar Image=@_globalService.AvatarImage(_searchResultUser.Image)></MudAvatar>
                         <MudText Class="pl-3 mr-auto">@_searchResultUser.UserName</MudText>
-                        @if (_searchResultGroupUser == null)
+                        @if (_searchResultBoardUser == null)
                         {
-                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await InviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
-                                <ProcessingButtonComponent Processing=@_searchProcessing>Invite to group</ProcessingButtonComponent>
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await InviteUser(@_searchResultUser!); await UpdateSearchResultBoardUser(); _searchProcessing=false;})">
+                                <ProcessingButtonComponent Processing=@_searchProcessing>Invite to board</ProcessingButtonComponent>
                             </MudButton>
                         }
-                        else if (_searchResultGroupUser.Role == GroupRole.PendingAcceptance)
+                        else if (_searchResultBoardUser.Role == BoardRole.PendingAcceptance)
                         {
                             <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                                <MudButton Disabled="@_searchProcessing" Color="Color.Success" OnClick="@(async() => {_searchProcessing=true; await AcceptUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Success" OnClick="@(async() => {_searchProcessing=true; await AcceptUser(_searchResultBoardUser!); await UpdateSearchResultBoardUser(); _searchProcessing=false;})">
                                     <ProcessingButtonComponent Processing=@_searchProcessing>Accept invite</ProcessingButtonComponent>
                                 </MudButton>
-                                <MudButton Disabled="@_searchProcessing" Color="Color.Error" OnClick="@(async() => {_searchProcessing=true;await RejectUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                                <MudButton Disabled="@_searchProcessing" Color="Color.Error" OnClick="@(async() => {_searchProcessing=true;await RejectUser(_searchResultBoardUser!); await UpdateSearchResultBoardUser(); _searchProcessing=false;})">
                                     <ProcessingButtonComponent Processing=@_searchProcessing>Reject invite</ProcessingButtonComponent>
                                 </MudButton>
                             </MudButtonGroup>
                         }
-                        else if (_searchResultGroupUser.Role == GroupRole.Invited)
+                        else if (_searchResultBoardUser.Role == BoardRole.Invited)
                         {
-                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await CancelInviteUser(@_searchResultUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await CancelInviteUser(@_searchResultUser!); await UpdateSearchResultBoardUser(); _searchProcessing=false;})">
                                 <ProcessingButtonComponent Processing=@_searchProcessing>Cancel invite</ProcessingButtonComponent>
                             </MudButton>
                         }
                         else
                         {
-                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await RemoveUser(@_searchResultGroupUser!); await UpdateSearchResultGroupUser(); _searchProcessing=false;})">
+                            <MudButton Disabled="@_searchProcessing" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" OnClick="@(async() => {_searchProcessing=true;await RemoveUser(_searchResultBoardUser!); await UpdateSearchResultBoardUser(); _searchProcessing=false;})">
                                 <ProcessingButtonComponent Processing=@_searchProcessing>Remove user</ProcessingButtonComponent>
                             </MudButton>
                         }
@@ -271,173 +268,173 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? GroupId { get; set; }
+    public Guid? BoardId { get; set; }
 
 
-    private List<GroupUser> _groupUsers = new();
-    private List<GroupUser> _pendingApproval = new();
-    private List<GroupUser> _invited = new();
+    private List<BoardUser> _boardUsers = new();
+    private List<BoardUser> _pendingApproval = new();
+    private List<BoardUser> _invited = new();
 
 
     private string _searchString = "";
-    private Group? _group;
-    private State _pageState = State.LOADING;
+    private Board? _board;
+    private State _pageState = State.Loading;
     private MudAutocomplete<User> _searchAutocomplete = new();
 
     private User? _searchResultUser;
-    private GroupUser? _searchResultGroupUser;
+    private BoardUser? _searchResultBoardUser;
 
-    private bool _searchProcessing = false;
-    private bool _processing = false;
+    private bool _searchProcessing;
+    private bool _processing;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
-    public async override Task SetParametersAsync(ParameterView parameters)
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (UserService.IsGroupAdmin(new Group(GroupId ?? Consts.DefaultGroupId)))
+        if (_userService.IsBoardAdmin(new Board(BoardId ?? _globalService.DefaultBoardId)))
         {
-            _group = await GroupService.GetGroupInfoAsyncCached(new Group(GroupId ?? Consts.DefaultGroupId));
-            _groupUsers = await GroupService.GetGroupUsers(_group!);
-            _pendingApproval = await GroupService.GetPendingApprovalUsers(_group!);
-            _invited = await GroupService.GetInvitedUsers(_group!);
+            _board = await _boardService.GetBoardInfoAsyncCached(new Board(BoardId ?? _globalService.DefaultBoardId));
+            _boardUsers = await _boardService.GetBoardUsers(_board!);
+            _pendingApproval = await _boardService.GetPendingApprovalUsers(_board!);
+            _invited = await _boardService.GetInvitedUsers(_board!);
         }
         else
         {
-            _pageState = State.ACCESS_BLOCKED;
+            _pageState = State.AccessBlocked;
         }
         StateHasChanged();
     }
 
-    private bool FilterFunc1(GroupUser groupUser) => FilterFunc(groupUser, _searchString);
-    private bool FilterFunc(GroupUser groupUser, string searchString)
+    private bool FilterFunc1(BoardUser boardUser) => FilterFunc(boardUser, _searchString);
+    private static bool FilterFunc(BoardUser boardUser, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (groupUser.User!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
+        return boardUser.User!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
     }
 
 
-    private async Task RoleChanged(GroupUser groupUser)
+    private async Task RoleChanged(BoardUser boardUser)
     {
-        var result = await GroupService.ChangeRole(groupUser.Group!, groupUser.User!, groupUser.Role);
+        var result = await _boardService.ChangeRole(boardUser.Board!, boardUser.User!, boardUser.Role);
         if (!result)
-            Snackbar.Add($"There was an error changing role", Severity.Error);
+            _snackbar.Add($"There was an error changing role", Severity.Error);
         else
-            Snackbar.Add($"Role changed successfully", Severity.Success);
+            _snackbar.Add($"Role changed successfully", Severity.Success);
     }
-    private async Task RemoveUser(GroupUser groupUser)
+    private async Task RemoveUser(BoardUser boardUser)
     {
-        var parameters = new DialogParameters();
-        parameters.Add("ContentText", $"Do you really want to delete '{groupUser.User!.UserName}' user?");
-        parameters.Add("ButtonText", "Delete");
-        parameters.Add("Color", Color.Error);
+        var parameters = new DialogParameters
+        {
+            {"ContentText", $"Do you really want to delete '{boardUser.User!.UserName}' user?"},
+            {"ButtonText", "Delete"},
+            {"Color", Color.Error}
+        };
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
+        var dialog = _dialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Cancelled)
         {
-            var removeUserResult = await GroupService.RemoveGroupUser(groupUser.Group!, groupUser.User!);
+            var removeUserResult = await _boardService.RemoveBoardUser(boardUser.Board!, boardUser.User!);
             if (!removeUserResult)
             {
-                Snackbar.Add($"There was an error removing '{groupUser.User!.UserName}' user", Severity.Error);
+                _snackbar.Add($"There was an error removing '{boardUser.User!.UserName}' user", Severity.Error);
                 return;
             }
-            _groupUsers.Remove(groupUser);
-            Snackbar.Add($"User '{groupUser.User!.UserName}' deleted successfully", Severity.Success);
+            _boardUsers.Remove(boardUser);
+            _snackbar.Add($"User '{boardUser.User!.UserName}' deleted successfully", Severity.Success);
             StateHasChanged();
         }
     }
-    private async Task AcceptUser(GroupUser groupUser)
+    private async Task AcceptUser(BoardUser boardUser)
     {
-        var result = await GroupService.AcceptUser(groupUser.Group!, groupUser.User!);
+        var result = await _boardService.AcceptUser(boardUser.Board!, boardUser.User!);
         if (result)
         {
-            Snackbar.Add($"User '{groupUser.User!.UserName}' accepted", Severity.Success);
-            _pendingApproval.Remove(groupUser);
-            groupUser.Role = GroupRole.User;
-            _groupUsers.Add(groupUser);
+            _snackbar.Add($"User '{boardUser.User!.UserName}' accepted", Severity.Success);
+            _pendingApproval.Remove(boardUser);
+            boardUser.Role = BoardRole.User;
+            _boardUsers.Add(boardUser);
             StateHasChanged();
         }
         else
-            Snackbar.Add($"There was an error accepting '{groupUser.User!.UserName}' user", Severity.Error);
+            _snackbar.Add($"There was an error accepting '{boardUser.User!.UserName}' user", Severity.Error);
     }
-    private async Task RejectUser(GroupUser groupUser)
+    private async Task RejectUser(BoardUser boardUser)
     {
-        var result = await GroupService.RejectUser(groupUser.Group!, groupUser.User!);
+        var result = await _boardService.RejectUser(boardUser.Board!, boardUser.User!);
         if (result)
         {
-            Snackbar.Add($"User '{groupUser.User!.UserName}' rejected", Severity.Warning);
-            _pendingApproval.Remove(groupUser);
+            _snackbar.Add($"User '{boardUser.User!.UserName}' rejected", Severity.Warning);
+            _pendingApproval.Remove(boardUser);
             StateHasChanged();
         }
         else
-            Snackbar.Add($"There was an error rejecting '{groupUser.User!.UserName}' user", Severity.Error);
+            _snackbar.Add($"There was an error rejecting '{boardUser.User!.UserName}' user", Severity.Error);
     }
     private async Task InviteUser(User user)
     {
-        var result = await GroupService.InviteUser(_group!, user);
+        var result = await _boardService.InviteUser(_board!, user);
         if (result)
         {
-            Snackbar.Add($"User '{user.UserName}' invited", Severity.Success);
-            _invited.Add(new GroupUser() { Group = _group, User = user });
+            _snackbar.Add($"User '{user.UserName}' invited", Severity.Success);
+            _invited.Add(new BoardUser() { Board = _board, User = user });
             StateHasChanged();
         }
         else
-            Snackbar.Add($"There was an error inviting '{user.UserName}' user", Severity.Error);
+            _snackbar.Add($"There was an error inviting '{user.UserName}' user", Severity.Error);
     }
-    private async Task CancelInviteUser(GroupUser groupUser)
+    private async Task CancelInviteUser(BoardUser boardUser)
     {
-        await CancelInviteUser(groupUser.User!);
+        await CancelInviteUser(boardUser.User!);
     }
     private async Task CancelInviteUser(User user)
     {
-        var result = await GroupService.CancelInviteUser(_group!, user);
+        var result = await _boardService.CancelInviteUser(_board!, user);
         if (result)
         {
-            Snackbar.Add($"User '{user.UserName}' invited cancelled", Severity.Warning);
-            _invited.Remove(_invited.Where(u => u.User!.Id == user.Id).FirstOrDefault()!);
+            _snackbar.Add($"User '{user.UserName}' invited cancelled", Severity.Warning);
+            _invited.Remove(_invited.FirstOrDefault(u => u.User!.Id == user.Id)!);
             StateHasChanged();
         }
         else
-            Snackbar.Add($"There was an error canceling ivnitation for '{user.UserName}' user", Severity.Error);
+            _snackbar.Add($"There was an error canceling invitation for '{user.UserName}' user", Severity.Error);
     }
     private async Task OnSearchResult(User entry)
     {
-        _searchResultUser = await UserService.GetUserInfoAsync(entry);
-        await UpdateSearchResultGroupUser();
+        _searchResultUser = await _userService.GetUserInfoAsync(entry);
+        await UpdateSearchResultBoardUser();
         StateHasChanged();
         await _searchAutocomplete.Clear();
     }
-    private async Task UpdateSearchResultGroupUser()
+    private async Task UpdateSearchResultBoardUser()
     {
         if (_searchResultUser != null)
-            _searchResultGroupUser = await GroupService.GetGroupUserAsync(_group!, _searchResultUser);
+            _searchResultBoardUser = await _boardService.GetBoardUserAsync(_board!, _searchResultUser);
     }
     private Task<IEnumerable<User>> Search(string userName)
     {
-        return UserService.Search(userName);
+        return _userService.Search(userName);
     }
 
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _processing = true;
-        var result = await GroupService.UpdateGroup(_group!);
+        var result = await _boardService.UpdateBoard(_board!);
         if (!result)
         {
             _processing = false;
-            Snackbar.Add($"Group has NOT been updated, contact system administrator", Severity.Error);
+            _snackbar.Add($"Board has NOT been updated, contact system administrator", Severity.Error);
             return;
         }
-        Snackbar.Add($"Group has been updated - reloading", Severity.Success);
+        _snackbar.Add($"Board has been updated - reloading", Severity.Success);
         await Task.Delay(1000);
-        NavigationManager.NavigateTo($"group/settings?groupid={_group!.Id}", true);
+        _navigationManager.NavigateTo($"board/settings?boardId={_board!.Id}", true);
     }
 }

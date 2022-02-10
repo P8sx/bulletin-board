@@ -1,37 +1,36 @@
-﻿@page "/group"
+﻿@page "/board"
 
 @attribute [Authorize]
 
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Model
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
 @using GEmojiSharp.Blazor
 
-@inject ISnackbar Snackbar
-@inject IUserService UserService
-@inject IGroupService GroupService
-@inject NavigationManager NavigationManager
+@inject ISnackbar _snackbar
+@inject IBoardService _boardService
+@inject NavigationManager _navigationManager
 
 <MudCard Outlined="true" Class="mb-3">
 
     <MudCardMedia Image="/group_page.svg" Height="200"/>
     <MudCardHeader>
         <CardHeaderContent>
-            <MudText Typo="Typo.h4">Groups</MudText>
+            <MudText Typo="Typo.h4">Boards</MudText>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent Class="pt-0">
-        <MudText Typo="Typo.body2">Browse in public group or create your own one.</MudText>
+        <MudText Typo="Typo.body2">Browse in public board or create your own one.</MudText>
     </MudCardContent>
 </MudCard>
 
-@if (_pageState == State.ACCESS_BLOCKED)
+@if (_pageState == State.AccessBlocked)
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
-else if (_pageState == State.LOADING)
+else if (_pageState == State.Loading)
 {
     <LoadingComponent></LoadingComponent>
 }
@@ -40,22 +39,22 @@ else
 <MudCard Outlined="true" Class="mb-3">
     <MudCardHeader>
         <CardHeaderContent>
-            <MudText Typo="Typo.h4">Public listed groups</MudText>
+            <MudText Typo="Typo.h4">Public listed boards</MudText>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
         <MudCardContent>
-            @if (PublicGroups.Any())
+            @if (_publicBoards.Any())
             {
                 <MudGrid>
-                    @foreach (var group in PublicGroups)
+                    @foreach (var board in _publicBoards)
                     {
                         <MudItem xs="6" md="6" lg="4" Class="d-flex">
                             <MudCard Outlined="true" Style="width:100%" Class="d-flex flex-column">
-                                <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
+                                <MudCardMedia Image="@(_globalService.BoardImage(board.Image))" Height="200" />
                                 <MudCardHeader Class="pb-2">
                                     <CardHeaderContent>
-                                        <MudText Typo="Typo.h5">@group.Name</MudText>
+                                        <MudText Typo="Typo.h5">@board.Name</MudText>
 
                                     </CardHeaderContent>
                                      <CardHeaderActions>
@@ -67,43 +66,43 @@ else
 
                                 <MudCardContent Class="py-0">
                                     <Emoji>
-                                        @group.Description
+                                        @board.Description
                                     </Emoji>
                                 </MudCardContent>
 
                                 <MudCardActions Class="pt-1 mt-auto d-flex justify-end">
-                                    @if (UserService.IsGroupOwner(group))
+                                    @if (_userService.IsBoardOwner(board))
                                     {
                                         <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Secondary">OWNER</MudText>
                                     }
-                                    else if (UserService.IsGroupAdmin(group))
+                                    else if (_userService.IsBoardAdmin(board))
                                     {
                                         <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Warning">ADMIN</MudText>
                                     }
-                                    else if (UserService.IsGroupModerator(group))
+                                    else if (_userService.IsBoardModerator(board))
                                     {
                                         <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Info">MODERATOR</MudText>
                                     }
-                                    else if (UserService.IsInGroup(group))
+                                    else if (_userService.IsInBoard(board))
                                     {
                                         <MudText Typo="Typo.caption" Class="pl-2 mr-auto">USER</MudText>
                                     }
 
-                                    @if (UserService.IsInGroup(group))
+                                    @if (_userService.IsInBoard(board))
                                     {
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?boardId={board.Id}")>View</MudButton>
                                     }
-                                    else if (UserService.PendingAcceptance(group))
+                                    else if (_userService.PendingAcceptance(board))
                                     {
                                         <MudButton Variant="Variant.Text" Disabled=true Color="Color.Primary">Pending acceptance</MudButton>
                                     }
-                                    else if (UserService.PendingInvitations(group))
+                                    else if (_userService.PendingInvitations(board))
                                     {
-                                        <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(async() => await AcceptInvitation(group))>Accept invitation</MudButton>
+                                        <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(async() => await AcceptInvitation(board))>Accept invitation</MudButton>
                                     }
                                     else
                                     {
-                                        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick=@(() => Join(group))>Join</MudButton>
+                                        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick=@(() => Join(board))>Join</MudButton>
                                     }
                                 </MudCardActions>
                             </MudCard>
@@ -113,7 +112,7 @@ else
             }
             else
             {
-                <MudText Typo="Typo.h5" Align="Align.Center">Sorry there are no public groups</MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center">Sorry there are no public boards</MudText>
             }
         </MudCardContent>
     </MudCardContent>
@@ -121,33 +120,33 @@ else
     
 }
 @code {
-    public List<Group> PublicGroups = new();
-    private State _pageState = State.LOADING;
+    private List<Board> _publicBoards = new();
+    private State _pageState = State.Loading;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await UpdateGroupsInfo();
-        _pageState = State.SUCCESS;
+        await UpdateBoardsInfo();
+        _pageState = State.Success;
     }
-    private async Task UpdateGroupsInfo()
+    private async Task UpdateBoardsInfo()
     {
-        PublicGroups = await GroupService.GetPublicGroups();
+        _publicBoards = await _boardService.GetPublicBoard();
     }
 
-    private async void Join(Group group)
+    private async void Join(Board board)
     {
-        var result = await GroupService.JoinToGroup(group, UserService.User!);
-        UserService.UpdateUserGroups();
-        await UpdateGroupsInfo();
+        await _boardService.JoinToBoard(board, _userService.User!);
+        _userService.UpdateUserBoards();
+        await UpdateBoardsInfo();
         StateHasChanged();
     }
 
-    private async Task AcceptInvitation(Group group)
+    private async Task AcceptInvitation(Board board)
     {
-        var result = await GroupService.AcceptInvitation(group, UserService.User!);
-        UserService.UpdateUserGroups();
-        await UpdateGroupsInfo();
+        await _boardService.AcceptInvitation(board, _userService.User!);
+        _userService.UpdateUserBoards();
+        await UpdateBoardsInfo();
         StateHasChanged();
     }
 }

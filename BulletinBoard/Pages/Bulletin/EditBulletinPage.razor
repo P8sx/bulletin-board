@@ -2,22 +2,19 @@
 
 @attribute [Authorize]
 
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 @using BulletinBoard.Model
-@using System.IO
 @using BulletinBoard.Pages.Shared.Components
-@using Microsoft.AspNetCore.Identity;
 @using BulletinBoard.Services
 @using System.Linq;
 
-@inject ISnackbar Snackbar
-@inject IWebHostEnvironment env
-@inject IUserService UserService
-@inject IBulletinService BulletinService
-@inject NavigationManager NavigationManager
+@inject ISnackbar _snackbar
+@inject IWebHostEnvironment _env
+@inject IBulletinService _bulletinService
+@inject NavigationManager _navigationManager
 
 
-@if (Bulletin != null && Bulletin.Group != null && UserService.CanEditBulletin(Bulletin.Group, Bulletin))
+@if (Bulletin is {Board: { } } && _userService.CanEditBulletin(Bulletin.Board, Bulletin))
 {
     <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
     <MudPaper Class="mud-width-full py-8" Elevation="1">
@@ -53,9 +50,9 @@
                                 {
                                     <MudItem xs="6" md="6">
                                         <MudCard>
-                                            <MudCardMedia Image=@img.Path() Height="200" />
+                                            <MudCardMedia Image=@_globalService.BulletinImage(img) Height="200" />
                                             <MudCardActions Class="d-flex justify-space-between">
-                                                <MudText Typo="Typo.caption">@img.OrginalName</MudText>
+                                                <MudText Typo="Typo.caption">@img.OriginalName</MudText>
                                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteExistingFile(img))"></MudIconButton>
                                             </MudCardActions>
                                         </MudCard>
@@ -66,7 +63,7 @@
 
                         <MudItem xs="12" Class="d-flex flex-column">
                             <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                            <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
+                            <MudText Class="mt-2" Align=Align.Center>Max (@_globalService.MaxFileSize/1024^2)MB per image.</MudText>
                         </MudItem>
 
                     </MudGrid>
@@ -75,8 +72,8 @@
                 <MudItem xs="12" md="4" Class="px-8">
                     <MudText Typo="Typo.h5">Additional</MudText>
                     <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                    <MudSelect T="Guid?" Label="Group" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin group" @bind-value="Bulletin.GroupId">
-                        <MudSelectItem T="Guid?" Value="@Bulletin.GroupId">@Bulletin.Group!.Name</MudSelectItem>
+                    <MudSelect T="Guid?" Label="Board" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin board" @bind-value="Bulletin.BoardId">
+                        <MudSelectItem T="Guid?" Value="@Bulletin.BoardId">@Bulletin.Board!.Name</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 
@@ -89,7 +86,7 @@
         </EditForm>
     </MudPaper>
 }
-else if (_pageState == State.LOADING)
+else if (_pageState == State.Loading)
 {
     <LoadingComponent></LoadingComponent>
 }
@@ -104,31 +101,36 @@ else
     [SupplyParameterFromQuery]
     public Guid BulletinId { get; set; }
 
-    public Bulletin? Bulletin { get; set; } = new();
+    private Bulletin? Bulletin { get; set; } = new();
 
     // Bulletin attachments
 
-    private List<Image> _deletedImages = new();
-    private List<Image> _newImages = new();
+    private readonly List<Image> _deletedImages = new();
 
-    private bool _processing = false;
-    private State _pageState = State.LOADING;
+    private bool _processing;
+    private State _pageState;
 
     private ImageUploadComponent? _imageUpload;
-    protected async Task UpdateImages(bool update) => await InvokeAsync(() => StateHasChanged());
+
+    public EditBulletinPage()
+    {
+        _pageState = State.Loading;
+    }
+
+    private async Task UpdateImages(bool update) => await InvokeAsync(StateHasChanged);
 
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        Bulletin = await BulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId))!;
-        _pageState = State.SUCCESS;
+        Bulletin = await _bulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId));
+        _pageState = State.Success;
         StateHasChanged();
     }
 
@@ -151,22 +153,22 @@ else
         }
 
         // Try save bulletin in db
-        var uploadedImages = _imageUpload!.GetImages().Take(_imageUpload.NumberOfFiles-Bulletin.Images.Count).ToList();
+        var uploadedImages = _imageUpload!.GetImages().ToList();
         Bulletin.Images.AddRange(uploadedImages);
         
 
-        var result = await BulletinService.UpdateBulletin(Bulletin);
+        var result = await _bulletinService.UpdateBulletin(Bulletin);
 
         if (!result)
         {
             _processing = false;
-            Snackbar.Add($"Bulletin has NOT been updated, contact system administrator", Severity.Error);
+            _snackbar.Add($"Bulletin has NOT been updated, contact system administrator", Severity.Error);
             return;
         }
-        // If bulletin succesfuly added save images on server
+        // If bulletin successfully added save images on server
         await _imageUpload.SaveFilesAsync();
-        Snackbar.Add($"Bulletin has been modified - redirecting", Severity.Success);
+        _snackbar.Add($"Bulletin has been modified - redirecting", Severity.Success);
         await Task.Delay(2000);
-        NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");
+        _navigationManager.NavigateTo($"bulletin?boardId={Bulletin.BoardId}&bulletinId={Bulletin.Id}");
     }
 }

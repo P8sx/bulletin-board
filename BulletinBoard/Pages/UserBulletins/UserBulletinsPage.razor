@@ -8,15 +8,15 @@
 @using BulletinBoard.Pages.Bulletin.Components
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Components;
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
 
 @inject IUserService UserService
-@inject IGroupService GroupService
+@inject IBoardService _boardService
 @inject IBulletinService BulletinService
 @inject NavigationManager NavigationManager
 
-@if (_pageState == State.SUCCESS && _bulletins != null)
+@if (_pageState == State.Success && _bulletins != null)
 {
 
     <MudCard Outlined="true" Class="mb-3">
@@ -63,7 +63,7 @@
     <MudElement>
         @foreach (var bulletin in _bulletins)
         {
-            <CardComponent Bulletin="bulletin" GroupInfo=true></CardComponent>
+            <CardComponent Bulletin="bulletin" BoardInfo=true></CardComponent>
         }
     </MudElement>
 
@@ -94,7 +94,7 @@ else
     private int _bulletinsPerPage = 10;
     private int _bulletinsCount = 0;
 
-    private State _pageState = State.LOADING;
+    private State _pageState = State.Loading;
     private IList<Bulletin> _bulletins = default!;
     private SortBy _sortBy = Services.SortBy.Created;
     private OrderBy _orderBy = Services.OrderBy.Ascending;
@@ -108,7 +108,7 @@ else
         _orderBy = (OrderBy)((OrderBy??1)%2);    
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();
-        _pageState = State.SUCCESS;
+        _pageState = State.Success;
         
         StateHasChanged();
     }

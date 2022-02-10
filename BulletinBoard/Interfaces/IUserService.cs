@@ -6,21 +6,21 @@ namespace BulletinBoard.Services
     {
         User? User { get; }
 
-        bool IsInGroup(Group group);
-        void UpdateUserGroups();
+        bool IsInBoard(Board board);
+        void UpdateUserBoards();
         Task Bookmark(Bulletin bulletin);
         Task Vote(Bulletin bulletin);
-        bool IsGroupModerator(Group group);
+        bool IsBoardModerator(Board board);
         bool IsBulletinOwner(Bulletin bulletin);
-        bool CanEditBulletin(Group group, Bulletin bulletin);
-        List<Group?> GetUserGroups();
-        List<Group?> GetUserPendingAcceptanceGroups();
-        List<Group?> GetUserPendingInvitationsGroups();
-        bool PendingAcceptance(Group group);
-        bool IsGroupAdmin(Group group);
+        bool CanEditBulletin(Board board, Bulletin bulletin);
+        List<Board?> GetUserBoards();
+        List<Board?> GetUserPendingAcceptanceBoards();
+        List<Board?> GetUserPendingInvitationsBoards();
+        bool PendingAcceptance(Board board);
+        bool IsBoardAdmin(Board board);
         Task<IEnumerable<User>> Search(string userName);
         Task<User?> GetUserInfoAsync(User user);
-        bool IsGroupOwner(Group group);
-        bool PendingInvitations(Group group);
+        bool IsBoardOwner(Board board);
+        bool PendingInvitations(Board board);
     }
 }

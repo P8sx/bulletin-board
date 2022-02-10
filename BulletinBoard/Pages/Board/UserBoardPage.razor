@@ -1,19 +1,18 @@
-﻿@page "/group/user"
+﻿@page "/board/user"
 
 @attribute [Authorize]
 @using BulletinBoard.Services
 @using BulletinBoard.Model
 @using GEmojiSharp.Blazor
 @using BulletinBoard.Pages.Shared.Components
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
 
 
-@inject ISnackbar Snackbar
-@inject IUserService UserService
-@inject IGroupService GroupService
-@inject NavigationManager NavigationManager
-@inject IDialogService DialogService
+@inject ISnackbar _snackbar
+@inject IBoardService _boardService
+@inject NavigationManager _navigationManager
+@inject IDialogService _dialogService
 
 
 <MudCard Outlined="true" Class="mb-3">
@@ -21,23 +20,23 @@
     <MudCardMedia Image="/group_page.svg" Height="200" />
     <MudCardHeader>
         <CardHeaderContent>
-            <MudText Typo="Typo.h4">Groups</MudText>
+            <MudText Typo="Typo.h4">Boards</MudText>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent Class="pt-0">
-        <MudText Typo="Typo.body2">This are groups that you belong to.</MudText>
+        <MudText Typo="Typo.body2">This are boards that you belong to.</MudText>
     </MudCardContent>
 </MudCard>
 
 <MudExpansionPanels MultiExpansion="true">
-    @*User groups panel*@
+    @*User boards panel*@
     <MudExpansionPanel IsInitiallyExpanded=true HideIcon="true">
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">My groups</MudText>
-                @if (_userGroups.Any())
+                @if (_userBoards.Any())
                 {
-                        <MudBadge Content=@_userGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudBadge Content=@_userBoards.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                             <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Default" />
                         </MudBadge>
                 }
@@ -48,25 +47,25 @@
             </div>
         </TitleContent>
         <ChildContent>
-            @if (_userGroups.Any())
+            @if (_userBoards.Any())
             {
 
                     <MudGrid>
-                    @foreach (var group in _userGroups)
+                    @foreach (var board in _userBoards)
                     {
                                 <MudItem xs="6" md="4" Class="d-flex">
                                     <MudCard Outlined="true" Style="width:100%" Class="d-flex flex-column">
-                                        <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
+                                        <MudCardMedia Image="@(_globalService.BoardImage(board.Image))" Height="200" />
                                         <MudCardHeader Class="pb-2">
                                             <CardHeaderContent>
-                                                <MudText Typo="Typo.h5">@group.Name</MudText>
+                                                <MudText Typo="Typo.h5">@board.Name</MudText>
 
                                             </CardHeaderContent>
                                             <CardHeaderActions>
                                                 <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
                                                     <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
-                                                    @if(!UserService.IsGroupOwner(group)){
-                                                        <MudMenuItem OnClick="@(async ()=> await LeaveGroup(group))"><MudIcon Icon="@Icons.Filled.ExitToApp" Style="vertical-align:middle;" Title="Leave" Class="mr-2" /><span style="vertical-align:middle;">Leave group</span></MudMenuItem>
+                                                    @if(!_userService.IsBoardOwner(board)){
+                                                        <MudMenuItem OnClick="@(async ()=> await LeaveBoard(board))"><MudIcon Icon="@Icons.Filled.ExitToApp" Style="vertical-align:middle;" Title="Leave" Class="mr-2" /><span style="vertical-align:middle;">Leave board</span></MudMenuItem>
                                                     }
                                                 </MudMenu>
                                             </CardHeaderActions>
@@ -74,28 +73,28 @@
 
                                         <MudCardContent Class="py-0">
                                             <Emoji>
-                                        @group.Description
+                                        @board.Description
                                             </Emoji>
                                         </MudCardContent>
 
                                         <MudCardActions Class="pt-1 mt-auto d-flex justify-end">
-                                            @if (UserService.IsGroupOwner(group))
+                                            @if (_userService.IsBoardOwner(board))
                                             {
                                                 <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Secondary">OWNER</MudText>
                                             }
-                                            else if (UserService.IsGroupAdmin(group))
+                                            else if (_userService.IsBoardAdmin(board))
                                             {
                                                 <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Warning">ADMIN</MudText>
                                             }
-                                            else if (UserService.IsGroupModerator(group))
+                                            else if (_userService.IsBoardModerator(board))
                                             {
                                                 <MudText Typo="Typo.caption" Class="pl-2 mr-auto" Color="Color.Info">MODERATOR</MudText>
                                             }
-                                            else if (UserService.IsInGroup(group))
+                                            else if (_userService.IsInBoard(board))
                                             {
                                                 <MudText Typo="Typo.caption" Class="pl-2 mr-auto">USER</MudText>
                                             }
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?groupid={group.Id}")>View</MudButton>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?boardId={board.Id}")>View</MudButton>
                                         </MudCardActions>
                                     </MudCard>
                                 </MudItem>
@@ -105,19 +104,19 @@
             }
             else
             {
-                    <MudText Typo="Typo.body2" Align="Align.Center">Sorry but you aren't in any group</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center">Sorry but you aren't in any board</MudText>
             }
         </ChildContent>
     </MudExpansionPanel>
 
     @*Invitations panel*@
-    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingInvitationsGroups.Any()">
+    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingInvitationsBoards.Any()">
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Invitations</MudText>
-                @if (_userPendingInvitationsGroups.Any())
+                @if (_userPendingInvitationsBoards.Any())
                 {
-                        <MudBadge Content=@_userPendingInvitationsGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudBadge Content=@_userPendingInvitationsBoards.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                             <MudIcon Icon="@Icons.Filled.InsertInvitation" Color="Color.Default" />
                         </MudBadge>
                 }
@@ -128,17 +127,17 @@
             </div>
         </TitleContent>
         <ChildContent>
-          @if (_userPendingInvitationsGroups.Any())
+          @if (_userPendingInvitationsBoards.Any())
             {
                 <MudGrid>
-                    @foreach (var group in _userPendingInvitationsGroups)
+                    @foreach (var board in _userPendingInvitationsBoards)
                     {
                                 <MudItem xs="6" md="4">
                                     <MudCard Outlined="true">
-                                        <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
+                                        <MudCardMedia Image="@(_globalService.BoardImage(board.Image))" Height="200" />
                                         <MudCardHeader Class="pb-2">
                                             <CardHeaderContent>
-                                                <MudText Typo="Typo.h5">@group.Name</MudText>
+                                                <MudText Typo="Typo.h5">@board.Name</MudText>
 
                                             </CardHeaderContent>
                                             <CardHeaderActions>
@@ -148,12 +147,12 @@
 
                                         <MudCardContent Class="py-0">
                                             <Emoji>
-                                        @group.Description
+                                        @board.Description
                                             </Emoji>
                                         </MudCardContent>
 
                                         <MudCardActions Class="pt-1 d-flex justify-end">
-                                            <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(()=>AcceptInvitation(group))>Accept</MudButton>
+                                            <MudButton Variant="Variant.Text" Color="Color.Success" OnClick=@(()=>AcceptInvitation(board))>Accept</MudButton>
                                         </MudCardActions>
                                     </MudCard>
                                 </MudItem>
@@ -169,13 +168,13 @@
     </MudExpansionPanel>
 
     @*Pending acceptance panel*@
-    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingAcceptanceGroups.Any()">
+    <MudExpansionPanel HideIcon="true" Disabled="!_userPendingAcceptanceBoards.Any()">
         <TitleContent>
             <div class="d-flex">
                 <MudText Typo="Typo.h5">Pending acceptance</MudText>
-                @if (_userPendingAcceptanceGroups.Any())
+                @if (_userPendingAcceptanceBoards.Any())
                 {
-                        <MudBadge Content=@_userPendingAcceptanceGroups.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
+                        <MudBadge Content=@_userPendingAcceptanceBoards.Count Color="Color.Primary" Overlap="true" Class="d-flex ml-auto">
                             <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Default" />
                         </MudBadge>
                 }
@@ -186,17 +185,17 @@
             </div>
         </TitleContent>
         <ChildContent>
-           @if (_userPendingAcceptanceGroups.Any())
+           @if (_userPendingAcceptanceBoards.Any())
           {
                   <MudGrid>
-                    @foreach (var group in _userPendingAcceptanceGroups)
+                    @foreach (var board in _userPendingAcceptanceBoards)
                     {
                                 <MudItem xs="6" md="4">
                                     <MudCard Outlined="true">
-                                        <MudCardMedia Image="@(GroupImage(group.Image))" Height="200" />
+                                        <MudCardMedia Image="@(_globalService.BoardImage(board.Image))" Height="200" />
                                         <MudCardHeader Class="pb-2">
                                             <CardHeaderContent>
-                                                <MudText Typo="Typo.h5">@group.Name</MudText>
+                                                <MudText Typo="Typo.h5">@board.Name</MudText>
 
                                             </CardHeaderContent>
                                             <CardHeaderActions>
@@ -206,12 +205,12 @@
 
                                         <MudCardContent Class="py-0">
                                             <Emoji>
-                                        @group.Description
+                                        @board.Description
                                             </Emoji>
                                         </MudCardContent>
 
                                         <MudCardActions Class="pt-1 d-flex justify-end">
-                                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick=@(()=>CancelJoin(group))>Cancel request</MudButton>
+                                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick=@(()=>CancelJoin(board))>Cancel request</MudButton>
                                         </MudCardActions>
                                     </MudCard>
                                 </MudItem>
@@ -221,7 +220,7 @@
             }
            else
            { 
-                <MudText Typo="Typo.body1" Align="Align.Center">You have not joined any group</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center">You have not joined any board</MudText>
             }
         </ChildContent>
     </MudExpansionPanel>
@@ -229,57 +228,59 @@
 </MudExpansionPanels>
 
 @code {
-    private List<Group> _userGroups = new();
-    private List<Group> _userPendingAcceptanceGroups = new();
-    private List<Group> _userPendingInvitationsGroups = new();
+    private List<Board> _userBoards = new();
+    private List<Board> _userPendingAcceptanceBoards = new();
+    private List<Board> _userPendingInvitationsBoards = new();
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        UpdateGroupsInfo();
+        UpdateBoardsInfo();
     }
-    private void UpdateGroupsInfo()
+    private void UpdateBoardsInfo()
     {
-        _userGroups = UserService.GetUserGroups()!;
-        _userPendingAcceptanceGroups = UserService.GetUserPendingAcceptanceGroups()!;
-        _userPendingInvitationsGroups = UserService.GetUserPendingInvitationsGroups()!;
+        _userBoards = _userService.GetUserBoards()!;
+        _userPendingAcceptanceBoards = _userService.GetUserPendingAcceptanceBoards()!;
+        _userPendingInvitationsBoards = _userService.GetUserPendingInvitationsBoards()!;
     }
-    private async Task CancelJoin(Group group)
+    private async Task CancelJoin(Board board)
     {
-        var resutl = await GroupService.CancelJoinToGroup(group, UserService.User!);
-        UserService.UpdateUserGroups();
-        UpdateGroupsInfo();
+        await _boardService.CancelJoinToBoard(board, _userService.User!);
+        _userService.UpdateUserBoards();
+        UpdateBoardsInfo();
         StateHasChanged();
     }
-    private async Task AcceptInvitation(Group group)
+    private async Task AcceptInvitation(Board board)
     {
-        var resutl = await GroupService.AcceptInvitation(group, UserService.User!);
-        UserService.UpdateUserGroups();
-        UpdateGroupsInfo();
+        await _boardService.AcceptInvitation(board, _userService.User!);
+        _userService.UpdateUserBoards();
+        UpdateBoardsInfo();
         StateHasChanged();
     }
-    private async Task LeaveGroup(Group group)
+    private async Task LeaveBoard(Board board)
     {
-        var parameters = new DialogParameters();
-        parameters.Add("ContentText", $"Do you really want to leave '{group.Name}' group?");
-        parameters.Add("ButtonText", "Leave");
-        parameters.Add("Color", Color.Error);
+        var parameters = new DialogParameters
+        {
+            {"ContentText", $"Do you really want to leave '{board.Name}' board?"},
+            {"ButtonText", "Leave"},
+            {"Color", Color.Error}
+        };
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
 
-        var dialog = DialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
+        var dialog = _dialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
         var result = await dialog.Result;
 
          if (!result.Cancelled)
         {
-            var leaveGroupResult = await GroupService.RemoveGroupUser(group, UserService.User!);
-            if (!leaveGroupResult)
+            var leaveBoardResult = await _boardService.RemoveBoardUser(board, _userService.User!);
+            if (!leaveBoardResult)
             {
-                Snackbar.Add($"There was an error - contact system admin", Severity.Error);
+                _snackbar.Add($"There was an error - contact system admin", Severity.Error);
                 return;
             }
-            _userGroups.Remove(group);
-            Snackbar.Add($"Successfully left '{group.Name}' group", Severity.Success);
+            _userBoards.Remove(board);
+            _snackbar.Add($"Successfully left '{board.Name}' board", Severity.Success);
             StateHasChanged();
         }
     }

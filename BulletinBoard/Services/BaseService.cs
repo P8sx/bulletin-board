@@ -9,11 +9,14 @@ namespace BulletinBoard.Services
         protected readonly IDbContextFactory<ApplicationDbContext> _dbFactory;
         protected readonly ILogger _logger;
         protected readonly IMemoryCache _memoryCache;
-        public BaseService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger logger, IMemoryCache memoryCache)
+        protected readonly GlobalService GlobalService;
+
+        protected BaseService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger logger, IMemoryCache memoryCache, GlobalService globalService)
         {
             _dbFactory = dbFactory;
             _logger = logger;
             _memoryCache = memoryCache;
+            GlobalService = globalService;
         }
     }
 }

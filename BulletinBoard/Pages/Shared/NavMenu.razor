@@ -4,7 +4,7 @@
         <AuthorizeView>
             <Authorized>
                 <MudElement Class="d-flex flex-column justify-center">
-                    <MudAvatar Image="/no_avatar.png" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
+                    <MudAvatar Image="#" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
                     <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
                     <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
                 </MudElement>
@@ -18,8 +18,8 @@
 
 
         <MudNavGroup Title="Bulletins" Icon="@Icons.Filled.Dashboard" Href="/bulletins" Match="NavLinkMatch.All" Expanded="true">
-            <MudNavLink Href="/bulletins?sortby=0" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
-            <MudNavLink Href="/bulletins?sortby=1" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
+            <MudNavLink Href="/bulletins?sortBy=0" Match="NavLinkMatch.All" Icon="@Icons.Filled.AccessTime">Latest</MudNavLink>
+            <MudNavLink Href="/bulletins?sortBy=1" Match="NavLinkMatch.All" Icon="@Icons.Filled.Favorite">Popular</MudNavLink>
             <AuthorizeView>
                 <Authorized>
                     <MudNavLink Href="/bulletin/add" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Add bulletin</MudNavLink>
@@ -32,17 +32,17 @@
         <AuthorizeView>
             <Authorized>
                 <MudNavLink Href="/bulletin/bookmark" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Bookmark">Bookmarks</MudNavLink>
-                <MudNavLink Href="/bulletin/mybulletins" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">My Bulletins</MudNavLink>
+                <MudNavLink Href="/bulletin/myBulletins" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Book">My Bulletins</MudNavLink>
             </Authorized>
         </AuthorizeView>
-        <MudText Typo="Typo.h4" Class="mx-3 mt-3">Groups</MudText>
+        <MudText Typo="Typo.h4" Class="mx-3 mt-3">Boards</MudText>
         <MudDivider Class="mt-3 mb-1"></MudDivider>
         <AuthorizeView>
             <Authorized>
-            <MudNavLink Href="/group" Match="NavLinkMatch.All" Icon="@Icons.Filled.Groups">Public groups</MudNavLink>
-            <MudNavGroup Title="Groups" Icon="@Icons.Filled.Home" Href="/group" Match="NavLinkMatch.All" Expanded="true">
-                <MudNavLink Href="/group/user" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">My groups</MudNavLink>
-                <MudNavLink Href="/group/add" Match="NavLinkMatch.All" Icon="@Icons.Filled.GroupAdd">Create group</MudNavLink>
+            <MudNavLink Href="/board" Match="NavLinkMatch.All" Icon="@Icons.Filled.Groups">Public boards</MudNavLink>
+            <MudNavGroup Title="Boards" Icon="@Icons.Filled.Home" Href="/board" Match="NavLinkMatch.All" Expanded="true">
+                <MudNavLink Href="/board/user" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">My boards</MudNavLink>
+                <MudNavLink Href="/board/add" Match="NavLinkMatch.All" Icon="@Icons.Filled.GroupAdd">Create board</MudNavLink>
             </MudNavGroup>
 
             </Authorized>

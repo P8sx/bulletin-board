@@ -10,14 +10,13 @@
 @using Microsoft.AspNetCore.Components;
 
 
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
-@inject IUserService UserService
-@inject IGroupService GroupService
-@inject IBulletinService BulletinService
-@inject NavigationManager NavigationManager
+@inject IBoardService _boardService
+@inject IBulletinService _bulletinService
+@inject NavigationManager _navigationManager
 
-@if (_pageState == State.SUCCESS && _bulletins != null)
+@if (_pageState == State.Success)
 {
 
     <MudCard Outlined="true" Class="mb-3">
@@ -64,7 +63,7 @@
     <MudElement>
         @foreach (var bulletin in _bulletins)
         {
-            <CardComponent Bulletin="bulletin" GroupInfo=true></CardComponent>
+            <CardComponent Bulletin="bulletin" BoardInfo=true></CardComponent>
         }
     </MudElement>
 
@@ -95,12 +94,12 @@ else
     private int _bulletinsPerPage = 10;
     private int _bulletinsCount = 0;
 
-    private State _pageState = State.LOADING;
+    private State _pageState = State.Loading;
     private IList<Bulletin> _bulletins = default!;
     private SortBy _sortBy = Services.SortBy.Created;
     private OrderBy _orderBy = Services.OrderBy.Ascending;
 
-    public async override Task SetParametersAsync(ParameterView parameters)
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
         Page = Page ?? 1;
@@ -109,26 +108,27 @@ else
         _orderBy = (OrderBy)((OrderBy??1)%2);    
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();
-        _pageState = State.SUCCESS;
+        _pageState = State.Success;
         
         StateHasChanged();
     }
 
-    protected void PageChanged(int page)
+    private void PageChanged(int page)
     {
-        NavigationManager.NavigateTo($"/bulletin/mybulletins?page={page}");
+        _navigationManager.NavigateTo($"/bulletin/myBulletins?page={page}");
     }
 
-    protected async Task<IList<Bulletin>> GetBulletins()
+    private async Task<IList<Bulletin>> GetBulletins()
     {
-        return await BulletinService.GetUserBookmarkBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, new BulletinSort(_sortBy, _orderBy));
-    }
-    protected async Task<int> GetBulletinsCount()
-    {
-        return await BulletinService.GetUserBookmarkBulletinsCountAsyncCached(UserService.User!);
+        return await _bulletinService.GetUserBookmarkBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _userService.User!, new BulletinSort(_sortBy, _orderBy));
     }
 
-    protected async Task UpdateBulletins()
+    private async Task<int> GetBulletinsCount()
+    {
+        return await _bulletinService.GetUserBookmarkBulletinsCountAsyncCached(_userService.User!);
+    }
+
+    private async Task UpdateBulletins()
     {
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();
@@ -137,7 +137,6 @@ else
 
     private int NumberOfPages()
     {
-        if (_bulletinsCount == 0) return 0;
-        return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
+        return _bulletinsCount == 0 ? 0 : Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
     }
 }

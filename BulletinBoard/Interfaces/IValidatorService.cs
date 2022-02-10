@@ -4,7 +4,7 @@ namespace BulletinBoard.Services
 {
     public interface IValidatorService
     {
-        bool CheckValidRoles(User user);
+        bool CheckValidRoles(User? user);
         void InvalidateUserRoles(User user);
     }
 }

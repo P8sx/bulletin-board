@@ -1,22 +1,21 @@
 ﻿@page "/bulletin"
-@using static BulletinBoard.Extensions.ExtensionsMethod
+@using static Services.GlobalService
 
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Pages.Bulletin.Components
 
-@inject IBulletinService BulletinService
-@inject IDialogService DialogService
-@inject IUserService UserService
-@inject ICommentService CommentService
-@inject IJSRuntime JS
-@inject ISnackbar Snackbar
+@inject IBulletinService _bulletinService
+@inject IDialogService _dialogService
+@inject ICommentService _commentService
+@inject IJSRuntime _js
+@inject ISnackbar _snackbar
 
 
 @using GEmojiSharp.Blazor
 
-@if (_pageState == State.SUCCESS && _bulletin != null)
+@if (_pageState == State.Success && _bulletin != null)
 {
     <CardComponent Bulletin="_bulletin" BulletinRemovedCallback="RemoveBulletin"></CardComponent>
 
@@ -31,7 +30,7 @@
         </AuthorizeView>
     </MudPaper>
     <MudText Typo="Typo.h4" Class="mb-2">Comments</MudText>
-    @if (_comments != null && _comments.Any())
+    @if (_comments.Any())
     {
 
         @foreach (var comment in _comments)
@@ -40,7 +39,7 @@
         }
 
     }
-    else if (_commentState == State.LOADING)
+    else if (_commentState == State.Loading)
     {
         <LoadingComponent></LoadingComponent>
     }
@@ -51,7 +50,7 @@
         </MudPaper>
     }
 }
-else if (_pageState == State.ACCESS_BLOCKED)
+else if (_pageState == State.AccessBlocked)
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
@@ -63,7 +62,7 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid GroupId { get; set; }
+    public Guid BoardId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -73,21 +72,21 @@ else
 
     private Bulletin? _bulletin = default!;
     private IList<Comment> _comments = default!;
-    private State _pageState = State.LOADING;
-    private State _commentState = State.LOADING;
+    private State _pageState = State.Loading;
+    private State _commentState = State.Loading;
 
-    public async override Task SetParametersAsync(ParameterView parameters)
+    public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (UserService.IsInGroup(new Group(GroupId)))
+        if (_userService.IsInBoard(new Board(BoardId)))
         {
-            _bulletin = await BulletinService.GetBulletinInfoAsyncCached(UserService.User!, new Bulletin(BulletinId));
-            _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId));
-            _commentState = _pageState = State.SUCCESS;
+            _bulletin = await _bulletinService.GetBulletinInfoAsyncCached(_userService.User!, new Bulletin(BulletinId));
+            _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(BulletinId));
+            _commentState = _pageState = State.Success;
         }
         else
         {
-            _commentState = _pageState = State.ACCESS_BLOCKED;
+            _commentState = _pageState = State.AccessBlocked;
         }
         StateHasChanged();
     }
@@ -95,37 +94,36 @@ else
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
-    protected async Task UpdateComments(bool update)
+    private async Task UpdateComments(bool update)
     {
         _comments = default!;
-        _commentState = State.LOADING;
+        _commentState = State.Loading;
         StateHasChanged();
-        _comments = await CommentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
-        _commentState = State.SUCCESS;
+        _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
+        _commentState = State.Success;
         _bulletin!.CommentsCount++;
         StateHasChanged();
     }
 
     private void OpenDialog(string path)
     {
-        var parameters = new DialogParameters();
-        parameters.Add("Path", path);
-        DialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+        var parameters = new DialogParameters {{"Path", path}};
+        _dialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 
-    protected async Task RemoveBulletin(Bulletin bulletin)
+    private async Task RemoveBulletin(Bulletin bulletin)
     {
-        var result = await BulletinService.RemoveBulletin(bulletin);
+        var result = await _bulletinService.RemoveBulletin(bulletin);
         if (result)
         {
-            Snackbar.Add($"Bulletin has been removed - redirecting", Severity.Success);
+            _snackbar.Add($"Bulletin has been removed - redirecting", Severity.Success);
             await Task.Delay(2000);
-            await JS.InvokeVoidAsync("history.back");
+            await _js.InvokeVoidAsync("history.back");
         }
         else
-            Snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
+            _snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
     }
 }

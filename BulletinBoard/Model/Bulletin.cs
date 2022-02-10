@@ -17,7 +17,7 @@ namespace BulletinBoard.Model
         public DateTime? Modified { get; set; }
         public DateTime? Expired { get; set; }
         public List<Image> Images { get; set; } = new();
-        public bool? Pinned { get; set; }
+        public bool? Pinned { get; set; } = false;
         public bool? Deleted { get; set; } = false;
 
 
@@ -25,9 +25,9 @@ namespace BulletinBoard.Model
         [ForeignKey("User")]
         public ulong UserId { get; set; }
 
-        public virtual Group? Group { get; set; }
-        [ForeignKey("Group")]
-        public Guid? GroupId { get; set; }
+        public virtual Board? Board { get; set; }
+        [ForeignKey("Board")]
+        public Guid? BoardId { get; set; }
 
         public virtual IList<Comment>? Comments { get; set; }
         public virtual IList<BulletinVote>? Votes { get; set; }

@@ -7,8 +7,8 @@ namespace BulletinBoard.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User, Role, ulong, IdentityUserClaim<ulong>, IdentityUserRole<ulong>, IdentityUserLogin<ulong>, IdentityRoleClaim<ulong>, IdentityUserToken<ulong>>
     {
-        public virtual DbSet<Group> Groups { get; set; } = default!;
-        public virtual DbSet<GroupUser> GroupUsers { get; set; } = default!;
+        public virtual DbSet<Board> Boards { get; set; } = default!;
+        public virtual DbSet<BoardUser> BoardUsers { get; set; } = default!;
         public virtual DbSet<Bulletin> Bulletins { get; set; } = default!;
         public virtual DbSet<Comment> Comments { get; set; } = default!;
         public virtual DbSet<BulletinVote> BulletinsVotes { get; set; } = default!;

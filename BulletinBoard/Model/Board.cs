@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BulletinBoard.Model
 {
-    public class Group
+    public class Board
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; init; }
         public DateTime Created { get; private set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
@@ -19,13 +19,13 @@ namespace BulletinBoard.Model
         public Guid? ImageId { get; set; }
 
 
-        public virtual IList<GroupUser>? GroupUsers { get; set; }
+        public virtual IList<BoardUser>? GroupUsers { get; set; }
         public virtual IList<Bulletin>? Bulletins { get; set; }
-        public Group()
+        public Board()
         {
             Created = DateTime.UtcNow;
         }
-        public Group(Guid id)
+        public Board(Guid id)
         {
             Id = id;
             Created = DateTime.UtcNow;

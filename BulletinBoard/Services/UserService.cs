@@ -2,7 +2,6 @@
 using BulletinBoard.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using static BulletinBoard.Extensions.ExtensionsMethod;
 
 namespace BulletinBoard.Services
 {
@@ -12,41 +11,42 @@ namespace BulletinBoard.Services
         private readonly IValidatorService _validatorService;
 
         public User? User { get; private set; }
-        private List<GroupUser> _userGroupsRoles = new();
-        private List<Group?> _userGroups = new();
-        private List<Group?> _userPendingAcceptanceGroups = new();
-        private List<Group?> _userPendingInvitationsGroups = new();
+        private List<BoardUser> _userBoardsRoles = new();
+        private List<Board?> _userBoards = new();
+        private List<Board?> _userPendingAcceptanceBoards = new();
+        private List<Board?> _userPendingInvitationsBoards = new();
 
-        public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<UserService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor, IValidatorService validatorService) : base(dbFactory, logger, memoryCache)
+        public UserService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<UserService> logger, IMemoryCache memoryCache, IHttpContextAccessor httpContextAccessor, IValidatorService validatorService, GlobalService globalService) : base(dbFactory, logger, memoryCache,globalService)
         {
             _httpContextAccessor = httpContextAccessor;
             _validatorService = validatorService;
             User = GetUser();
-            UpdateUserGroups();
+            UpdateUserBoards();
         }
 
 
-        public void UpdateUserGroups()
+        public void UpdateUserBoards()
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            _userGroupsRoles = _dbContext.GroupUsers
+            if(User == null || User == default) return;
+            using var dbContext = _dbFactory.CreateDbContext();
+            _userBoardsRoles = dbContext.BoardUsers
                 .Include(gu => gu.User)
-                .Include(gu => gu.Group)
+                .Include(gu => gu.Board)
                 .ThenInclude(gu => gu!.Image)
                 .Where(gu => gu.User == User)
                 .ToList();
-            _userGroups = _userGroupsRoles
-                .Where(g => g.Role != GroupRole.Invited)
-                .Where(g => g.Role != GroupRole.PendingAcceptance)
-                .Select(u => u.Group).Distinct()
+            _userBoards = _userBoardsRoles
+                .Where(g => g.Role != BoardRole.Invited)
+                .Where(g => g.Role != BoardRole.PendingAcceptance)
+                .Select(u => u.Board).Distinct()
                 .ToList();
-            _userPendingAcceptanceGroups = _userGroupsRoles
-                .Where(g => g.Role == GroupRole.PendingAcceptance)
-                .Select(u => u.Group).Distinct()
+            _userPendingAcceptanceBoards = _userBoardsRoles
+                .Where(g => g.Role == BoardRole.PendingAcceptance)
+                .Select(u => u.Board).Distinct()
                 .ToList();
-            _userPendingInvitationsGroups = _userGroupsRoles
-                .Where(g => g.Role == GroupRole.Invited)
-                .Select(u => u.Group).Distinct()
+            _userPendingInvitationsBoards = _userBoardsRoles
+                .Where(g => g.Role == BoardRole.Invited)
+                .Select(u => u.Board).Distinct()
                 .ToList();
         }
 
@@ -62,74 +62,61 @@ namespace BulletinBoard.Services
         }
         private User? GetUser()
         {
-            if (_httpContextAccessor.HttpContext != null && _httpContextAccessor.HttpContext.User.Identity != null && _httpContextAccessor.HttpContext.User.Identity.Name != null)
-            {
-                using var _dbContext = _dbFactory.CreateDbContext();
-                return _dbContext.Users.Where(u => u.UserName == _httpContextAccessor.HttpContext.User.Identity.Name).FirstOrDefault();
-            }
-            return null;
+            if (_httpContextAccessor.HttpContext?.User.Identity?.Name == null) return null;
+            using var dbContext = _dbFactory.CreateDbContext();
+            return dbContext.Users.FirstOrDefault(u => u.UserName == _httpContextAccessor.HttpContext.User.Identity.Name);
         }
 
         // User groups
-        public List<Group?> GetUserGroups() => _userGroups;
-        public List<Group?> GetUserPendingAcceptanceGroups() => _userPendingAcceptanceGroups;
-        public List<Group?> GetUserPendingInvitationsGroups() => _userPendingInvitationsGroups;
+        public List<Board?> GetUserBoards() => _userBoards;
+        public List<Board?> GetUserPendingAcceptanceBoards() => _userPendingAcceptanceBoards;
+        public List<Board?> GetUserPendingInvitationsBoards() => _userPendingInvitationsBoards;
 
         // User roles
-        public bool IsInGroup(Group group)
+        public bool IsInBoard(Board board)
         {
             RolesValid();
-            if (group.Id == Consts.DefaultGroupId)
-                return true;
-            return _userGroups.Any(g => g!.Id == group.Id);
+            return board.Id == GlobalService.DefaultBoardId || _userBoards.Any(g => g!.Id == board.Id);
         }
-        public bool IsGroupModerator(Group group)
+        public bool IsBoardModerator(Board board)
         {
             RolesValid();
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Moderator || a.Role == GroupRole.Admin || a.Role == GroupRole.Owner)))
-                return true;
-            return false;
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Moderator || a.Role == BoardRole.Admin || a.Role == BoardRole.Owner));
         }
-        public bool IsGroupAdmin(Group group)
+        public bool IsBoardAdmin(Board board)
         {
             RolesValid();
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Admin || a.Role == GroupRole.Owner)))
-                return true;
-            return false;
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Admin || a.Role == BoardRole.Owner));
         }
-        public bool IsGroupOwner(Group group)
+        public bool IsBoardOwner(Board board)
         {
             RolesValid();
-            if (_userGroupsRoles!.Any(a => (a.GroupId == group.Id) && (a.Role == GroupRole.Owner)))
-                return true;
-            return false;
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Owner));
         }
         public bool IsBulletinOwner(Bulletin bulletin)
         {
             RolesValid();
-            if (User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User!.Id))
-                return true;
-            return false;
+            return User != null && (User.Id == bulletin.UserId || User.Id == bulletin.User!.Id);
         }
 
         // User privileges
-        public bool CanEditBulletin(Group group, Bulletin bulletin)
+        public bool CanEditBulletin(Board board, Bulletin bulletin)
         {
-            return IsInGroup(group) && (IsBulletinOwner(bulletin) || IsGroupModerator(group));
+            return IsInBoard(board) && (IsBulletinOwner(bulletin) || IsBoardModerator(board));
         }
-        public bool PendingAcceptance(Group group)
+        public bool PendingAcceptance(Board board)
         {
-            return _userPendingAcceptanceGroups.Any(g => g!.Id == group.Id);
+            return _userPendingAcceptanceBoards.Any(g => g!.Id == board.Id);
         }
-        public bool PendingInvitations(Group group)
+        public bool PendingInvitations(Board board)
         {           
-            return _userPendingInvitationsGroups.Any(g => g!.Id == group.Id);
+            return _userPendingInvitationsBoards.Any(g => g!.Id == board.Id);
         }
 
         public async Task<IEnumerable<User>> Search(string userName)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            return await _dbContext.Users
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            return await dbContext.Users
                 .Where(obj => EF.Functions.Like(obj.UserName, $"{userName}%"))
                 .Where(u => u.Id != User!.Id)
                 .Take(10)
@@ -137,35 +124,35 @@ namespace BulletinBoard.Services
         }
         public async Task Bookmark(Bulletin bulletin)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            var exist = await _dbContext.BulletinsBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var exist = await dbContext.BulletinsBookmarks.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
             if (exist == null)
-                await _dbContext.BulletinsBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id });
+                await dbContext.BulletinsBookmarks.AddAsync(new BulletinBookmark { BulletinId = bulletin.Id, UserId = User!.Id });
             else
-                _dbContext.BulletinsBookmarks.Remove(exist);
+                dbContext.BulletinsBookmarks.Remove(exist);
 
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         public async Task Vote(Bulletin bulletin)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            var exist = await _dbContext.BulletinsVotes.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var exist = await dbContext.BulletinsVotes.FirstOrDefaultAsync(v => v.BulletinId == bulletin.Id && v.UserId == User!.Id);
             if (exist == null)
-                await _dbContext.BulletinsVotes.AddAsync(new BulletinVote { BulletinId = bulletin.Id, UserId = User!.Id });
+                await dbContext.BulletinsVotes.AddAsync(new BulletinVote { BulletinId = bulletin.Id, UserId = User!.Id });
             else
-                _dbContext.BulletinsVotes.Remove(exist);
+                dbContext.BulletinsVotes.Remove(exist);
 
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         public async Task<User?> GetUserInfoAsync(User user)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            return await _dbContext.Users.Include(u => u.Image).Where(u => u.Id == user.Id).FirstOrDefaultAsync();
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            return await dbContext.Users.Include(u => u.Image).Where(u => u.Id == user.Id).FirstOrDefaultAsync();
         }
         private void RolesValid()
         {
             if (_validatorService.CheckValidRoles(User!))
-                UpdateUserGroups();
+                UpdateUserBoards();
         }
     }
 }

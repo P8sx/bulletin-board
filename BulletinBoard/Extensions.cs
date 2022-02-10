@@ -2,37 +2,15 @@
 using BulletinBoard.Model;
 using Microsoft.AspNetCore.Identity;
 
-namespace BulletinBoard.Extensions
+namespace BulletinBoard
 {
-    public static class ExtensionsMethod
-    {
-        public enum State
-        {
-            LOADING,
-            SUCCESS,
-            ACCESS_BLOCKED
-        }
-        public static class Consts
-        {
-            public static readonly Guid DefaultGroupId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            public static readonly string DefaultImageFolder = "images";
-            public static readonly string DefaultAvatarPath = "no_avatar.png";
-            public static readonly string DefaultGroupAvatarPath = "no_group.svg";
-            public static readonly int MaxImagesPerBulletin = 5;
-            public static readonly int MaxFileSize = 5 * 1024 * 1024;
-        }
-        public static string Avatar(Image? img) => img == null ? Consts.DefaultAvatarPath : img.Path();
-        public static string GroupImage(Image? img) => img == null ? Consts.DefaultGroupAvatarPath : img.Path();
-    }
-
-
     public static class Extensions
     {
 
         public static void RunAppSetup(this IServiceCollection services)
         {
             CreateRoles(services);
-            AddGroups(services);
+            AddBoards(services);
         }
         private static void CreateRoles(this IServiceCollection services)
         {
@@ -51,25 +29,20 @@ namespace BulletinBoard.Extensions
                 await roleManager.CreateAsync(new Role(roleName));
             }
         }
-        private static void AddGroups(this IServiceCollection services)
+        private static void AddBoards(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-            var img = new Image(ExtensionsMethod.Consts.DefaultGroupId)
+            var board = new Board()
             {
-                Extension = "svg",
-            };
-            var group = new Group()
-            {
-                Id = ExtensionsMethod.Consts.DefaultGroupId,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Main",
-                Description = "Main application group",
+                Description = "Main board",
                 PublicListed = true,
-                Image = img
-            };   // Group 0 by default is main group (can be accesed by anyone)
+            };   // Board 0 by default is main board (can be accessed by anyone)
 
-            if (!dbContext.Groups.Any(g => g.Id == group.Id))
-                dbContext.Groups.Add(group); ;
+            if (!dbContext.Boards.Any(g => g.Id == board.Id))
+                dbContext.Boards.Add(board);
 
             dbContext.SaveChanges();
         }

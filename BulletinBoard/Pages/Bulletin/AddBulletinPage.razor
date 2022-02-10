@@ -2,20 +2,14 @@
 
 @attribute [Authorize]
 
-@using static BulletinBoard.Extensions.ExtensionsMethod
-
 @using BulletinBoard.Model
-@using System.IO
 @using BulletinBoard.Pages.Shared.Components
-@using Microsoft.AspNetCore.Identity;
 @using BulletinBoard.Services
-@using System.Linq;
 
-@inject ISnackbar Snackbar
-@inject IWebHostEnvironment env
-@inject IUserService UserService
-@inject IBulletinService BulletinService
-@inject NavigationManager NavigationManager
+@inject ISnackbar _snackbar
+@inject IWebHostEnvironment _env
+@inject IBulletinService _bulletinService
+@inject NavigationManager _navigationManager
 
 
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
@@ -53,7 +47,7 @@
 
                     <MudItem xs="12" Class="d-flex flex-column">
                         <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                        <MudText Class="mt-2" Align=Align.Center>Max 5 images, 5MB each.</MudText>
+                        <MudText Class="mt-2" Align="Align.Center">Max (_globals.FileSize/1024^2)MB per image.</MudText>
                     </MudItem>
 
                 </MudGrid>
@@ -61,10 +55,10 @@
             <MudItem xs="12" md="4" Class="px-8">
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                <MudSelect T="Guid?" Label="Group" Variant="Variant.Outlined" HelperText="Group in which the bulletin will be published" @bind-value="Bulletin.GroupId">
-                    @foreach (var group in UserService.GetUserGroups())
+                <MudSelect T="Guid?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
+                    @foreach (var board in _userService.GetUserBoards())
                     {
-                        <MudSelectItem T="Guid?" Value="@group!.Id">@group!.Name</MudSelectItem>
+                        <MudSelectItem T="Guid?" Value="@board!.Id">@board!.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -81,21 +75,21 @@
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? GroupId { get; set; }
+    public Guid? BoardId { get; set; }
 
-    public Bulletin Bulletin { get; set; } = new();
+    private Bulletin Bulletin { get; set; } = new();
 
     private ImageUploadComponent? _imageUpload;
-    protected async Task UpdateImages(bool update) => await InvokeAsync(() => StateHasChanged());
+    private async Task UpdateImages(bool update) => await InvokeAsync(StateHasChanged);
 
 
 
-    private bool _processing = false;
+    private bool _processing;
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.GroupId = GroupId==null?Consts.DefaultGroupId:GroupId;
+        Bulletin.BoardId = BoardId ?? _globalService.DefaultBoardId;
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
 
@@ -105,23 +99,23 @@
         _processing = true;
         // Set bulletin data
         if (Bulletin.UserId == 0)
-            Bulletin.UserId = UserService.User!.Id;
+            Bulletin.UserId = _userService.User!.Id;
         Bulletin.Created = DateTime.UtcNow;
 
         // Try save bulletin in db
         Bulletin.Images = _imageUpload!.GetImages();
-        var result = await BulletinService.AddBulletin(Bulletin);
+        var result = await _bulletinService.AddBulletin(Bulletin);
         if (!result)
         {
             _processing = false;
-            Snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
+            _snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
             return;
         }
-        // If bulletin succesfuly added save images on server
+        // If bulletin successfully added save images on server
         await _imageUpload!.SaveFilesAsync();
 
-        Snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
+        _snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
         await Task.Delay(2000);
-        NavigationManager.NavigateTo($"bulletin?groupid={Bulletin.GroupId}&bulletinid={Bulletin.Id}");
+        _navigationManager.NavigateTo($"bulletin?boardId={Bulletin.BoardId}&bulletinId={Bulletin.Id}");
     }
 }

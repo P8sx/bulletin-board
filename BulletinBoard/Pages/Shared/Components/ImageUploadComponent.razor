@@ -1,78 +1,68 @@
-﻿@using static BulletinBoard.Extensions.ExtensionsMethod
+﻿@using static Services.GlobalService
 
 @using BulletinBoard.Model
-@inject ISnackbar Snackbar
-@inject IWebHostEnvironment env
-
+@inject ISnackbar _snackbar
+@inject IWebHostEnvironment _env
 
 
 <MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
-<InputFile OnChange="@LoadFilesAsync" multiple accept=".jpg, .jpeg, .png" 
-CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed." 
-MaxFileSize=@FileSize 
-FileTooLargeMessage="File is too large" hidden 
-id="imgInput" />
+<InputFile OnChange="@LoadFilesAsync" multiple accept=".jpg, .jpeg, .png"
+           CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed."
+           MaxFileSize="@_globalService.MaxFileSize"
+           FileTooLargeMessage="File is too large" hidden
+           id="imgInput"/>
 
 
 @code {
-    [Parameter]
-    public int FileSize { get; set; } = 5 * 1024 * 1024;
-    [Parameter]
-    public int NumberOfFiles { get; set; } = 5;
-    [Parameter]
-    public int ImageSize { get; set; } = 500;
+    
     [Parameter]
     public EventCallback<bool> ImageUpdateCallback { get; set; }
 
 
-    private List<string> _acceptedFormat { get; set; } = new() { "image/jpeg", "image/png", "image/jpg" };
+    private List<string> AcceptedFormat { get; set; } = new() {"image/jpeg", "image/png", "image/jpg"};
 
     public List<(IBrowserFile browserFile, Image image, string base64Image)> Images { get; private set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
 
     private async Task LoadFilesAsync(InputFileChangeEventArgs e)
     {
         Images.Clear();
-        foreach (var file in e.GetMultipleFiles(NumberOfFiles))
+        foreach (var file in e.GetMultipleFiles(_globalService.MaxImagesPerBulletin))
         {
-            if (!_acceptedFormat.Contains(file.ContentType))
+            if (!AcceptedFormat.Contains(file.ContentType))
             {
-                Snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
+                _snackbar.Add($"File {file.Name} has wrong format only (.jpg, .jpeg, .png)", Severity.Error);
                 continue;
             }
-            if (file.Size >= FileSize)
+            if (file.Size >= _globalService.MaxFileSize)
             {
-                Snackbar.Add($"File {file.Name} is too large {Math.Round((float)file.Size / 1024*1024, 2)}MB, max size is {FileSize / 1024*1024}MB", Severity.Warning);
+                _snackbar.Add($"File {file.Name} is too large {Math.Round((float) file.Size / 1024 * 1024, 2)}MB, max size is {_globalService.MaxFileSize / 1024 * 1024}MB", Severity.Warning);
                 continue;
             }
-            else
-            {
-                var format = file.Name.Split('.').Last();
-                var resizedImageFile = await file.RequestImageFileAsync($"image/jpeg", ImageSize, ImageSize);
-                var buffer = new byte[resizedImageFile.Size];
-                await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+            var format = file.Name.Split('.').Last();
+            var resizedImageFile = await file.RequestImageFileAsync($"image/jpeg", 500, 500);
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
 
-                Images.Add(new(file,new Image(file.Name),$"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
-            }
+            Images.Add(new ValueTuple<IBrowserFile, Image, string>(file, new Image(file.Name), $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
         }
         await ImageUpdateCallback.InvokeAsync(true);
     }
+
     public async Task<bool> SaveFilesAsync()
     {
         if (!Images.Any()) return true;
-        foreach (var file in Images)
+        foreach (var (browserFile, image, _) in Images)
         {
-            Stream stream = file.browserFile.OpenReadStream(FileSize);
-
-            var folder = $"{env.WebRootPath}/{Consts.DefaultImageFolder}/{file.image.GetSubFolder()}";
+            var stream = browserFile.OpenReadStream(_globalService.MaxFileSize);
+            var folder = $"{_env.WebRootPath}/{_globalService.DefaultImageFolder}";
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-            FileStream fs = File.Create($"{env.WebRootPath}/{file.image.Path()}");
+            var fs = File.Create($"{_env.WebRootPath}/{_globalService.BulletinImage(image)}");
             await stream.CopyToAsync(fs);
             stream.Close();
             fs.Close();

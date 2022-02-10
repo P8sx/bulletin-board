@@ -8,17 +8,17 @@ namespace BulletinBoard.Services
     public class CommentService : BaseService, ICommentService
     {
 
-        public CommentService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<CommentService> logger, IMemoryCache memoryCache) : base(dbFactory, logger, memoryCache)
+        public CommentService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<CommentService> logger, IMemoryCache memoryCache, GlobalService globalService) : base(dbFactory, logger, memoryCache,globalService)
         {
 
         }
-        public async Task<bool> AddCommentAsync(Comment Comment)
+        public async Task<bool> AddCommentAsync(Comment comment)
         {
             try
             {
-                using var _dbContext = _dbFactory.CreateDbContext();
-                _dbContext.Comments.Add(Comment);
-                await _dbContext.SaveChangesAsync();
+                await using var dbContext = await _dbFactory.CreateDbContextAsync();
+                dbContext.Comments.Add(comment);
+                await dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -40,8 +40,8 @@ namespace BulletinBoard.Services
         }
         private async Task<IList<Comment>> GetCommentsAsync(Bulletin bulletin)
         {
-            using var _dbContext = _dbFactory.CreateDbContext();
-            var comments = _dbContext.Comments
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var comments = dbContext.Comments
                 .Where(c => c.BulletinId == bulletin.Id)
                 .Include(c => c.User)
                 .OrderByDescending(c => c.Created)
@@ -51,7 +51,7 @@ namespace BulletinBoard.Services
                     Created = c.Created,
                     Text = c.Text,
                     User = c.User
-                }).ToListAsync(); ;
+                }).ToListAsync();
             return await comments;
         }
     }
