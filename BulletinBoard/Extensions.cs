@@ -35,13 +35,13 @@ namespace BulletinBoard
             var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
             var board = new Board()
             {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Guid = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Main",
                 Description = "Main board",
                 PublicListed = true,
-            };   // Board 0 by default is main board (can be accessed by anyone)
+            };   // Board 1 by default is main board (can be accessed by anyone)
 
-            if (!dbContext.Boards.Any(g => g.Id == board.Id))
+            if (!dbContext.Boards.Any(g => g.Guid == board.Guid))
                 dbContext.Boards.Add(board);
 
             dbContext.SaveChanges();

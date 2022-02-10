@@ -13,7 +13,7 @@ namespace BulletinBoard.Model
 
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")]
-        public Guid? ImageId { get; set; }
+        public ulong? ImageId { get; set; }
         public User()
         {
             Joined = DateTime.UtcNow;

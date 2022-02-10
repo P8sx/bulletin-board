@@ -7,25 +7,29 @@ namespace BulletinBoard.Model
 
     public class Image
     {
-        [Key] public Guid Id { get; set; }
-        [MaxLength(5)] private string Extension { get; set; } = "";
-        public string OriginalName { get; set; } = "";
+        [Key]
+        public ulong Id { get; set; }
+        public Guid Guid { get; set; }
+        [MaxLength(5)] 
+        public string FileExtension { get; set; }
+        public string Name { get; set; }
+        
         private DateTime Created { get; set; } = DateTime.UtcNow;
 
-        [ForeignKey("Bulletin")] public Guid? BulletinId { get; set; }
+        [ForeignKey("Bulletin")] 
+        public ulong? BulletinId { get; set; }
         
-        
-        public string FileName() => $"{Id}.{Extension}";
+        public string FileName() => $"{Guid}.{FileExtension}";
 
         public Image(string file)
         {
-            Id = Guid.NewGuid();
-            Extension = file.Split('.').Last();
-            OriginalName = file.Split('.').First();
+            Guid = Guid.NewGuid();
+            FileExtension = file.Split('.').Last();
+            Name = file.Split('.').First();
         }
-        public Image(Guid id)
+        public Image(Guid guid)
         {
-            Id = id;
+            Guid = guid;
         }
 
     }

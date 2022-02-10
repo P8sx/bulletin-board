@@ -1,7 +1,6 @@
 ﻿@page "/board/settings"
 
 @using BulletinBoard.Pages.Shared.Components
-@using BulletinBoard.Services
 @using BulletinBoard.Model
 @using Microsoft.AspNetCore.Components;
 @using static Services.GlobalService
@@ -268,13 +267,12 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? BoardId { get; set; }
+    public Guid? BoardGuid { get; set; }
 
 
     private List<BoardUser> _boardUsers = new();
     private List<BoardUser> _pendingApproval = new();
     private List<BoardUser> _invited = new();
-
 
     private string _searchString = "";
     private Board? _board;
@@ -294,9 +292,9 @@ else
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (_userService.IsBoardAdmin(new Board(BoardId ?? _globalService.DefaultBoardId)))
+        _board = await _boardService.GetBoardAsync(new Board(BoardGuid ?? _globalService.DefaultBoardGuid));
+        if (_board != null && _userService.IsBoardAdmin(new Board(_board.Id)))
         {
-            _board = await _boardService.GetBoardInfoAsyncCached(new Board(BoardId ?? _globalService.DefaultBoardId));
             _boardUsers = await _boardService.GetBoardUsers(_board!);
             _pendingApproval = await _boardService.GetPendingApprovalUsers(_board!);
             _invited = await _boardService.GetInvitedUsers(_board!);
@@ -435,6 +433,6 @@ else
         }
         _snackbar.Add($"Board has been updated - reloading", Severity.Success);
         await Task.Delay(1000);
-        _navigationManager.NavigateTo($"board/settings?boardId={_board!.Id}", true);
+        _navigationManager.NavigateTo($"board/settings?boardGuid={_board!.Guid}", true);
     }
 }

@@ -29,7 +29,7 @@
         @if (_userService.IsBoardAdmin(_board))
         {
         <MudCardActions Class="d-flex justify-end">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"board/settings?boardId={_board.Id}")>Board panel</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"board/settings?boardGuid={_board.Guid}")>Board panel</MudButton>
         </MudCardActions>
         }
     </MudCard>
@@ -74,7 +74,7 @@
     <MudElement Class="d-flex justify-center">
         <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
     </MudElement>
-    <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardId={BoardId}")/>
+    <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardGuid={BoardGuid??_globalService.DefaultBoardGuid}")/>
 }
 else if (_pageState == State.AccessBlocked)
 {
@@ -87,7 +87,7 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? BoardId { get; set; }
+    public Guid? BoardGuid { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -106,10 +106,10 @@ else
 
 
     private Board? _board;
-
+    
     private int _bulletinsPerPage = 10;
     private int _bulletinsCount;
-
+    
     private IList<Bulletin> _bulletins = default!;
     private State _pageState = State.Loading;
     private SortBy _sortBy = Services.SortBy.Created;
@@ -118,13 +118,13 @@ else
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        BoardId = BoardId ?? _globalService.DefaultBoardId;
+        _board = await _boardService.GetBoardAsync(new Board(BoardGuid ?? _globalService.DefaultBoardGuid));
+        
         Page = Page ?? 1;
-        if (_userService.IsInBoard(new Board(BoardId ?? _globalService.DefaultBoardId)))
+        if (_board != null && _userService.IsInBoard(_board))
         {
             _sortBy = (SortBy)((SortBy??1)%4);
             _orderBy = (OrderBy)((OrderBy??1)%2);
-            _board = await _boardService.GetBoardInfoAsyncCached(new Board(BoardId ?? _globalService.DefaultBoardId));
             _bulletins = await GetBulletins();
             _bulletinsCount = await GetBulletinsCount();
             _pageState = State.Success;
@@ -144,7 +144,7 @@ else
 
     private void PageChanged(int page)
     {
-        _navigationManager.NavigateTo($"/bulletins?boardId{BoardId}&page={page}");
+        _navigationManager.NavigateTo($"/bulletins?boardGuid{BoardGuid}&page={page}");
     }
 
     private async Task<IList<Bulletin>> GetBulletins()

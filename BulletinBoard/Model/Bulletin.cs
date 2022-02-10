@@ -6,7 +6,8 @@ namespace BulletinBoard.Model
     public class Bulletin
     {
         [Key]
-        public Guid Id { get; set; }
+        public ulong Id { get; set; }
+        public Guid Guid { get; set; }
         [Required]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
         public string? Title { get; set; }
@@ -27,7 +28,7 @@ namespace BulletinBoard.Model
 
         public virtual Board? Board { get; set; }
         [ForeignKey("Board")]
-        public Guid? BoardId { get; set; }
+        public ulong? BoardId { get; set; }
 
         public virtual IList<Comment>? Comments { get; set; }
         public virtual IList<BulletinVote>? Votes { get; set; }
@@ -45,8 +46,14 @@ namespace BulletinBoard.Model
         public Bulletin()
         {
             Created = DateTime.UtcNow;
+            Guid = Guid.NewGuid();
         }
-        public Bulletin(Guid id)
+        public Bulletin(Guid guid)
+        {
+            Guid = guid;
+            Created = DateTime.UtcNow;
+        }
+        public Bulletin(ulong id)
         {
             Id = id;
             Created = DateTime.UtcNow;

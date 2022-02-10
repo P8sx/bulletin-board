@@ -13,17 +13,7 @@ namespace BulletinBoard.Services
         {
             _validatorService = validatorService;
         }
-
-
-        public async Task<Board?> GetBoardInfoAsyncCached(Board board)
-        {
-            var result = await _memoryCache.GetOrCreateAsync($"Group{board.Id}", async p =>
-            {
-                p.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
-                return await GetBoardAsync(board);
-            });
-            return result;
-        }
+        
         public async Task<List<Board>> GetPublicBoard()
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
@@ -38,7 +28,7 @@ namespace BulletinBoard.Services
             return await dbContext.BoardUsers
                 .Include(gu => gu.User)
                 .Include(gu => gu.Board)
-                .Where(gu => gu.BoardId == board.Id)
+                .Where(gu => gu.BoardId == board.Id || gu.Board!.Guid == board.Guid)
                 .Where(gu => gu.Role == BoardRole.PendingAcceptance)
                 .ToListAsync();
         }
@@ -66,7 +56,7 @@ namespace BulletinBoard.Services
                 {
                     Id = gu.Id,
                     Board = gu.Board,
-                    BoardId = gu.Board!.Id,
+                    BoardId = gu.BoardId,
                     Role = gu.Role,
                     User = gu.User,
                     UserId = gu.UserId,
@@ -103,7 +93,7 @@ namespace BulletinBoard.Services
             try
             {
                 await using var dbContext = await _dbFactory.CreateDbContextAsync();
-                var dbGroup = await dbContext.Boards.Where(g => g.Id == board.Id).FirstOrDefaultAsync();
+                var dbGroup = await dbContext.Boards.Where(g => g.Guid == board.Guid).FirstOrDefaultAsync();
                 if (dbGroup == null) return false;
                 dbContext.Entry(dbGroup).CurrentValues.SetValues(board);
                 await dbContext.SaveChangesAsync();
@@ -115,7 +105,6 @@ namespace BulletinBoard.Services
             }
             return false;
         }
-
         public async Task<bool> JoinToBoard(Board board, User user)
         {
             if (board.AcceptAnyone)
@@ -140,7 +129,6 @@ namespace BulletinBoard.Services
         {
             return await SetBoardUser(board, user, role);
         }
-        
         public async Task<bool> InviteUser(Board board, User user)
         {
             return await SetBoardUser(board, user, BoardRole.Invited);
@@ -159,10 +147,10 @@ namespace BulletinBoard.Services
             return await SetBoardUser(board, user, null);
         }
 
-        private async Task<Board?> GetBoardAsync(Board board)
+        public async Task<Board?> GetBoardAsync(Board board)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
-            return await dbContext.Boards.Where(g => g.Id == board.Id).Include(g => g.Image).FirstOrDefaultAsync();
+            return await dbContext.Boards.Where(g => g.Id == board.Id || g.Guid == board.Guid).Include(g => g.Image).FirstOrDefaultAsync();
         }
         private async Task<bool> SetBoardUser(Board board, User user, BoardRole? role)  // if role equals null then remove role from db
         {
@@ -173,13 +161,13 @@ namespace BulletinBoard.Services
                     .Where(gu => gu.BoardId == board.Id)
                     .Where(gu => gu.UserId == user.Id)
                     .FirstOrDefaultAsync();
-                // if groupuser not found in db
+                // if boardUser not found in db
                 if (result == null)
                 {
                     // if role null return true
                     if (role == null)
                         return true;
-                    // else create new groupuser and assign role
+                    // else create new boardUser and assign role
                     var groupUser = new BoardUser()
                     {
                         BoardId = board.Id,
@@ -188,10 +176,10 @@ namespace BulletinBoard.Services
                     };
                     await dbContext.BoardUsers.AddAsync(groupUser);
                 }
-                // if groupuser found in db
+                // if boardUser found in db
                 else
                 {
-                    // if role null remove grouprole from db
+                    // if role null remove boardUser from db
                     if (role == null)
                         dbContext.BoardUsers.Remove(result);
                     else if(role == BoardRole.Invited && result.Role == BoardRole.PendingAcceptance)

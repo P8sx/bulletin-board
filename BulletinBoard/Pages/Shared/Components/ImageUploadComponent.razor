@@ -59,13 +59,7 @@
         if (!Images.Any()) return true;
         foreach (var (browserFile, image, _) in Images)
         {
-            var stream = browserFile.OpenReadStream(_globalService.MaxFileSize);
-            var folder = $"{_env.WebRootPath}/{_globalService.DefaultImageFolder}";
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-            var fs = File.Create($"{_env.WebRootPath}/{_globalService.BulletinImage(image)}");
-            await stream.CopyToAsync(fs);
-            stream.Close();
-            fs.Close();
+            await _globalService.SaveFilesAsync(browserFile, image);
         }
         return true;
     }

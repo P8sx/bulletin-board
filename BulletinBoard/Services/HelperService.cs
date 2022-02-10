@@ -15,7 +15,9 @@ namespace BulletinBoard.Services
         public async Task AddToDefaultGroupAsync(User user, string roleName)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
-            await dbContext.BoardUsers.AddAsync(new BoardUser() { BoardId = GlobalService.DefaultBoardId, Role = BoardRole.User, UserId = user.Id });
+            var boardId = await dbContext.Boards.Where(b => b.Guid == GlobalService.DefaultBoardGuid).Select(b=>b.Id)
+                .FirstOrDefaultAsync();
+            await dbContext.BoardUsers.AddAsync(new BoardUser() { BoardId = boardId, Role = BoardRole.User, UserId = user.Id });
             await dbContext.SaveChangesAsync();
         }
     }

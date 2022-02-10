@@ -76,17 +76,17 @@ namespace BulletinBoard.Services
         public bool IsInBoard(Board board)
         {
             RolesValid();
-            return board.Id == GlobalService.DefaultBoardId || _userBoards.Any(g => g!.Id == board.Id);
+            return board.Guid == GlobalService.DefaultBoardGuid || _userBoards.Any(g => g!.Id == board.Id || g.Guid == board.Guid);
         }
         public bool IsBoardModerator(Board board)
         {
             RolesValid();
-            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Moderator || a.Role == BoardRole.Admin || a.Role == BoardRole.Owner));
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && a.Role is BoardRole.Moderator or BoardRole.Admin or BoardRole.Owner);
         }
         public bool IsBoardAdmin(Board board)
         {
             RolesValid();
-            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Admin || a.Role == BoardRole.Owner));
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && a.Role is BoardRole.Admin or BoardRole.Owner);
         }
         public bool IsBoardOwner(Board board)
         {
@@ -106,11 +106,11 @@ namespace BulletinBoard.Services
         }
         public bool PendingAcceptance(Board board)
         {
-            return _userPendingAcceptanceBoards.Any(g => g!.Id == board.Id);
+            return _userPendingAcceptanceBoards.Any(g => g!.Guid == board.Guid);
         }
         public bool PendingInvitations(Board board)
         {           
-            return _userPendingInvitationsBoards.Any(g => g!.Id == board.Id);
+            return _userPendingInvitationsBoards.Any(g => g!.Guid == board.Guid);
         }
 
         public async Task<IEnumerable<User>> Search(string userName)

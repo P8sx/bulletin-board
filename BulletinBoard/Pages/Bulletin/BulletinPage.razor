@@ -3,7 +3,6 @@
 
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
-@using BulletinBoard.Services
 @using BulletinBoard.Pages.Bulletin.Components
 
 @inject IBulletinService _bulletinService
@@ -11,9 +10,7 @@
 @inject ICommentService _commentService
 @inject IJSRuntime _js
 @inject ISnackbar _snackbar
-
-
-@using GEmojiSharp.Blazor
+@inject IBoardService _boardService
 
 @if (_pageState == State.Success && _bulletin != null)
 {
@@ -62,15 +59,15 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid BoardId { get; set; }
+    public Guid BoardGuid { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid BulletinId { get; set; }
+    public Guid BulletinGuid { get; set; }
 
 
 
-    private Bulletin? _bulletin = default!;
+    private Bulletin? _bulletin;
     private IList<Comment> _comments = default!;
     private State _pageState = State.Loading;
     private State _commentState = State.Loading;
@@ -78,10 +75,10 @@ else
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        if (_userService.IsInBoard(new Board(BoardId)))
+        if (_userService.IsInBoard(new Board(BoardGuid)))
         {
-            _bulletin = await _bulletinService.GetBulletinInfoAsyncCached(_userService.User!, new Bulletin(BulletinId));
-            _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(BulletinId));
+            _bulletin = await _bulletinService.GetBulletinInfoAsyncCached(_userService.User!, new Bulletin(BulletinGuid));
+            _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(_bulletin!.Id));
             _commentState = _pageState = State.Success;
         }
         else
@@ -99,19 +96,12 @@ else
 
     private async Task UpdateComments(bool update)
     {
-        _comments = default!;
         _commentState = State.Loading;
         StateHasChanged();
-        _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(BulletinId), true);
+        _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(_bulletin!.Id), true);
         _commentState = State.Success;
         _bulletin!.CommentsCount++;
         StateHasChanged();
-    }
-
-    private void OpenDialog(string path)
-    {
-        var parameters = new DialogParameters {{"Path", path}};
-        _dialogService.Show<ImageDialogComponent>("Image", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
 
     private async Task RemoveBulletin(Bulletin bulletin)

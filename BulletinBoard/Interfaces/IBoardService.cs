@@ -7,7 +7,7 @@ namespace BulletinBoard.Services
         Task<bool> AddBoard(Board board, User user);
         Task<bool> CancelJoinToBoard(Board board, User user);
         Task<List<BoardUser>> GetPendingApprovalUsers(Board board);
-        Task<Board?> GetBoardInfoAsyncCached(Board board);
+        Task<Board?> GetBoardAsync(Board board);
         Task<List<BoardUser>> GetBoardUsers(Board board);
         Task<List<Board>> GetPublicBoard();
         Task<bool> JoinToBoard(Board board, User user);

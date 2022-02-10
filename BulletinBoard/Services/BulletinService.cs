@@ -39,7 +39,7 @@ namespace BulletinBoard.Services
         public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User? user, Board board, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{board.Id}{sort.OrderBy}{sort.SortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{board.Guid}{sort.OrderBy}{sort.SortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinsAsync(page, limit, user, board, sort);
@@ -67,7 +67,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
-                    Id = a.Id,
+                    Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
                     Created = a.Created,
@@ -78,7 +78,7 @@ namespace BulletinBoard.Services
                     User = a.User,
                     UserId = a.UserId,
                     Board = a.Board,
-                    BoardId = a.Id,
+                    BoardId = a.BoardId,
                     CommentsCount = a.Comments!.Count,
                     VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1,
@@ -118,7 +118,7 @@ namespace BulletinBoard.Services
 
         public async Task<int> GetBulletinsCountAsyncCached(Board board)
         {
-            var result = _memoryCache.GetOrCreateAsync($"BulletinsCount{board.Id}", async p =>
+            var result = _memoryCache.GetOrCreateAsync($"BulletinsCount{board.Guid}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinsCountAsync(board);
@@ -138,7 +138,7 @@ namespace BulletinBoard.Services
         public async Task<Bulletin?> GetBulletinInfoAsyncCached(User? user, Bulletin bulletin)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Id}", async p =>
+            return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Guid}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
                 return await GetBulletinInfoAsync(user!, bulletin);
@@ -150,12 +150,14 @@ namespace BulletinBoard.Services
             return await dbContext.Bulletins
             .Include(x => x.Images)
             .Include(u => u.User)
+            .Include(b=>b.Board)
             .ThenInclude(i => i!.Image)
-            .Where(b => b.Id == bulletin.Id)
+            .Where(b => b.Guid == bulletin.Guid || b.Id == bulletin.Id)
             .Where(b => b.Deleted == false)
             .Select(a => new Bulletin
             {
                 Id = a.Id,
+                Guid = a.Guid,
                 Title = a.Title,
                 Description = a.Description,
                 Created = a.Created,
@@ -206,7 +208,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
-                    Id = a.Id,
+                    Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
                     Created = a.Created,
@@ -217,7 +219,7 @@ namespace BulletinBoard.Services
                     User = a.User,
                     UserId = a.UserId,
                     Board = a.Board,
-                    BoardId = a.Id,
+                    BoardId = a.BoardId,
                     CommentsCount = a.Comments!.Count,
                     VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1,
@@ -294,7 +296,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
-                    Id = a.Id,
+                    Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
                     Created = a.Created,
@@ -305,7 +307,7 @@ namespace BulletinBoard.Services
                     User = a.User,
                     UserId = a.UserId,
                     Board = a.Board,
-                    BoardId = a.Id,
+                    BoardId = a.BoardId,
                     CommentsCount = a.Comments!.Count,
                     VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1,
@@ -376,7 +378,7 @@ namespace BulletinBoard.Services
             try
             {
                 bulletin.Images.ForEach(i => i.BulletinId = bulletin.Id);
-                var dbBulletin = await dbContext.Bulletins.Include(b => b.Images).Where(b => b.Id == bulletin.Id).FirstOrDefaultAsync();
+                var dbBulletin = await dbContext.Bulletins.Include(b => b.Images).Where(b => b.Guid == bulletin.Guid).FirstOrDefaultAsync();
                 if (dbBulletin == null) return false;
 
                 dbContext.Entry(dbBulletin).CurrentValues.SetValues(bulletin);
@@ -385,11 +387,11 @@ namespace BulletinBoard.Services
                 List<Image> existingImages = new();
                 existingImages.AddRange(dbBulletin.Images);
 
-                foreach (var existingImage in existingImages.Where(existingImage => bulletin.Images.All(i => i.Id != existingImage.Id)))
+                foreach (var existingImage in existingImages.Where(existingImage => bulletin.Images.All(i => i.Guid != existingImage.Guid)))
                 {
                     dbContext.Images.Remove(existingImage);
                 }
-                foreach (var image in bulletin.Images.Where(image => dbBulletin.Images.All(i => i.Id != image.Id)))
+                foreach (var image in bulletin.Images.Where(image => dbBulletin.Images.All(i => i.Guid != image.Guid)))
                 {
                     dbContext.Images.Add(image);
                 }
@@ -409,7 +411,7 @@ namespace BulletinBoard.Services
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var dbBulletin = await dbContext.Bulletins
-                .Where(b => b.Id == bulletin.Id)
+                .Where(b => b.Guid == bulletin.Guid)
                 .Include(b => b.Images)
                 .Include(b => b.Bookmarks)
                 .Include(b => b.Comments)

@@ -5,7 +5,6 @@
 @using static Services.GlobalService
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
-@using BulletinBoard.Services
 @using System.Linq;
 
 @inject ISnackbar _snackbar
@@ -13,8 +12,7 @@
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
 
-
-@if (Bulletin is {Board: { } } && _userService.CanEditBulletin(Bulletin.Board, Bulletin))
+@if (Bulletin != null && Bulletin.Board != null && _userService.CanEditBulletin(Bulletin.Board, Bulletin))
 {
     <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
     <MudPaper Class="mud-width-full py-8" Elevation="1">
@@ -52,7 +50,7 @@
                                         <MudCard>
                                             <MudCardMedia Image=@_globalService.BulletinImage(img) Height="200" />
                                             <MudCardActions Class="d-flex justify-space-between">
-                                                <MudText Typo="Typo.caption">@img.OriginalName</MudText>
+                                                <MudText Typo="Typo.caption">@img.Name</MudText>
                                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteExistingFile(img))"></MudIconButton>
                                             </MudCardActions>
                                         </MudCard>
@@ -63,7 +61,7 @@
 
                         <MudItem xs="12" Class="d-flex flex-column">
                             <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                            <MudText Class="mt-2" Align=Align.Center>Max (@_globalService.MaxFileSize/1024^2)MB per image.</MudText>
+                            <MudText Class="mt-2" Align=Align.Center>Max @(_globalService.MaxFileSize/1024/1024) MB per image.</MudText>
                         </MudItem>
 
                     </MudGrid>
@@ -72,8 +70,8 @@
                 <MudItem xs="12" md="4" Class="px-8">
                     <MudText Typo="Typo.h5">Additional</MudText>
                     <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                    <MudSelect T="Guid?" Label="Board" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin board" @bind-value="Bulletin.BoardId">
-                        <MudSelectItem T="Guid?" Value="@Bulletin.BoardId">@Bulletin.Board!.Name</MudSelectItem>
+                    <MudSelect T="ulong?" Label="Board" Disabled=true Variant="Variant.Outlined" HelperText="You can't change bulletin board" @bind-value="Bulletin.BoardId">
+                        <MudSelectItem T="ulong?" Value="@Bulletin.BoardId">@Bulletin.Board!.Name</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 
@@ -99,7 +97,7 @@ else
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid BulletinId { get; set; }
+    public Guid BulletinGuid { get; set; }
 
     private Bulletin? Bulletin { get; set; } = new();
 
@@ -129,7 +127,7 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        Bulletin = await _bulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinId));
+        Bulletin = await _bulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinGuid));
         _pageState = State.Success;
         StateHasChanged();
     }
@@ -169,6 +167,6 @@ else
         await _imageUpload.SaveFilesAsync();
         _snackbar.Add($"Bulletin has been modified - redirecting", Severity.Success);
         await Task.Delay(2000);
-        _navigationManager.NavigateTo($"bulletin?boardId={Bulletin.BoardId}&bulletinId={Bulletin.Id}");
+        _navigationManager.NavigateTo($"bulletin?boardGuid={Bulletin.Board!.Guid}&bulletinGuid={Bulletin.Guid}");
     }
 }

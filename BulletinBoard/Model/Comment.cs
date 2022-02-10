@@ -12,7 +12,7 @@ namespace BulletinBoard.Model
         public ulong? UserId { get; set; }
         public virtual Bulletin? Bulletin { get; set; }
         [ForeignKey("Bulletin")]
-        public Guid? BulletinId { get; set; }
+        public ulong? BulletinId { get; set; }
         [Required]
         [StringLength(200, MinimumLength = 1, ErrorMessage = "Comment can't be empty")]
         public string? Text { get; set; }

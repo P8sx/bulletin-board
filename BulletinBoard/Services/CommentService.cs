@@ -31,7 +31,7 @@ namespace BulletinBoard.Services
         public async Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin, bool forceReload = false)
         {
             if (forceReload) return await GetCommentsAsync(bulletin);
-            var result = await _memoryCache.GetOrCreateAsync($"Comments{bulletin.Id}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Comments{bulletin.Guid}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
                 return await GetCommentsAsync(bulletin);

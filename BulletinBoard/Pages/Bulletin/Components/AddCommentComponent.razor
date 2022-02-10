@@ -13,7 +13,6 @@
 <MudElement Class="d-flex justify-end mr-5">
     <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.AddComment" OnClick=Submitted>Comment</MudButton>
 </MudElement>
-
 @code {
     [Parameter]
     public Bulletin Bulletin { get; set; } = default!;
@@ -56,10 +55,12 @@
             _snackbar.Add($"Can't add empty comment", Severity.Warning);
             return;
         }    
-        Comment comment = new();
-        comment.Text = _commentText;
-        comment.UserId = _userService.User.Id;
-        comment.BulletinId = Bulletin.Id;
+        Comment comment = new()
+        {
+            Text = _commentText,
+            UserId = _userService.User.Id,
+            BulletinId = Bulletin.Id
+        };
         _commentText = "";
         var result = await _commentService.AddCommentAsync(comment);
         if (result)

@@ -86,7 +86,7 @@
         _userService.UpdateUserBoards();
         _snackbar.Add($"Board has been created - redirecting", Severity.Success);
         await Task.Delay(2000);
-        _navigationManager.NavigateTo($"bulletins?boardId={Board.Id}");
+        _navigationManager.NavigateTo($"bulletins?boardGuid={Board.Guid}");
 
     }
 }

@@ -32,10 +32,10 @@
                 <CardHeaderActions>
                     <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
                         <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
-                        @if (_userService.IsBoardModerator(new Board(){Id = Bulletin.Board!.Id}) || _userService.IsBulletinOwner(Bulletin))
+                        @if (_userService.IsBoardModerator(new Board(){Guid = Bulletin.Board!.Guid}) || _userService.IsBulletinOwner(Bulletin))
                         {
                             <MudMenuItem OnClick=@(async () => await BulletinRemovedCallback.InvokeAsync(Bulletin))><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>                         
-                            <MudMenuItem Link=@($"bulletin/edit?&bulletinId={Bulletin.Id}")><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+                            <MudMenuItem Link=@($"bulletin/edit?&bulletinGuid={Bulletin.Guid}")><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span></MudMenuItem>
                         }
                     </MudMenu>
                 </CardHeaderActions>
@@ -100,7 +100,7 @@
                     <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled />
                 </NotAuthorized>
             </AuthorizeView>
-            <MudIconButton Link=@($"bulletin?boardId={Bulletin.Board!.Id}&bulletinId={Bulletin.Id}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
+            <MudIconButton Link=@($"bulletin?boardGuid={Bulletin.Board!.Guid}&bulletinGuid={Bulletin.Guid}") Icon="@Icons.Filled.ReadMore" Color="Color.Default" />
 
         </MudCardActions>
     </MudCard>
@@ -136,7 +136,7 @@
     private void OpenDialog(Image image)
     {
         var parameters = new DialogParameters {{"Path", _globalService.BulletinImage(image)}};
-        _dialogService.Show<ImageDialogComponent>($"Image - {image.OriginalName}", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
+        _dialogService.Show<ImageDialogComponent>($"Image - {image.Name}", parameters, new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Large });
     }
     private void Delete()
     {

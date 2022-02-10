@@ -90,7 +90,7 @@ else
 
                                     @if (_userService.IsInBoard(board))
                                     {
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?boardId={board.Id}")>View</MudButton>
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary" Link=@($"/bulletins?boardGuid={board.Guid}")>View</MudButton>
                                     }
                                     else if (_userService.PendingAcceptance(board))
                                     {

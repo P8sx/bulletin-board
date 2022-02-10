@@ -9,6 +9,6 @@ namespace BulletinBoard.Model
         public ulong UserId { get; set; }
         public virtual Bulletin? Bulletin { get; set; }
         [ForeignKey("Bulletin")]
-        public Guid BulletinId { get; set; }
+        public ulong BulletinId { get; set; }
     }
 }

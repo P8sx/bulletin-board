@@ -10,7 +10,7 @@
 @inject IWebHostEnvironment _env
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
-
+@inject IBoardService _boardService
 
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
 <MudPaper Class="mud-width-full py-8" Elevation="1">
@@ -47,7 +47,7 @@
 
                     <MudItem xs="12" Class="d-flex flex-column">
                         <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                        <MudText Class="mt-2" Align="Align.Center">Max (_globals.FileSize/1024^2)MB per image.</MudText>
+                        <MudText Class="mt-2" Align="Align.Center">Max @(_globalService.MaxFileSize/1024/1024) MB per image.</MudText>
                     </MudItem>
 
                 </MudGrid>
@@ -55,10 +55,10 @@
             <MudItem xs="12" md="4" Class="px-8">
                 <MudText Typo="Typo.h5">Additional</MudText>
                 <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
-                <MudSelect T="Guid?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
+                <MudSelect T="ulong?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
                     @foreach (var board in _userService.GetUserBoards())
                     {
-                        <MudSelectItem T="Guid?" Value="@board!.Id">@board!.Name</MudSelectItem>
+                        <MudSelectItem T="ulong?" Value="@board!.Id">@board!.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
@@ -75,23 +75,24 @@
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? BoardId { get; set; }
-
+    public Guid? BoardGuid { get; set; }
+    
     private Bulletin Bulletin { get; set; } = new();
-
     private ImageUploadComponent? _imageUpload;
     private async Task UpdateImages(bool update) => await InvokeAsync(StateHasChanged);
-
+    private Board? _board;
 
 
     private bool _processing;
     protected override async Task OnInitializedAsync()
     {
-        Bulletin.BoardId = BoardId ?? _globalService.DefaultBoardId;
+        _board = await _boardService.GetBoardAsync(new Board(BoardGuid??_globalService.DefaultBoardGuid));
+        Bulletin.BoardId = _board!.Id;
+        StateHasChanged();
         await base.OnInitializedAsync();
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
-
+    
 
     // Submit form
     private async Task ValidFormSubmitted(EditContext editContext)
@@ -116,6 +117,6 @@
 
         _snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
         await Task.Delay(2000);
-        _navigationManager.NavigateTo($"bulletin?boardId={Bulletin.BoardId}&bulletinId={Bulletin.Id}");
+        _navigationManager.NavigateTo($"bulletin?boardGuid={_board!.Guid}&bulletinGuid={Bulletin.Guid}");
     }
 }

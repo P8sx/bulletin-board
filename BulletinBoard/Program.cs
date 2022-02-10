@@ -40,7 +40,7 @@ builder.Services.AddSingleton<GlobalService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
-
+builder.Services.RunAppSetup();
 
 var app = builder.Build();
 
