@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using System.Net;
 using BulletinBoard;
+using Minio.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,18 @@ builder.Services.AddSingleton<GlobalService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
 builder.Services.RunAppSetup();
+
+builder.Services.AddMinio(options =>
+{
+    options.AccessKey = builder.Configuration.GetSection("Minio:AccessKey").Value;
+    options.SecretKey = builder.Configuration.GetSection("Minio:SecretKey").Value;
+    options.Endpoint = builder.Configuration.GetSection("Minio:ServiceURL").Value;
+    options.Region = builder.Configuration.GetSection("Minio:Region").Value;
+    options.OnClientConfiguration = client =>
+    {
+        client.WithSSL();
+    };
+});
 
 var app = builder.Build();
 
