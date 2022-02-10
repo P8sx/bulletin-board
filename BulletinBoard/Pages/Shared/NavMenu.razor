@@ -4,7 +4,7 @@
         <AuthorizeView>
             <Authorized>
                 <MudElement Class="d-flex flex-column justify-center">
-                    <MudAvatar Image="#" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
+                    <MudAvatar Image="@_globalService.AvatarImage(_userService.User!.Image)" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
                     <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
                     <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
                 </MudElement>

@@ -8,7 +8,7 @@
     <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudIconButton OnClick="@((e) => DarkMode())" Icon=@(darkMode?@Icons.Filled.DarkMode:@Icons.Filled.LightMode) aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
+        <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(darkMode?@Icons.Filled.DarkMode:@Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
         <AuthorizeView>
             <Authorized>
                 <MudButton Link="Identity/Account/Manage"
