@@ -356,7 +356,7 @@ namespace BulletinBoard.Services
         }
 
 
-        public async Task<bool> AddBulletin(Bulletin bulletin)
+        public async Task<bool> AddBulletinAsync(Bulletin bulletin)
         {
             try
             {
@@ -372,7 +372,7 @@ namespace BulletinBoard.Services
             }
             return true;
         }
-        public async Task<bool> UpdateBulletin(Bulletin bulletin)
+        public async Task<bool> UpdateBulletinAsync(Bulletin bulletin)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             try
@@ -407,7 +407,7 @@ namespace BulletinBoard.Services
             }
 
         }
-        public async Task<bool> RemoveBulletin(Bulletin bulletin)
+        public async Task<bool> RemoveBulletinAsync(Bulletin bulletin)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var dbBulletin = await dbContext.Bulletins

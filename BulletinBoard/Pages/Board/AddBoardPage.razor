@@ -74,7 +74,7 @@
         _processing = true;
         if(_imageUpload!.GetImages().Any())
             Board.Image = _imageUpload!.GetImages().First();
-        var result = await _boardService.AddBoard(Board, _userService.User!);
+        var result = await _boardService.AddBoardAsync(Board, _userService.User!);
         if (!result)
         {
             _processing = false;

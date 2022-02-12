@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="415"
+   height="182"
+   viewBox="0 0 415 182"
+   fill="none"
+   version="1.1"
+   id="svg93"
+   sodipodi:docname="logo.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs97">
+    <rect
+       x="187.31"
+       y="74.49"
+       width="228.31479"
+       height="102.36453"
+       id="rect63702" />
+    <rect
+       x="187.31"
+       y="74.49"
+       width="197.17556"
+       height="42.825533"
+       id="rect57162" />
+    <rect
+       x="187.31"
+       y="74.49"
+       width="167.857"
+       height="40.132"
+       id="rect33198" />
+    <rect
+       x="187.31"
+       y="114.622"
+       width="184.85471"
+       height="53.585354"
+       id="rect17616" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview95"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.3963229"
+     inkscape:cx="213.0596"
+     inkscape:cy="31.153253"
+     inkscape:window-width="1620"
+     inkscape:window-height="752"
+     inkscape:window-x="3189"
+     inkscape:window-y="572"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg93" />
+  <path
+     d="M130.432 78.9088C132.775 81.252 132.775 85.051 130.432 87.3941L87.8609 129.965C85.5178 132.309 81.7188 132.309 79.3756 129.965L52.5855 103.175C50.2423 100.832 50.2423 97.0331 52.5855 94.69L95.1568 52.1187C97.4999 49.7755 101.299 49.7755 103.642 52.1187L130.432 78.9088Z"
+     fill="black"
+     id="path77" />
+  <path
+     d="M140.432 87.3941C142.775 85.051 142.775 81.252 140.432 78.9088L120.733 59.21L127.825 52.1187C130.168 49.7755 133.967 49.7755 136.31 52.1187L163.1 78.9088C165.443 81.252 165.443 85.051 163.1 87.3941L120.529 129.965C118.186 132.309 114.387 132.309 112.043 129.965L104.952 122.874L140.432 87.3941Z"
+     fill="black"
+     id="path79" />
+  <text
+     xml:space="preserve"
+     id="text17614"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect17616);fill:#000000;fill-opacity:1;stroke:none" />
+  <text
+     xml:space="preserve"
+     id="text63700"
+     style="font-style:normal;font-weight:normal;font-size:58.6667px;line-height:0;font-family:sans-serif;letter-spacing:1px;word-spacing:0px;white-space:pre;shape-inside:url(#rect63702);fill:#000000;fill-opacity:1;stroke:none"
+     transform="matrix(1,0,0,1.150785,-0.39251115,-19.832802)"><tspan
+       x="187.31055"
+       y="110.54493"
+       id="tspan16853"><tspan
+         style="line-height:1.15;font-family:Ramabhadra;-inkscape-font-specification:Ramabhadra"
+         id="tspan16851">Bulletin</tspan></tspan></text>
+</svg>

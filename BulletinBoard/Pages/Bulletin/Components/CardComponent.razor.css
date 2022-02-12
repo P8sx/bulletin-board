@@ -1,0 +1,6 @@
+::deep h1{
+    border-bottom: 0 !important;
+}
+::deep h2{
+    border-bottom: 0 !important;
+}

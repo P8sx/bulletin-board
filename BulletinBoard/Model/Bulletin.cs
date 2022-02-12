@@ -8,9 +8,9 @@ namespace BulletinBoard.Model
         [Key]
         public ulong Id { get; set; }
         public Guid Guid { get; set; }
-        [Required]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
-        public string? Title { get; set; }
+
+        [StringLength(50, MinimumLength = 0, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
+        public string? Title { get; set; } = "";
         [Required]
         [StringLength(1000, MinimumLength = 10, ErrorMessage = "Description must be at least 10 characters long (max 1000)")]
         public string? Description { get; set; }
@@ -22,7 +22,7 @@ namespace BulletinBoard.Model
         public bool? Deleted { get; set; } = false;
 
 
-        public virtual User? User { get; set; }
+        public virtual User User { get; set; }
         [ForeignKey("User")]
         public ulong UserId { get; set; }
 

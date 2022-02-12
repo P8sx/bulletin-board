@@ -14,7 +14,7 @@ namespace BulletinBoard.Services
             _validatorService = validatorService;
         }
         
-        public async Task<List<Board>> GetPublicBoard()
+        public async Task<List<Board>> GetPublicBoardAsync()
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             return await dbContext.Boards
@@ -22,7 +22,7 @@ namespace BulletinBoard.Services
                 .Where(g => g.PublicListed == true)
                 .ToListAsync();
         }
-        public async Task<List<BoardUser>> GetPendingApprovalUsers(Board board)
+        public async Task<List<BoardUser>> GetPendingApprovalUsersAsync(Board board)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             return await dbContext.BoardUsers
@@ -32,7 +32,7 @@ namespace BulletinBoard.Services
                 .Where(gu => gu.Role == BoardRole.PendingAcceptance)
                 .ToListAsync();
         }
-        public async Task<List<BoardUser>> GetInvitedUsers(Board board)
+        public async Task<List<BoardUser>> GetInvitedUsersAsync(Board board)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             return await dbContext.BoardUsers
@@ -43,7 +43,7 @@ namespace BulletinBoard.Services
                 .ToListAsync();
         }
 
-        public async Task<List<BoardUser>> GetBoardUsers(Board board)
+        public async Task<List<BoardUser>> GetBoardUsersAsync(Board board)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             return await dbContext.BoardUsers
@@ -72,7 +72,7 @@ namespace BulletinBoard.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<bool> AddBoard(Board board, User user)
+        public async Task<bool> AddBoardAsync(Board board, User user)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace BulletinBoard.Services
             }
             return false;
         }
-        public async Task<bool> UpdateBoard(Board board)
+        public async Task<bool> UpdateBoardAsync(Board board)
         {
             try
             {
@@ -105,44 +105,44 @@ namespace BulletinBoard.Services
             }
             return false;
         }
-        public async Task<bool> JoinToBoard(Board board, User user)
+        public async Task<bool> JoinToBoardAsync(Board board, User user)
         {
             if (board.AcceptAnyone)
                 return await SetBoardUser(board, user, BoardRole.User);
             return await SetBoardUser(board, user, BoardRole.PendingAcceptance);
         }
-        public async Task<bool> CancelJoinToBoard(Board board, User user)
+        public async Task<bool> CancelJoinToBoardAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, null);
         }
 
-        public async Task<bool> AcceptUser(Board board, User user)
+        public async Task<bool> AcceptUserAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, BoardRole.User);
         }
-        public async Task<bool> RejectUser(Board board, User user)
+        public async Task<bool> RejectUserAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, null);
         }
 
-        public async Task<bool> ChangeRole(Board board, User user, BoardRole role)
+        public async Task<bool> ChangeRoleAsync(Board board, User user, BoardRole role)
         {
             return await SetBoardUser(board, user, role);
         }
-        public async Task<bool> InviteUser(Board board, User user)
+        public async Task<bool> InviteUserAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, BoardRole.Invited);
         }
-        public async Task<bool> RemoveBoardUser(Board board, User user)
+        public async Task<bool> RemoveBoardUserAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, null);
         }
        
-        public async Task<bool> AcceptInvitation(Board board, User user)
+        public async Task<bool> AcceptInvitationAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, BoardRole.User);
         }
-        public async Task<bool> CancelInviteUser(Board board, User user)
+        public async Task<bool> CancelInviteUserAsync(Board board, User user)
         {
             return await SetBoardUser(board, user, null);
         }
@@ -182,11 +182,17 @@ namespace BulletinBoard.Services
                     // if role null remove boardUser from db
                     if (role == null)
                         dbContext.BoardUsers.Remove(result);
-                    else if(role == BoardRole.Invited && result.Role == BoardRole.PendingAcceptance)
+                    else if (role == BoardRole.Invited && result.Role == BoardRole.PendingAcceptance)
+                    {
                         result.Role = BoardRole.User;
+                        dbContext.BoardUsers.Update(result);
+                    }
                     else
+                    {
                         result.Role = role.Value;
-                    dbContext.BoardUsers.Update(result);
+                        dbContext.BoardUsers.Update(result);
+                    }
+                    
                 }
                 _validatorService.InvalidateUserRoles(user);
                 await dbContext.SaveChangesAsync();

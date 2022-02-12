@@ -4,7 +4,7 @@
 
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
-@using BulletinBoard.Services
+@using GEmojiSharp.Blazor
 
 @inject ISnackbar _snackbar
 @inject IWebHostEnvironment _env
@@ -15,12 +15,26 @@
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
 <MudPaper Class="mud-width-full py-8" Elevation="1">
     <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
-        <DataAnnotationsValidator />
+        <DataAnnotationsValidator/>
         <MudGrid>
-            <MudItem xs="12" md="12" Class="px-8">
-                <MudText Typo="Typo.h5">Bulletin</MudText>
-                <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)" />
-                <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)" />
+            <MudItem xs="12" md="12" Class="px-8 d-flex flex-column">
+                <MudText Typo="Typo.h5">Bulletin @(_preview ? "(preview)" : "")</MudText>
+                @if (_preview)
+                {
+                    <MudPaper Class="px-2 mt-2 mb-3" Outlined="true">
+                        <Emoji>
+                            <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
+                                <MudMarkdown OverrideHeaderTypo="delegate(Typo arg) { return arg is Typo.h1 or Typo.h2 ? Typo.h3 : arg; }" Value="@Bulletin.Description"></MudMarkdown>
+                            </MudText>
+                        </Emoji>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)"/>
+                    <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Markdown and Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)"/>
+                }
+                <MudButton Class="ms-auto" Variant="Variant.Filled" OnClick="() => { _preview = !_preview; }" Color="@(_preview ? Color.Primary : Color.Secondary)">@(_preview ? "Text" : "Preview")</MudButton>
             </MudItem>
             <MudItem xs="12" md="8" Class="px-8 d-flex">
                 <MudGrid>
@@ -34,7 +48,7 @@
                             {
                                 <MudItem xs="6" md="6">
                                     <MudCard>
-                                        <MudCardMedia Image=@img.base64Image Height="200" />
+                                        <MudCardMedia Image=@img.base64Image Height="200"/>
                                         <MudCardActions Class="d-flex justify-space-between">
                                             <MudText Typo="Typo.caption">@img.browserFile.Name</MudText>
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => _imageUpload.RemoveImage(img))"></MudIconButton>
@@ -47,14 +61,14 @@
 
                     <MudItem xs="12" Class="d-flex flex-column">
                         <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                        <MudText Class="mt-2" Align="Align.Center">Max @(_globalService.MaxFileSize/1024/1024) MB per image.</MudText>
+                        <MudText Class="mt-2" Align="Align.Center">Max @(_globalService.MaxFileSize / 1024 / 1024) MB per image.</MudText>
                     </MudItem>
 
                 </MudGrid>
             </MudItem>
             <MudItem xs="12" md="4" Class="px-8">
                 <MudText Typo="Typo.h5">Additional</MudText>
-                <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false" />
+                <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false"/>
                 <MudSelect T="ulong?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
                     @foreach (var board in _userService.GetUserBoards())
                     {
@@ -73,50 +87,53 @@
 </MudPaper>
 
 @code {
+
     [Parameter]
     [SupplyParameterFromQuery]
     public Guid? BoardGuid { get; set; }
-    
+
     private Bulletin Bulletin { get; set; } = new();
     private ImageUploadComponent? _imageUpload;
     private async Task UpdateImages(bool update) => await InvokeAsync(StateHasChanged);
     private Board? _board;
-
+    private bool _preview = false;
 
     private bool _processing;
+
     protected override async Task OnInitializedAsync()
     {
-        _board = await _boardService.GetBoardAsync(new Board(BoardGuid??_globalService.DefaultBoardGuid));
+        _board = await _boardService.GetBoardAsync(new Board(BoardGuid ?? _globalService.DefaultBoardGuid));
         Bulletin.BoardId = _board!.Id;
         StateHasChanged();
         await base.OnInitializedAsync();
         _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
     }
-    
+
 
     // Submit form
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _processing = true;
-        // Set bulletin data
+    // Set bulletin data
         if (Bulletin.UserId == 0)
             Bulletin.UserId = _userService.User!.Id;
         Bulletin.Created = DateTime.UtcNow;
 
-        // Try save bulletin in db
+    // Try save bulletin in db
         Bulletin.Images = _imageUpload!.GetImages();
-        var result = await _bulletinService.AddBulletin(Bulletin);
+        var result = await _bulletinService.AddBulletinAsync(Bulletin);
         if (!result)
         {
             _processing = false;
             _snackbar.Add($"Bulletin has NOT been added, contact system administrator", Severity.Error);
             return;
         }
-        // If bulletin successfully added save images on server
+    // If bulletin successfully added save images on server
         await _imageUpload!.SaveFilesAsync();
 
         _snackbar.Add($"Bulletin has been added - redirecting", Severity.Success);
         await Task.Delay(2000);
         _navigationManager.NavigateTo($"bulletin?boardGuid={_board!.Guid}&bulletinGuid={Bulletin.Guid}");
     }
+
 }

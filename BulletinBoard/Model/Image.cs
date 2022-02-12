@@ -11,8 +11,9 @@ namespace BulletinBoard.Model
         public ulong Id { get; set; }
         public Guid Guid { get; set; }
         [MaxLength(5)] 
-        public string FileExtension { get; set; }
-        public string Name { get; set; }
+        public string FileExtension { get; set; } = "";
+
+        public string Name { get; set; } = "";
         
         private DateTime Created { get; set; } = DateTime.UtcNow;
 

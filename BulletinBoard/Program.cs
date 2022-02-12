@@ -9,6 +9,7 @@ using MudBlazor.Services;
 using System.Net;
 using BulletinBoard;
 using Minio.AspNetCore;
+using MudBlazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.AddSingleton<GlobalService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
+builder.Services.AddMudMarkdownServices();
 builder.Services.RunAppSetup();
 
 builder.Services.AddMinio(options =>
@@ -70,20 +72,6 @@ else
 }
 
 app.UseHttpsRedirection();
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    OnPrepareResponse = ctx =>
-    {
-        if (ctx.Context.Request.Path.StartsWithSegments("/images/board"))
-        {
-            ctx.Context.Response.Headers.Add("Cache-Control", "no-store");
-            ctx.Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-            ctx.Context.Response.ContentLength = 0;
-            ctx.Context.Response.Body = Stream.Null;
-        }
-    }
-});
 app.UseStaticFiles();
 app.UseRouting();
 

@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider Theme="currentTheme" />
+<MudThemeProvider Theme="_currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -8,7 +8,7 @@
     <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(darkMode?@Icons.Filled.DarkMode:@Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
+        <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(_darkMode?@Icons.Filled.DarkMode:@Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
         <AuthorizeView>
             <Authorized>
                 <MudButton Link="Identity/Account/Manage"
@@ -50,9 +50,8 @@
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Width="16rem">
-        <MudDrawerHeader Style="align-items:center">
-            <img src="new-logo.svg" width=50 height=50 class="rounded" style=@_logoColor/>
-            <MudText Class="ps-2" Typo="Typo.h4">Bullet-In</MudText>
+        <MudDrawerHeader>
+            <img src="logo.svg" width=300 height=80 class="rounded" style=@_logoColor alt=""/>
         </MudDrawerHeader>
         <NavMenu />
     </MudDrawer>
@@ -73,28 +72,29 @@
     }
     protected override void OnInitialized()
     {
-        currentTheme = defaultTheme;
+        _currentTheme = _defaultTheme;
     }
     private string _logoColor = "";
-    bool darkMode = false;
+    bool _darkMode = false;
     void DarkMode()
     {
-        if (currentTheme == defaultTheme)
+        if (_currentTheme == _defaultTheme)
         {
-            currentTheme = darkTheme;
-            darkMode = true;
+            _currentTheme = _darkTheme;
+            _darkMode = true;
             _logoColor = "filter: invert(64%) sepia(0%) saturate(691%) hue-rotate(160deg) brightness(92%) contrast(86%);";
         }
         else
         {
-            currentTheme = defaultTheme;
-            darkMode = false;
-            _logoColor = "";
+            _currentTheme = _defaultTheme;
+            _darkMode = false;
+            _logoColor = "filter: invert(78%) sepia(0%) saturate(0%) hue-rotate(2deg) brightness(92%) contrast(81%);";
         }
     }
 
-    MudTheme currentTheme = new MudTheme();
-    MudTheme defaultTheme = new MudTheme()
+    MudTheme _currentTheme = new MudTheme();
+
+    readonly MudTheme _defaultTheme = new MudTheme()
         {
             Palette = new Palette()
             {
@@ -102,7 +102,7 @@
             }
         };
 
-    MudTheme darkTheme = new MudTheme()
+    readonly MudTheme _darkTheme = new MudTheme()
         {
             Palette = new Palette()
             {

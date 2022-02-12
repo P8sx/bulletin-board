@@ -171,7 +171,7 @@ else
 
     private async Task RemoveBulletin(Bulletin bulletin)
     {
-        var result = await _bulletinService.RemoveBulletin(bulletin);
+        var result = await _bulletinService.RemoveBulletinAsync(bulletin);
         if (result)
         {
             _snackbar.Add($"Bulletin has been removed", Severity.Success);

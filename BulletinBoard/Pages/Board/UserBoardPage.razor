@@ -245,14 +245,14 @@
     }
     private async Task CancelJoin(Board board)
     {
-        await _boardService.CancelJoinToBoard(board, _userService.User!);
+        await _boardService.CancelJoinToBoardAsync(board, _userService.User!);
         _userService.UpdateUserBoards();
         UpdateBoardsInfo();
         StateHasChanged();
     }
     private async Task AcceptInvitation(Board board)
     {
-        await _boardService.AcceptInvitation(board, _userService.User!);
+        await _boardService.AcceptInvitationAsync(board, _userService.User!);
         _userService.UpdateUserBoards();
         UpdateBoardsInfo();
         StateHasChanged();
@@ -273,7 +273,7 @@
 
          if (!result.Cancelled)
         {
-            var leaveBoardResult = await _boardService.RemoveBoardUser(board, _userService.User!);
+            var leaveBoardResult = await _boardService.RemoveBoardUserAsync(board, _userService.User!);
             if (!leaveBoardResult)
             {
                 _snackbar.Add($"There was an error - contact system admin", Severity.Error);

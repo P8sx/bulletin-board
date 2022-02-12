@@ -131,12 +131,12 @@ else
     }
     private async Task UpdateBoardsInfo()
     {
-        _publicBoards = await _boardService.GetPublicBoard();
+        _publicBoards = await _boardService.GetPublicBoardAsync();
     }
 
     private async void Join(Board board)
     {
-        await _boardService.JoinToBoard(board, _userService.User!);
+        await _boardService.JoinToBoardAsync(board, _userService.User!);
         _userService.UpdateUserBoards();
         await UpdateBoardsInfo();
         StateHasChanged();
@@ -144,7 +144,7 @@ else
 
     private async Task AcceptInvitation(Board board)
     {
-        await _boardService.AcceptInvitation(board, _userService.User!);
+        await _boardService.AcceptInvitationAsync(board, _userService.User!);
         _userService.UpdateUserBoards();
         await UpdateBoardsInfo();
         StateHasChanged();

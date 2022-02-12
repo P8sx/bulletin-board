@@ -295,9 +295,9 @@ else
         _board = await _boardService.GetBoardAsync(new Board(BoardGuid ?? _globalService.DefaultBoardGuid));
         if (_board != null && _userService.IsBoardAdmin(new Board(_board.Id)))
         {
-            _boardUsers = await _boardService.GetBoardUsers(_board!);
-            _pendingApproval = await _boardService.GetPendingApprovalUsers(_board!);
-            _invited = await _boardService.GetInvitedUsers(_board!);
+            _boardUsers = await _boardService.GetBoardUsersAsync(_board!);
+            _pendingApproval = await _boardService.GetPendingApprovalUsersAsync(_board!);
+            _invited = await _boardService.GetInvitedUsersAsync(_board!);
         }
         else
         {
@@ -317,7 +317,7 @@ else
 
     private async Task RoleChanged(BoardUser boardUser)
     {
-        var result = await _boardService.ChangeRole(boardUser.Board!, boardUser.User!, boardUser.Role);
+        var result = await _boardService.ChangeRoleAsync(boardUser.Board!, boardUser.User!, boardUser.Role);
         if (!result)
             _snackbar.Add($"There was an error changing role", Severity.Error);
         else
@@ -339,7 +339,7 @@ else
 
         if (!result.Cancelled)
         {
-            var removeUserResult = await _boardService.RemoveBoardUser(boardUser.Board!, boardUser.User!);
+            var removeUserResult = await _boardService.RemoveBoardUserAsync(boardUser.Board!, boardUser.User!);
             if (!removeUserResult)
             {
                 _snackbar.Add($"There was an error removing '{boardUser.User!.UserName}' user", Severity.Error);
@@ -352,7 +352,7 @@ else
     }
     private async Task AcceptUser(BoardUser boardUser)
     {
-        var result = await _boardService.AcceptUser(boardUser.Board!, boardUser.User!);
+        var result = await _boardService.AcceptUserAsync(boardUser.Board!, boardUser.User!);
         if (result)
         {
             _snackbar.Add($"User '{boardUser.User!.UserName}' accepted", Severity.Success);
@@ -366,7 +366,7 @@ else
     }
     private async Task RejectUser(BoardUser boardUser)
     {
-        var result = await _boardService.RejectUser(boardUser.Board!, boardUser.User!);
+        var result = await _boardService.RejectUserAsync(boardUser.Board!, boardUser.User!);
         if (result)
         {
             _snackbar.Add($"User '{boardUser.User!.UserName}' rejected", Severity.Warning);
@@ -378,7 +378,7 @@ else
     }
     private async Task InviteUser(User user)
     {
-        var result = await _boardService.InviteUser(_board!, user);
+        var result = await _boardService.InviteUserAsync(_board!, user);
         if (result)
         {
             _snackbar.Add($"User '{user.UserName}' invited", Severity.Success);
@@ -394,7 +394,7 @@ else
     }
     private async Task CancelInviteUser(User user)
     {
-        var result = await _boardService.CancelInviteUser(_board!, user);
+        var result = await _boardService.CancelInviteUserAsync(_board!, user);
         if (result)
         {
             _snackbar.Add($"User '{user.UserName}' invited cancelled", Severity.Warning);
@@ -424,7 +424,7 @@ else
     private async Task ValidFormSubmitted(EditContext editContext)
     {
         _processing = true;
-        var result = await _boardService.UpdateBoard(_board!);
+        var result = await _boardService.UpdateBoardAsync(_board!);
         if (!result)
         {
             _processing = false;
