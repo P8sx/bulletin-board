@@ -15,9 +15,10 @@ namespace BulletinBoard.Services
         Task<int> GetUserBookmarkBulletinsCountAsyncCached(User user);
 
         Task<Bulletin?> GetBulletinInfoAsyncCached(User? user, Bulletin bulletin);
-        Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin);
+        Task<Bulletin?> GetBulletinAsync(User? user, Bulletin bulletin);
 
         Task<bool> RemoveBulletinAsync(Bulletin bulletin);
         Task<bool> UpdateBulletinAsync(Bulletin bulletin);
+        Task<bool> PinBulletin(Bulletin bulletin);
     }
 }

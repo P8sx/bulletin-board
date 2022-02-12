@@ -6,27 +6,30 @@ namespace BulletinBoard.Model
     public class Bulletin
     {
         [Key]
-        public ulong Id { get; set; }
-        public Guid Guid { get; set; }
+        public ulong Id { get; init; }
+        public Guid Guid { get; init; }
 
-        [StringLength(50, MinimumLength = 0, ErrorMessage = "Title must be at least 3 characters long (max 50)")]
+        [StringLength(50, MinimumLength = 0, ErrorMessage = "Title max lenght is 50)")]
         public string? Title { get; set; } = "";
+
         [Required]
         [StringLength(1000, MinimumLength = 10, ErrorMessage = "Description must be at least 10 characters long (max 1000)")]
-        public string? Description { get; set; }
+        public string Description { get; set; } = "";
+        
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
         public DateTime? Modified { get; set; }
         public DateTime? Expired { get; set; }
         public List<Image> Images { get; set; } = new();
-        public bool? Pinned { get; set; } = false;
-        public bool? Deleted { get; set; } = false;
+        public bool Pinned { get; set; }
+        public bool Deleted { get; set; }
 
 
-        public virtual User User { get; set; }
+        public virtual User? User { get; init; }
         [ForeignKey("User")]
         public ulong UserId { get; set; }
 
-        public virtual Board? Board { get; set; }
+        public virtual Board? Board { get; init; }
         [ForeignKey("Board")]
         public ulong? BoardId { get; set; }
 
@@ -45,18 +48,16 @@ namespace BulletinBoard.Model
 
         public Bulletin()
         {
-            Created = DateTime.UtcNow;
             Guid = Guid.NewGuid();
         }
         public Bulletin(Guid guid)
         {
             Guid = guid;
-            Created = DateTime.UtcNow;
         }
         public Bulletin(ulong id)
         {
             Id = id;
-            Created = DateTime.UtcNow;
         }
+        
     }
 }

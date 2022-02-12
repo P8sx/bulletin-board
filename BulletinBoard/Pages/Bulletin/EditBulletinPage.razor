@@ -13,7 +13,7 @@
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
 
-@if (Bulletin is {Board: { } } && _userService.CanEditBulletin(Bulletin.Board, Bulletin))
+@if (Bulletin is {Board: { } } && _userService.IsBulletinOwner(Bulletin))
 {
     <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
     <MudPaper Class="mud-width-full py-8" Elevation="1">
@@ -143,7 +143,7 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        Bulletin = await _bulletinService.GetBulletinInfoAsync(null, new Bulletin(BulletinGuid));
+        Bulletin = await _bulletinService.GetBulletinAsync(null, new Bulletin(BulletinGuid));
         _pageState = State.Success;
         StateHasChanged();
     }

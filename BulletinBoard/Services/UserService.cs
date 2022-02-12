@@ -81,17 +81,17 @@ namespace BulletinBoard.Services
         public bool IsBoardModerator(Board board)
         {
             RolesValid();
-            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && a.Role is BoardRole.Moderator or BoardRole.Admin or BoardRole.Owner);
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id || a.Board!.Guid == board.Guid) && a.Role is BoardRole.Moderator or BoardRole.Admin or BoardRole.Owner);
         }
         public bool IsBoardAdmin(Board board)
         {
             RolesValid();
-            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && a.Role is BoardRole.Admin or BoardRole.Owner);
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id || a.Board!.Guid == board.Guid)  && a.Role is BoardRole.Admin or BoardRole.Owner);
         }
         public bool IsBoardOwner(Board board)
         {
             RolesValid();
-            return _userBoardsRoles.Any(a => (a.BoardId == board.Id) && (a.Role == BoardRole.Owner));
+            return _userBoardsRoles.Any(a => (a.BoardId == board.Id || a.Board!.Guid == board.Guid)  && (a.Role == BoardRole.Owner));
         }
         public bool IsBulletinOwner(Bulletin bulletin)
         {

@@ -12,7 +12,7 @@ namespace BulletinBoard.Services
         {
 
         }
-        public async Task AddToDefaultGroupAsync(User user, string roleName)
+        public async Task AddToDefaultGroupAsync(User user)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var boardId = await dbContext.Boards.Where(b => b.Guid == GlobalService.DefaultBoardGuid).Select(b=>b.Id)

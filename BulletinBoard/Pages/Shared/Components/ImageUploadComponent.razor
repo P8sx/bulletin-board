@@ -1,7 +1,6 @@
 ﻿@using static Services.GlobalService
 
 @using BulletinBoard.Model
-@inject ISnackbar _snackbar
 @inject IWebHostEnvironment _env
 
 
@@ -22,12 +21,7 @@
     private List<string> AcceptedFormat { get; set; } = new() {"image/jpeg", "image/png", "image/jpg"};
 
     public List<(IBrowserFile browserFile, Image image, string base64Image)> Images { get; private set; } = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-    }
+    
 
     private async Task LoadFilesAsync(InputFileChangeEventArgs e)
     {

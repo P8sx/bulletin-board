@@ -8,12 +8,13 @@ namespace BulletinBoard.Model
         [Key]
         public ulong Id { get; set; }
         public Guid Guid { get; init; }
-        public DateTime Created { get; private set; }
+        
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime Created { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public bool PublicListed { get; set; }
         public bool AcceptAnyone { get; set; }
-
 
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")] 
@@ -25,17 +26,15 @@ namespace BulletinBoard.Model
         public Board()
         {
             Guid = Guid.NewGuid();
-            Created = DateTime.UtcNow;
         }
         public Board(ulong id)
         {
             Id = id;
-            Created = DateTime.UtcNow;
         }
         public Board(Guid guid)
         {
             Guid = guid;
-            Created = DateTime.UtcNow;
         }
+        
     }
 }

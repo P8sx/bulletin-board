@@ -12,7 +12,6 @@ namespace BulletinBoard.Services
         Task Vote(Bulletin bulletin);
         bool IsBoardModerator(Board board);
         bool IsBulletinOwner(Bulletin bulletin);
-        bool CanEditBulletin(Board board, Bulletin bulletin);
         List<Board?> GetUserBoards();
         List<Board?> GetUserPendingAcceptanceBoards();
         List<Board?> GetUserPendingInvitationsBoards();

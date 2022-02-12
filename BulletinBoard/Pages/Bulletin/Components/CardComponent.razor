@@ -17,22 +17,22 @@
             </CardHeaderAvatar>
             <CardHeaderContent>
                 <MudText Typo="Typo.body1">
-                    <b>@Bulletin.User.UserName</b>
+                    <b>@Bulletin.User!.UserName</b>
                 </MudText>
                 <MudText Typo="Typo.body2">
-                    @switch ((DateTime.UtcNow - Bulletin.Created).TotalMinutes)
+                    @switch ((DateTime.Now - Bulletin.Created).TotalMinutes)
                     {
                         case < 60:
-                            @Convert.ToInt32(((DateTime.UtcNow - Bulletin.Created).TotalMinutes))@: minutes ago
+                            @Convert.ToInt32(((DateTime.Now - Bulletin.Created).TotalMinutes))@: minutes ago
                             break;
                         case < 10 * 60:
-                            @Convert.ToInt32(((DateTime.UtcNow - Bulletin.Created).TotalHours))@: hour ago
+                            @Convert.ToInt32(((DateTime.Now - Bulletin.Created).TotalHours))@: hour ago
                             break;
                         case < 24 * 60:
-                            @Convert.ToInt32(((DateTime.UtcNow - Bulletin.Created).TotalHours))@: hours ago
+                            @Convert.ToInt32(((DateTime.Now - Bulletin.Created).TotalHours))@: hours ago
                             break;
                         case > 24 * 60 and < 24 * 7 * 60:
-                            @Convert.ToInt32(((DateTime.UtcNow - Bulletin.Created).TotalDays))@: days ago
+                            @Convert.ToInt32(((DateTime.Now - Bulletin.Created).TotalDays))@: days ago
                             break;
                         default:
                             @(Bulletin.Created.ToString("dd.MM.yyyy"))
@@ -54,6 +54,10 @@
                 }
             </CardHeaderContent>
             <CardHeaderActions>
+                @if (Bulletin.Pinned)
+                {
+                    <MudChip Class="mb-5" Icon="@Icons.Material.Filled.PushPin" Color="Color.Primary" IconColor="Color.Default">Pinned</MudChip>
+                }
                 <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
                     <MudMenuItem>
                         <MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span>
@@ -61,8 +65,17 @@
                     @if (_userService.IsBoardModerator(new Board() {Guid = Bulletin.Board!.Guid}) || _userService.IsBulletinOwner(Bulletin))
                     {
                         <MudMenuItem OnClick=@(async () => await BulletinRemovedCallback.InvokeAsync(Bulletin))>
-                            <MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Delete</span>
+                            <MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Delete" Class="mr-2"/><span style="vertical-align:middle;">Delete</span>
                         </MudMenuItem>
+                    }
+                    @if (_userService.IsBoardModerator(new Board() {Guid = Bulletin.Board!.Guid}))
+                    {
+                        <MudMenuItem OnClick=@(async () => await BulletinPinnedCallback.InvokeAsync(Bulletin))>
+                            <MudIcon Icon="@Icons.Filled.PushPin" Style="vertical-align:middle;" Title="Pin" Class="mr-2"/><span style="vertical-align:middle;">Pin</span>
+                        </MudMenuItem>
+                    }
+                    @if (_userService.IsBulletinOwner(Bulletin))
+                    {
                         <MudMenuItem Link=@($"bulletin/edit?&bulletinGuid={Bulletin.Guid}")>
                             <MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Edit</span>
                         </MudMenuItem>
@@ -126,10 +139,10 @@
         <AuthorizeView>
             <Authorized>
                 <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted ? Color.Secondary : Color.Default) OnClick=Vote Disabled=@(Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)/>
+                <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted ? Color.Secondary : Color.Default) OnClick="Vote" Disabled="@(Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)"></MudIconButton>
                 <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
                 <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default"/>
-                <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark ? Color.Warning : Color.Default) OnClick=Bookmark Style="margin-left:auto"/>
+                <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark ? Color.Warning : Color.Default) OnClick="Bookmark" Style="margin-left:auto"></MudIconButton>
             </Authorized>
             <NotAuthorized>
                 <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
@@ -155,7 +168,10 @@
 
     [Parameter]
     public EventCallback<Bulletin> BulletinRemovedCallback { get; set; }
-
+    
+    [Parameter]
+    public EventCallback<Bulletin> BulletinPinnedCallback { get; set; }
+    
     private MudCarousel<Image>? _carousel;
 
     private void Vote()

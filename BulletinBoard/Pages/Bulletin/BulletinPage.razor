@@ -9,7 +9,6 @@
 @inject IDialogService _dialogService
 @inject ICommentService _commentService
 @inject IJSRuntime _js
-@inject ISnackbar _snackbar
 @inject IBoardService _boardService
 
 @if (_pageState == State.Success && _bulletin != null)
@@ -66,7 +65,6 @@ else
     public Guid BulletinGuid { get; set; }
 
 
-
     private Bulletin? _bulletin;
     private IList<Comment> _comments = default!;
     private State _pageState = State.Loading;
@@ -87,12 +85,7 @@ else
         }
         StateHasChanged();
     }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-    }
+    
 
     private async Task UpdateComments(bool update)
     {

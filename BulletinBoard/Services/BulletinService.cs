@@ -67,6 +67,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
+                    Id = a.Id,
                     Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
@@ -82,31 +83,31 @@ namespace BulletinBoard.Services
                     CommentsCount = a.Comments!.Count,
                     VotesCount = a.Votes!.Count,
                     UserVoted = user != null && a.Votes.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1,
-                    UserBookmark = user != null && a.Bookmarks!.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1
+                    UserBookmark = user != null &&
+                                   a.Bookmarks!.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1
                 });
-
             switch (sort.SortBy)
             {
                 case SortBy.Popular:
                     bulletins = sort.OrderBy == OrderBy.Ascending
-                        ? bulletins.OrderBy(d => d.VotesCount)
-                        : bulletins.OrderByDescending(d => d.VotesCount);
+                        ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.VotesCount)
+                        : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.VotesCount);
                     break;
                 case SortBy.Expiring:
                     bulletins = sort.OrderBy == OrderBy.Ascending
-                        ? bulletins.OrderBy(d => d.Expired)
-                        : bulletins.OrderByDescending(d => d.Expired);
+                        ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.Expired)
+                        : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.Expired);
                     break;
                 case SortBy.Commented:
                     bulletins = sort.OrderBy == OrderBy.Ascending
-                        ? bulletins.OrderBy(d => d.CommentsCount)
-                        : bulletins.OrderByDescending(d => d.CommentsCount);
+                        ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.CommentsCount)
+                        : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.CommentsCount);
                     break;
                 case SortBy.Created:
                 default:
                     bulletins = sort.OrderBy == OrderBy.Ascending
-                        ? bulletins.OrderBy(d => d.Created)
-                        : bulletins.OrderByDescending(d => d.Created);
+                        ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.Created)
+                        : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.Created);
                     break;
             }
 
@@ -141,10 +142,10 @@ namespace BulletinBoard.Services
             return await _memoryCache.GetOrCreateAsync($"Bulletin{uId}{bulletin.Guid}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
-                return await GetBulletinInfoAsync(user!, bulletin);
+                return await GetBulletinAsync(user!, bulletin);
             });
         }
-        public async Task<Bulletin?> GetBulletinInfoAsync(User? user, Bulletin bulletin)
+        public async Task<Bulletin?> GetBulletinAsync(User? user, Bulletin bulletin)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             return await dbContext.Bulletins
@@ -208,6 +209,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
+                    Id = a.Id,
                     Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
@@ -296,6 +298,7 @@ namespace BulletinBoard.Services
                 .Where(b => b.Deleted == false)
                 .Select(a => new Bulletin
                 {
+                    Id = a.Id,
                     Guid = a.Guid,
                     Title = a.Title,
                     Description = a.Description,
@@ -428,6 +431,19 @@ namespace BulletinBoard.Services
 
             await dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> PinBulletin(Bulletin bulletin)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var dbBulletin = await dbContext.Bulletins.Where(b => b.Id == bulletin.Id || b.Guid == bulletin.Guid)
+                .FirstOrDefaultAsync();
+            if (dbBulletin == null) return false;
+            dbBulletin.Pinned = !dbBulletin.Pinned;
+            dbContext.Bulletins.Update(dbBulletin);
+            await dbContext.SaveChangesAsync();
+            return true;
+
         }
     }
 }

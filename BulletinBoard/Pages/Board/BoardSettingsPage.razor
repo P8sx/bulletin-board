@@ -8,7 +8,6 @@
 
 @inject IBoardService _boardService
 @inject IBulletinService _bulletinService
-@inject ISnackbar _snackbar
 @inject IDialogService _dialogService
 @inject NavigationManager _navigationManager
 
@@ -22,7 +21,7 @@ else if (_board != null)
 {
     <MudCard Outlined="true" Class="mb-3">
 
-        <MudCardMedia Image="/control_panel.svg" Height="200" Style="background-position:top" />
+        <MudCardMedia Image="/control-panel.svg" Height="200" Style="background-position:top" />
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h4"><strong>@_board.Name</strong> - Boad panel</MudText>
@@ -284,11 +283,7 @@ else
 
     private bool _searchProcessing;
     private bool _processing;
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-    }
+
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);

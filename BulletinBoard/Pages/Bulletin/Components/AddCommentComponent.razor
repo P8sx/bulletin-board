@@ -2,7 +2,6 @@
 @using BulletinBoard.Services
 @using System.ComponentModel.DataAnnotations
 
-@inject ISnackbar _snackbar
 @inject ICommentService _commentService
 
 @using GEmojiSharp.Blazor
@@ -23,13 +22,7 @@
     [Required]
     private String _commentText = "";
     private DateTime _lastComment;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-    }
-
+    
     private async Task Submitted()
     {
 

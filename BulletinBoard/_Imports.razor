@@ -13,3 +13,14 @@
 
 @inject GlobalService _globalService
 @inject IUserService _userService
+@inject ISnackbar _snackbar
+
+@code{
+
+    protected override Task OnInitializedAsync()
+    {
+        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        return base.OnInitializedAsync();
+    }
+
+}

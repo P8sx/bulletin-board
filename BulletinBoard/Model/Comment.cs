@@ -16,10 +16,8 @@ namespace BulletinBoard.Model
         [Required]
         [StringLength(200, MinimumLength = 1, ErrorMessage = "Comment can't be empty")]
         public string? Text { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
-        public Comment()
-        {
-            Created = DateTime.Now;
-        }
+
     }
 }

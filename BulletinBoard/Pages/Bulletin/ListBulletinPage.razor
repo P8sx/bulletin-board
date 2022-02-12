@@ -10,7 +10,6 @@
 
 @inject IBoardService _boardService
 @inject IBulletinService _bulletinService
-@inject ISnackbar _snackbar
 @inject NavigationManager _navigationManager
 
 @if (_pageState == State.Success && _board != null)
@@ -67,7 +66,7 @@
     <MudElement>
         @foreach (var bulletin in _bulletins)
         {
-            <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin"></CardComponent>
+            <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin" BulletinPinnedCallback="PinBulletin"></CardComponent>
         }
     </MudElement>
 
@@ -135,12 +134,7 @@ else
         }
         StateHasChanged();
     }
-
-     protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        _snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-    }
+    
 
     private void PageChanged(int page)
     {
@@ -180,5 +174,16 @@ else
         }
         else
             _snackbar.Add($"There was an error removing bulletin - contact system admin", Severity.Error);
+    }
+
+    private async Task PinBulletin(Bulletin bulletin)
+    {
+        var result = await _bulletinService.PinBulletin(bulletin);
+        if (result)
+        {
+            var index = _bulletins.IndexOf(bulletin);
+            _bulletins[index].Pinned = !_bulletins[index].Pinned;
+            StateHasChanged();
+        }
     }
 }

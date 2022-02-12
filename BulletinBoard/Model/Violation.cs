@@ -7,7 +7,8 @@ namespace BulletinBoard.Model
     {
         [Key]
         public ulong Id { get; set; }
-
+        
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
         public string Description { get; set; } = "";
         
@@ -24,10 +25,6 @@ namespace BulletinBoard.Model
         public virtual Comment? Comment { get; set; }
         [ForeignKey("Comment")]
         public ulong? CommentId { get; set; }
-
-        public Violation()
-        {
-            Created = DateTime.UtcNow;
-        }
+        
     }
 }
