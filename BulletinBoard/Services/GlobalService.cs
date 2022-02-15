@@ -47,8 +47,8 @@ public class GlobalService
     }
     
 
-    public string AvatarImage(Image? img) => img == null ? $"/avatar.png" : Path(img);
-    public string BoardImage(Image? img) => img == null ? $"/board.svg" : Path(img);
+    public string AvatarImage(Image? img) => img == null ? $"/static/avatar.png" : Path(img);
+    public string BoardImage(Image? img) => img == null ? $"/static/board.svg" : Path(img);
     public string BulletinImage(Image? img) => img == null ? "#" : Path(img);
     private string Path(Image img) => _minioStorage ? $"https://{_serviceUrl}/{_bucket}/{img.FileName()}" : $"{DefaultImageFolder}/{img.FileName()}";
 

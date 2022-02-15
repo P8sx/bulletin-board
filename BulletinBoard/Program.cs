@@ -16,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options
-           .UseMySql(connectionString, new MySqlServerVersion(new Version(5, 7, 35))), ServiceLifetime.Scoped);
+    .UseMySql(connectionString, new MySqlServerVersion(new Version(5, 7, 35))), ServiceLifetime.Scoped);
+
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
