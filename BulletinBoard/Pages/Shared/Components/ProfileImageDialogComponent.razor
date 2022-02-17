@@ -1,0 +1,54 @@
+@using BulletinBoard.Model
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column">
+            @if (_imageUpload != null)
+            {
+                if (_imageUpload.Images.Any())
+                {
+                    <MudAvatar onclick="" Image="@_imageUpload.Images.Last().base64Image" Style="height:150px; width:150px;" Class="ma-2 align-self-center"/>
+                }
+                else
+                {
+                    <MudAvatar onclick="" Image="@_globalService.AvatarImage(_image)" Style="height:150px; width:150px;" Class="ma-2 align-self-center"/>
+                }
+            }
+            else
+            {
+                <MudAvatar onclick="" Image="@_globalService.AvatarImage(_image)" Style="height:150px; width:150px;" Class="ma-2 align-self-center"/>
+            }
+            <ImageUploadComponent @ref="_imageUpload" ButtonText="Load Avatar" ImageUpdateCallback="ImageUpdate"></ImageUploadComponent> 
+        </div>
+        
+    </DialogContent>
+     <DialogActions>
+            <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    private Image? _image;
+    private ImageUploadComponent? _imageUpload;
+    protected override void OnParametersSet()
+    {
+        _image = _userService.User!.Image;
+        base.OnParametersSet();
+    }
+
+    private async Task ImageUpdate(bool status) => await InvokeAsync(StateHasChanged);
+
+    async Task Submit()
+    {
+        if (_imageUpload != null && _imageUpload.Images.Any())
+        {
+            await _imageUpload.SaveFilesAsync();
+            await _userService.UpdateImage(_imageUpload.GetImages().Last());
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void Cancel() => MudDialog.Cancel();
+}

@@ -1,10 +1,11 @@
-﻿
+﻿@using BulletinBoard.Pages.Shared.Components
 
+@inject IDialogService _dialogService
     <MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary" Class="pa-2">
         <AuthorizeView>
             <Authorized>
                 <MudElement Class="d-flex flex-column justify-center">
-                    <MudAvatar Image="@_globalService.AvatarImage(_userService.User!.Image)" Style="height:150px; width:150px;" Class="ma-2 align-self-center" />
+                    <MudAvatar onclick="@UserImage" Image="@_globalService.AvatarImage(_userService.User!.Image)" Style="height:150px; width:150px;"  Class="ma-2 align-self-center"/>
                     <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
                     <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
                 </MudElement>
@@ -51,3 +52,11 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudNavMenu>
+@code{
+
+    private void UserImage()
+    {
+        _dialogService.Show<ProfileImageDialogComponent>($"Change avatar", new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
+    }
+
+}

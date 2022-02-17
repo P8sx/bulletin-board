@@ -4,7 +4,7 @@
 @inject IWebHostEnvironment _env
 
 
-<MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">Load pictures</MudButton>
+<MudButton Class="mx-auto" Variant="Variant.Filled" HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" for="imgInput">@ButtonText</MudButton>
 <InputFile OnChange="@LoadFilesAsync" multiple accept=".jpg, .jpeg, .png"
            CustomExtensionMessage="Only .jpg .jpeg and .png files are allowed."
            MaxFileSize="@_globalService.MaxFileSize"
@@ -17,6 +17,8 @@
     [Parameter]
     public EventCallback<bool> ImageUpdateCallback { get; set; }
 
+    [Parameter]
+    public string ButtonText { get; set; } = "Load pictures";
 
     private List<string> AcceptedFormat { get; set; } = new() {"image/jpeg", "image/png", "image/jpg"};
 

@@ -13,6 +13,8 @@ namespace BulletinBoard.Data
         public virtual DbSet<Comment> Comments { get; set; } = default!;
         public virtual DbSet<BulletinVote> BulletinsVotes { get; set; } = default!;
         public virtual DbSet<BulletinBookmark> BulletinsBookmarks { get; set; } = default!;
+        
+        
         public virtual DbSet<Violation> Violations { get; set; } = default!;
         public virtual DbSet<Image> Images { get; set; } = default!;
 
@@ -37,6 +39,7 @@ namespace BulletinBoard.Data
 
             builder.Entity<BulletinBookmark>()
                 .HasKey(sc => new { sc.UserId, sc.BulletinId });
+            builder.Entity<User>().Navigation(e => e.Image).AutoInclude();
 
         }
     }

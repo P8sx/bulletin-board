@@ -154,5 +154,14 @@ namespace BulletinBoard.Services
             if (_validatorService.CheckValidRoles(User!))
                 UpdateUserBoards();
         }
+
+        public async Task UpdateImage(Image image)
+        {
+            User!.Image = image;
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            dbContext.Users.Update(User);
+            await dbContext.SaveChangesAsync();
+            User.Image = image;
+        }
     }
 }

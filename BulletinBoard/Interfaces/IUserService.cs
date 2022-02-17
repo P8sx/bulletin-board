@@ -21,5 +21,6 @@ namespace BulletinBoard.Services
         Task<User?> GetUserInfoAsync(User user);
         bool IsBoardOwner(Board board);
         bool PendingInvitations(Board board);
+        Task UpdateImage(Image image);
     }
 }
