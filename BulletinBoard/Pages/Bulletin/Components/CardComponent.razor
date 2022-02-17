@@ -1,5 +1,6 @@
 ﻿@using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
+@using BulletinBoard.Pages.Violation
 @using BulletinBoard.Services
 @using GEmojiSharp.Blazor
 @using static Services.GlobalService
@@ -59,7 +60,7 @@
                     <MudChip Class="mb-5" Icon="@Icons.Material.Filled.PushPin" Color="Color.Primary" IconColor="Color.Default">Pinned</MudChip>
                 }
                 <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                    <MudMenuItem>
+                    <MudMenuItem OnClick="@(() => Report(Bulletin))">
                         <MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span>
                     </MudMenuItem>
                     @if (_userService.IsBoardModerator(new Board() {Guid = Bulletin.Board!.Guid}) || _userService.IsBulletinOwner(Bulletin))
@@ -196,9 +197,11 @@
         var parameters = new DialogParameters {{"Path", _globalService.BulletinImage(image)}};
         _dialogService.Show<ImageDialogComponent>($"Image - {image.Name}", parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
     }
-
-    private void Delete()
+    
+    private void Report(Bulletin bulletin)
     {
+        var parameters = new DialogParameters {{"Bulletin", bulletin}};
+        _dialogService.Show<ViolationDialogComponent>($"Report bulletin",parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
     }
 
 }

@@ -1,0 +1,204 @@
+@using BulletinBoard.Model
+@using BulletinBoard.Pages.Shared.Components
+@using GEmojiSharp.Blazor
+@if (Violation != null)
+{
+    <MudCard Outlined="true" Class="mb-3 pb-1">
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                <MudAvatar Color="Color.Secondary" Image="@_globalService.AvatarImage(Violation.User!.Image)"></MudAvatar>
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.body1">
+                    @Violation.User!.UserName
+                    <span style="color:red">reported</span>
+                    @if (Violation.Bulletin != null)
+                    {
+                        @: bulletin
+                    }
+                    else if (Violation.Board != null)
+                    {
+                        @: board
+                    }
+                    else if (Violation.Comment != null)
+                    {
+                        @: comment
+                    }
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    @switch ((DateTime.Now - Violation.Created).TotalMinutes)
+                    {
+                        case < 60:
+                            @Convert.ToInt32(((DateTime.Now - Violation.Created).TotalMinutes))@: minutes ago
+                            break;
+                        case < 10 * 60:
+                            @Convert.ToInt32(((DateTime.Now - Violation.Created).TotalHours))@: hour ago
+                            break;
+                        case < 24 * 60:
+                            @Convert.ToInt32(((DateTime.Now - Violation.Created).TotalHours))@: hours ago
+                            break;
+                        case > 24 * 60 and < 24 * 7 * 60:
+                            @Convert.ToInt32(((DateTime.Now - Violation.Created).TotalDays))@: days ago
+                            break;
+                        default:
+                            @(Violation.Created.ToString("dd.MM.yyyy"))
+                            break;
+                    }
+
+                </MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Violation.Bulletin != null)
+            {
+                <MudCard Outlined="true" Class="mb-2 pb-4">
+                    <div style="position: relative;">
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudAvatar Image="@(_globalService.AvatarImage(Violation.Bulletin.User!.Image))"></MudAvatar>
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.body1">
+                                    <b>@Violation.Bulletin.User!.UserName</b>
+                                </MudText>
+                                <MudText Typo="Typo.body2">
+                                    @switch ((DateTime.Now - Violation.Bulletin.Created).TotalMinutes)
+                                    {
+                                        case < 60:
+                                            @Convert.ToInt32(((DateTime.Now - Violation.Bulletin.Created).TotalMinutes))@: minutes ago
+                                            break;
+                                        case < 10 * 60:
+                                            @Convert.ToInt32(((DateTime.Now - Violation.Bulletin.Created).TotalHours))@: hour ago
+                                            break;
+                                        case < 24 * 60:
+                                            @Convert.ToInt32(((DateTime.Now - Violation.Bulletin.Created).TotalHours))@: hours ago
+                                            break;
+                                        case > 24 * 60 and < 24 * 7 * 60:
+                                            @Convert.ToInt32(((DateTime.Now - Violation.Bulletin.Created).TotalDays))@: days ago
+                                            break;
+                                        default:
+                                            @(Violation.Bulletin.Created.ToString("dd.MM.yyyy"))
+                                            break;
+                                    }
+
+                                </MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                @if (Violation.Bulletin.Pinned)
+                                {
+                                    <MudChip Class="mb-5" Icon="@Icons.Material.Filled.PushPin" Color="Color.Primary" IconColor="Color.Default">Pinned</MudChip>
+                                }
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent Class="pt-0">
+                            @if (Violation.Bulletin.Title != "")
+                            {
+                                <MudText Typo="Typo.h4">@Violation.Bulletin.Title</MudText>
+                            }
+                            <Emoji>
+                                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
+                                    <MudMarkdown OverrideHeaderTypo="delegate(Typo arg) { return arg is Typo.h1 or Typo.h2 ? Typo.h3 : arg; }" Value="@Violation.Bulletin.Description"></MudMarkdown>
+                                </MudText>
+                            </Emoji>
+
+                        </MudCardContent>
+                        @if (Violation.Bulletin.Images.Any())
+                        {
+                            <MudGrid Class="px-4">
+                                @foreach (var img in Violation.Bulletin.Images)
+                                {
+                                    <MudItem xs="4">
+                                        <div class="d-flex flex-column flex-column justify-center" @onclick="@(_ => OpenDialog(img))">
+                                            <MudCardMedia Image=@_globalService.BulletinImage(img)></MudCardMedia>
+                                        </div>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        }
+                    </div>
+                </MudCard>
+            }
+            else if (Violation.Board != null)
+            {
+                <MudCard Outlined="true" Class="d-flex flex-column mb-2 pb-4">
+                    <MudCardMedia Image="@(_globalService.BoardImage(Violation.Board.Image))" Height="200"/>
+                    <MudCardHeader Class="pb-2">
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h5">@Violation.Board.Name</MudText>
+
+                        </CardHeaderContent>
+                    </MudCardHeader>
+
+                    <MudCardContent Class="py-0 mb-2">
+                        <Emoji>
+                            @Violation.Board.Description
+                        </Emoji>
+                    </MudCardContent>
+                </MudCard>
+            }
+            else if (Violation.Comment != null)
+            {
+                <MudCard Outlined="true" Class="mb-2 pb-4">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Image="@(_globalService.AvatarImage(Violation.Comment.User!.Image))" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">@Violation.Comment.User!.UserName</MudText>
+                            <MudText Typo="Typo.subtitle2"><strong>Posted:</strong> @(((DateTime)Violation.Comment.Created).ToString("dd.MM.yyyy HH:mm")) </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent Class="pt-0">
+                        <MudText Typo="Typo.body1" Class="mt-2" Style="overflow-wrap: break-word;">
+                            <Emoji>@Violation.Comment.Text</Emoji>
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+            <MudText Class="ms-1" Typo="Typo.h6">Description</MudText>
+            <MudText Class="ms-1">@Violation.Description</MudText>
+        </MudCardContent>
+        <MudCardActions Class="d-flex justify-end">
+            @if (Violation.Bulletin != null || Violation.Comment != null)
+            {
+                <MudMenu Class="me-2" Label="Ban & Delete" Variant="Variant.Filled" Color="Color.Error">
+                    <MudMenuItem>12 hours</MudMenuItem>
+                    <MudMenuItem>1 day</MudMenuItem>
+                    <MudMenuItem>7 days</MudMenuItem>
+                    <MudMenuItem>1 month</MudMenuItem>
+                    <MudMenuItem>3 month</MudMenuItem>
+                    <MudMenuItem>Forever</MudMenuItem>
+                </MudMenu>
+                <MudButton Class="me-2" Variant="Variant.Filled" Color="Color.Warning">Delete</MudButton>
+            }
+            else
+            {
+                <MudMenu Class="me-2" Label="Ban Owner & Delete Group" Variant="Variant.Filled" Color="Color.Error">
+                    <MudMenuItem>12 hours</MudMenuItem>
+                    <MudMenuItem>1 day</MudMenuItem>
+                    <MudMenuItem>7 days</MudMenuItem>
+                    <MudMenuItem>1 month</MudMenuItem>
+                    <MudMenuItem>3 month</MudMenuItem>
+                    <MudMenuItem>Forever</MudMenuItem>
+                </MudMenu>
+                <MudButton Class="me-2" Variant="Variant.Filled" Color="Color.Warning">Delete Group</MudButton>
+
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Info">Reject</MudButton>
+        </MudCardActions>
+    </MudCard>
+}
+
+
+@code {
+
+    [Parameter]
+    public Violation? Violation { get; set; }
+
+    private void OpenDialog(Image image)
+    {
+        var parameters = new DialogParameters {{"Path", _globalService.BulletinImage(image)}};
+        _dialogService.Show<ImageDialogComponent>($"Image - {image.Name}", parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
+    }
+
+}

@@ -1,0 +1,30 @@
+@page "/violations"
+@using BulletinBoard.Model
+@inject IHelperService _helperService
+@attribute [Authorize(Roles = "Admin, Moderator")]
+ <MudCard Outlined="true" Class="mb-3">
+     <MudCardHeader Class="pb-0">
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4">Violations</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.body2">Here are all reported violations</MudText>
+        </MudCardContent>
+ </MudCard>
+@foreach (var violation in _violations)
+{
+    <ViolationComponent Violation="violation"></ViolationComponent> 
+}
+
+
+@code {
+    private List<Violation> _violations = new();
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        _violations = await _helperService.GetViolations();
+        StateHasChanged();
+    }
+
+}

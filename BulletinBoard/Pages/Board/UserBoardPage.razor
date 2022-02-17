@@ -5,6 +5,7 @@
 @using BulletinBoard.Model
 @using GEmojiSharp.Blazor
 @using BulletinBoard.Pages.Shared.Components
+@using BulletinBoard.Pages.Violation
 @using static Services.GlobalService
 
 
@@ -62,7 +63,7 @@
                                             </CardHeaderContent>
                                             <CardHeaderActions>
                                                 <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                                                    <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
+                                                    <MudMenuItem OnClick="@(()=>Report(board))"><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
                                                     @if(!_userService.IsBoardOwner(board)){
                                                         <MudMenuItem OnClick="@(async ()=> await LeaveBoard(board))"><MudIcon Icon="@Icons.Filled.ExitToApp" Style="vertical-align:middle;" Title="Leave" Class="mr-2" /><span style="vertical-align:middle;">Leave board</span></MudMenuItem>
                                                     }
@@ -282,5 +283,10 @@
             _snackbar.Add($"Successfully left '{board.Name}' board", Severity.Success);
             StateHasChanged();
         }
+    }
+    private void Report(Board board)
+    {
+        var parameters = new DialogParameters {{"Board", board}};
+        _dialogService.Show<ViolationDialogComponent>($"Report board",parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
     }
 }

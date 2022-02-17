@@ -40,16 +40,25 @@
         <MudDivider Class="mt-3 mb-1"></MudDivider>
         <AuthorizeView>
             <Authorized>
-            <MudNavLink Href="/board" Match="NavLinkMatch.All" Icon="@Icons.Filled.Groups">Public boards</MudNavLink>
-            <MudNavGroup Title="Boards" Icon="@Icons.Filled.Home" Href="/board" Match="NavLinkMatch.All" Expanded="true">
-                <MudNavLink Href="/board/user" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">My boards</MudNavLink>
-                <MudNavLink Href="/board/add" Match="NavLinkMatch.All" Icon="@Icons.Filled.GroupAdd">Create board</MudNavLink>
-            </MudNavGroup>
+                <MudNavLink Href="/board" Match="NavLinkMatch.All" Icon="@Icons.Filled.Groups">Public boards</MudNavLink>
+                <MudNavGroup Title="Boards" Icon="@Icons.Filled.Home" Href="/board" Match="NavLinkMatch.All" Expanded="true">
+                    <MudNavLink Href="/board/user" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">My boards</MudNavLink>
+                    <MudNavLink Href="/board/add" Match="NavLinkMatch.All" Icon="@Icons.Filled.GroupAdd">Create board</MudNavLink>
+                </MudNavGroup>
 
             </Authorized>
             <NotAuthorized>
                 <MudText Class="mx-3 my-3">Log in or Register to be able to use the groups</MudText>
             </NotAuthorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <MudText Typo="Typo.h4" Class="mx-3 mt-3">Admin</MudText>
+                <MudDivider Class="mt-3 mb-1"></MudDivider>
+                <MudNavLink Href="/violations" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warning">Violations</MudNavLink>
+                <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Groups">Users</MudNavLink>
+            </Authorized>
         </AuthorizeView>
     </MudNavMenu>
 @code{

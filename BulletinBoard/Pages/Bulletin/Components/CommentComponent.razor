@@ -1,4 +1,5 @@
 ﻿@using BulletinBoard.Model
+@using BulletinBoard.Pages.Violation
 @using GEmojiSharp.Blazor
 @using static Services.GlobalService
 
@@ -14,7 +15,7 @@
     </CardHeaderContent>
     <CardHeaderActions>
         <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-            <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
+            <MudMenuItem OnClick="@(()=>Report(Comment))"><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
             <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
             <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
         </MudMenu>
@@ -30,4 +31,10 @@
 @code {
     [Parameter]
     public Comment Comment { get; set; } = default!;
+    
+    private void Report(Comment comment)
+    {
+        var parameters = new DialogParameters {{"Comment", comment}};
+        _dialogService.Show<ViolationDialogComponent>($"Report comment",parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
+    }
 }

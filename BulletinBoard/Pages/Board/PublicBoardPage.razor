@@ -5,6 +5,7 @@
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Model
+@using BulletinBoard.Pages.Violation
 @using static Services.GlobalService
 
 @using GEmojiSharp.Blazor
@@ -58,7 +59,7 @@ else
                                     </CardHeaderContent>
                                      <CardHeaderActions>
                                             <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-                                                <MudMenuItem><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
+                                                <MudMenuItem OnClick="@(() => Report(board))"><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Report" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>                                                               
                                             </MudMenu>
                                     </CardHeaderActions>
                                 </MudCardHeader>
@@ -147,5 +148,11 @@ else
         _userService.UpdateUserBoards();
         await UpdateBoardsInfo();
         StateHasChanged();
+    }
+
+    private void Report(Board board)
+    {
+        var parameters = new DialogParameters {{"Board", board}};
+        _dialogService.Show<ViolationDialogComponent>($"Report board",parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
     }
 }

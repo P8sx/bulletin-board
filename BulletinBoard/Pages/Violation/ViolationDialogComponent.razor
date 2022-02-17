@@ -1,0 +1,61 @@
+@using BulletinBoard.Model
+
+@inject IHelperService _helperService
+<MudDialog Style="min-width: 500px">
+    
+    <DialogContent>
+        @if (!_status)
+        {
+            <MudText Typo="Typo.h5">Briefly describe the violation</MudText>
+            <MudTextField T="string" Label="Description" Lines="5" Variant="Variant.Outlined" @bind-Value="_violation.Description" For="@(() => _violation.Description)"/>
+        }
+        else
+        {
+            <MudText Align="Align.Center" Typo="Typo.h4">Reported <MudText Typo="Typo.h4" Color="Color.Success">succesfuly</MudText></MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Disabled="_status" OnClick="ValidFormSubmitted" Variant="Variant.Filled" Color="Color.Error">
+            <ProcessingButtonComponent Processing="_status">Report</ProcessingButtonComponent>
+        </MudButton>
+    </DialogActions>
+    
+
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter]
+    public Bulletin? Bulletin { get; set; }
+    [Parameter]
+    public Board? Board { get; set; }
+    [Parameter]
+    public Comment? Comment { get; set; }
+    
+    private Violation _violation = new();
+    void Cancel() => MudDialog.Cancel();
+
+    private bool _status = false;
+    
+    private async Task ValidFormSubmitted()
+    {
+        
+        if (Bulletin == null && Board == null && Comment == null)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        if(Bulletin != null) _violation.BulletinId = Bulletin.Id;
+        if(Comment != null) _violation.CommentId = Comment.Id;
+        if(Board != null) _violation.BoardId = Board.Id;
+        _violation.UserId = _userService.User!.Id;
+        await _helperService.Report(_violation);
+        _status = true;
+        StateHasChanged();
+        await Task.Delay(1500);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}
