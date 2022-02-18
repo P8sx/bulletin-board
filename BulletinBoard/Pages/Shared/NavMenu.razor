@@ -7,7 +7,15 @@
                 <MudElement Class="d-flex flex-column justify-center">
                     <MudAvatar onclick="@UserImage" Image="@_globalService.AvatarImage(_userService.User!.Image)" Style="height:150px; width:150px;"  Class="ma-2 align-self-center"/>
                     <MudText Typo="Typo.h5" Class="mt-3 text-center align-self-center">Hello</MudText>
-                    <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
+                    @if (context.User.IsInRole("Banned"))
+                    {
+                        <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center" Style="text-decoration: line-through;" Color="Color.Error">@context.User.Identity?.Name!</MudText>
+                        <MudText Typo="Typo.body2" Class="text-center mud-secondary-text align-self-center" Color="Color.Error">banned</MudText> 
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h5" Class="text-center mud-secondary-text align-self-center">@context.User.Identity?.Name!</MudText>
+                    }
                 </MudElement>
             </Authorized>
             <NotAuthorized>

@@ -1,0 +1,19 @@
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="BanReason">
+            <MudTextField Label="Reason" Lines="5" Style="min-width: 400px" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="BanReason" For="@(() => BanReason)"/>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="Submit">Ban</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] 
+    MudDialogInstance? MudDialog { get; set; }
+
+    private string BanReason { get; set; } = "";
+    void Submit() => MudDialog!.Close(DialogResult.Ok(BanReason));
+    void Cancel() => MudDialog!.Cancel();
+}

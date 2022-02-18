@@ -25,6 +25,10 @@ namespace BulletinBoard.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            foreach (var relationship in builder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+            {
+                relationship.DeleteBehavior = DeleteBehavior.Cascade;
+            }
             builder.Entity<User>().ToTable("Users");
             builder.Entity<IdentityUserRole<ulong>>().ToTable("UserRoles");
             builder.Entity<IdentityUserLogin<ulong>>().ToTable("UserLogins");
@@ -39,7 +43,6 @@ namespace BulletinBoard.Data
             builder.Entity<BulletinBookmark>()
                 .HasKey(sc => new { sc.UserId, sc.BulletinId });
             builder.Entity<User>().Navigation(e => e.Image).AutoInclude();
-
         }
     }
 }

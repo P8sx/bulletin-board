@@ -164,16 +164,16 @@
         <MudCardActions Class="d-flex justify-end">
             <MudTooltip Text="Bans user/owner and deletes group/bulletin/board">
                 <MudMenu FullWidth="true" Class="me-2" Label="Ban & Delete" Variant="Variant.Filled" Color="Color.Error">
-                    <MudMenuItem>12 hours</MudMenuItem>
-                    <MudMenuItem>1 day</MudMenuItem>
-                    <MudMenuItem>7 days</MudMenuItem>
-                    <MudMenuItem>1 month</MudMenuItem>
-                    <MudMenuItem>3 month</MudMenuItem>
-                    <MudMenuItem>Forever</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(12))">12 hours</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(24))">1 day</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(7*24))">7 days</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(31*24))">1 month</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(3*31*24))">3 month</MudMenuItem>
+                    <MudMenuItem OnClick="@(async()=>await Ban(int.MaxValue))">Forever</MudMenuItem>
                 </MudMenu>
             </MudTooltip>
             <MudTooltip Text="Deletes group/bulletin/board">
-                <MudButton Class="me-2" Variant="Variant.Filled" Color="Color.Warning">Delete</MudButton>
+                <MudButton Class="me-2" Variant="Variant.Filled" OnClick="Delete" Color="Color.Warning">Delete</MudButton>
             </MudTooltip>
             <MudTooltip Text="Rejects violation">
                 <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await ViolationRejectCallback.InvokeAsync(Violation))">Reject</MudButton>
@@ -193,7 +193,7 @@
     public EventCallback<Violation> ViolationRejectCallback { get; set; }
 
     [Parameter]
-    public EventCallback<Tuple<Violation, Ban>> ViolationBanCallback { get; set; }
+    public EventCallback<Tuple<Violation, string, DateTime>> ViolationBanCallback { get; set; }
 
     [Parameter]
     public EventCallback<Violation> ViolationDeleteCallback { get; set; }
@@ -204,4 +204,31 @@
         _dialogService.Show<ImageDialogComponent>($"Image - {image.Name}", parameters, new DialogOptions() {CloseButton = true, MaxWidth = MaxWidth.Large});
     }
 
+    private async Task Ban(int hours)
+    {
+        var dialog = _dialogService.Show<ViolationBanDialogComponent>($"Ban {Violation!.User!.UserName}");
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            await ViolationBanCallback.InvokeAsync(new Tuple<Violation, string,DateTime>(Violation, result.Data.ToString()!, DateTime.Now.AddHours(hours)));
+        }
+    }
+
+    private async Task Delete()
+    {
+        
+        var parameters = new DialogParameters
+        {
+            {"ContentText", $"Do you really want to delete?"},
+            {"ButtonText", "Delete"},
+            {"Color", Color.Error}
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = _dialogService.Show<ConfirmationDialogComponent>("Delete", parameters, options);
+        var result = await dialog.Result;
+        if(!result.Cancelled) await ViolationDeleteCallback.InvokeAsync(Violation);
+    }
+    
 }

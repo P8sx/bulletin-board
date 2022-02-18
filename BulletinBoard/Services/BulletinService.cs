@@ -415,10 +415,6 @@ namespace BulletinBoard.Services
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var dbBulletin = await dbContext.Bulletins
                 .Where(b => b.Guid == bulletin.Guid)
-                .Include(b => b.Images)
-                .Include(b => b.Bookmarks)
-                .Include(b => b.Comments)
-                .Include(b => b.Votes)
                 .FirstOrDefaultAsync();
             if (dbBulletin == default)
                 return false;
@@ -427,7 +423,7 @@ namespace BulletinBoard.Services
             dbBulletin.Deleted = true;
             dbContext.Bulletins.Update(dbBulletin);
 
-            //_dbContext.Remove(dbBulletin);
+            //dbContext.Remove(dbBulletin);
 
             await dbContext.SaveChangesAsync();
             return true;

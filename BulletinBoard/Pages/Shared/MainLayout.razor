@@ -6,9 +6,9 @@
 
 <MudLayout>
     <MudAppBar Elevation="0">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(_darkMode?@Icons.Filled.DarkMode:@Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
+        <MudSpacer/>
+        <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(_darkMode ? @Icons.Filled.DarkMode : @Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
         <AuthorizeView>
             <Authorized>
                 <MudButton Link="Identity/Account/Manage"
@@ -53,8 +53,8 @@
         <MudDrawerHeader>
             <img src="static/logo.svg" width=300 height=80 class="rounded" style=@_logoColor alt=""/>
         </MudDrawerHeader>
-        <NavMenu />
-    </MudDrawer> 
+        <NavMenu/>
+    </MudDrawer>
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.Medium" Class="my-6 pt-6">

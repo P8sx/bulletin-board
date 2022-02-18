@@ -89,15 +89,32 @@
     }
     private async Task ViolationReject(Violation violation)
     {
-        
+        var result = await _helperService.RemoveViolation(violation);
+        _violations.Remove(violation);
+        StateHasChanged();
+        if(result) _snackbar.Add($"Violation has been rejected", Severity.Success);
+        else _snackbar.Add($"Error occured when rejecting violation", Severity.Error);
     }
     private async Task ViolationDelete(Violation violation)
     {
-        
+        var result = await _helperService.DeleteViolation(violation);
+        _violations.Remove(violation);
+        StateHasChanged();
+        if(result) _snackbar.Add($"Violation object was removed", Severity.Success);
+        else _snackbar.Add($"Error occured when deleting violation object", Severity.Error);
     }
-    private async Task ViolationBan(Tuple<Violation,Ban> violation)
+    private async Task ViolationBan(Tuple<Violation,string,DateTime> violation)
     {
-        
+        var ban = new Ban() {Reason = violation.Item2, BanExpiringDate = violation.Item3};
+        var result = await _helperService.BanUser(ban, violation.Item1);
+        if (result)
+        {
+            await _helperService.RemoveViolation(violation.Item1);
+            _violations.Remove(violation.Item1);
+            StateHasChanged();
+            _snackbar.Add($"User successfully banned and object removed ", Severity.Success);
+        }
+        else _snackbar.Add($"Error occured when banning user", Severity.Error);
     }
     
     private void PageChanged(int page) => _navigationManager.NavigateTo($"/violations?page={page}");

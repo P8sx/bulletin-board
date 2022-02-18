@@ -11,6 +11,8 @@ namespace BulletinBoard.Services
             ViolationSortBy sortBy = ViolationSortBy.Bulletin);
 
         Task<int> GetViolationsCount();
-        Task RejectViolation(Violation violation);
+        Task<bool> RemoveViolation(Violation violation);
+        Task<bool> DeleteViolation(Violation violation);
+        Task<bool> BanUser(Ban ban, Violation violation);
     }
 }

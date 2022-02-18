@@ -19,8 +19,7 @@ namespace BulletinBoard.Model
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")] 
         public ulong? ImageId { get; set; }
-
-
+        
         public virtual IList<BoardUser>? GroupUsers { get; set; }
         public virtual IList<Bulletin>? Bulletins { get; set; }
         public Board()

@@ -1,8 +1,8 @@
 ﻿using BulletinBoard.Data;
 using BulletinBoard.Model;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using static BulletinBoard.Services.GlobalService;
 
 namespace BulletinBoard.Services
 {
@@ -14,16 +14,21 @@ namespace BulletinBoard.Services
     }
     public class HelperService : BaseService, IHelperService
     {
-        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache, GlobalService globalService) : base(dbFactory, logger, memoryCache, globalService)
+        private readonly IBulletinService _bulletinService;
+        private readonly IBoardService _boardService;
+        private readonly UserManager<User> _userManager;
+        public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache, GlobalService globalService, IBulletinService bulletinService, IBoardService boardService, UserManager<User> userManager) : base(dbFactory, logger, memoryCache, globalService)
         {
-
+            _bulletinService = bulletinService;
+            _boardService = boardService;
+            _userManager = userManager;
         }
         public async Task AddToDefaultGroupAsync(User user)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var boardId = await dbContext.Boards.Where(b => b.Guid == GlobalService.DefaultBoardGuid).Select(b=>b.Id)
                 .FirstOrDefaultAsync();
-            await dbContext.BoardUsers.AddAsync(new BoardUser() { BoardId = boardId, Role = BoardRole.User, UserId = user.Id });
+            await dbContext.BoardUsers.AddAsync(new BoardUser { BoardId = boardId, Role = BoardRole.User, UserId = user.Id });
             await dbContext.SaveChangesAsync();
         }
 
@@ -75,13 +80,70 @@ namespace BulletinBoard.Services
             return await dbContext.Violations.CountAsync();
         }
 
-        public async Task RejectViolation(Violation violation)
+        public async Task<bool> RemoveViolation(Violation violation)
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
             var result = await dbContext.Violations.Where(v => v.Id == violation.Id).FirstOrDefaultAsync();
-            if(result == null) return;
+            if(result == null) return false;
             dbContext.Remove(result);
             await dbContext.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteViolation(Violation violation)
+        {
+            var removeResult = await RemoveViolation(violation);
+            if (!removeResult) return false;
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            if (violation.Bulletin != null) return await _bulletinService.RemoveBulletinAsync(violation.Bulletin);
+            if (violation.Board != null) return await _boardService.RemoveBoardAsync(violation.Board);
+            if (violation.Comment == null) return false;
+            var result = await dbContext.Comments.Where(b => b.Id == violation.CommentId).FirstOrDefaultAsync();
+            if (result == null) return false;
+            dbContext.Remove(result);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> BanUser(Ban ban, Violation violation)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            User? banUser = null;
+            if (violation.Board != null)
+            {
+                banUser = await dbContext.BoardUsers.AsNoTracking().Where(b => b.Role == BoardRole.Owner && b.BoardId == violation.BoardId).Select(b => b.User)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (violation.Comment is {User: { }})
+            {
+                banUser = await dbContext.Comments.AsNoTracking().Where(c => c.Id == violation.CommentId).Select(c => c.User)
+                    .FirstOrDefaultAsync();
+            }
+            else if(violation.Comment != null)
+            {
+                banUser = violation.Comment.User;
+            }
+
+
+            if (violation.Bulletin is {User: { }})
+            {
+                banUser = await dbContext.Bulletins.AsNoTracking().Where(c => c.Id == violation.BulletinId).Select(c => c.User)
+                    .FirstOrDefaultAsync();
+            }
+            else if(violation.Bulletin != null)
+            {
+                banUser = violation.Bulletin.User;
+            }
+
+            if (banUser == null) return false;
+            ban.UserId = banUser.Id;
+            await dbContext.Bans.AddAsync(ban);
+            await dbContext.SaveChangesAsync();
+            var usermanagerUser = await _userManager.FindByIdAsync(banUser.Id.ToString());
+            var roles = await _userManager.GetRolesAsync(usermanagerUser);
+            await _userManager.AddToRoleAsync(usermanagerUser, "Banned");
+            await _userManager.RemoveFromRolesAsync(usermanagerUser, roles);
+            return true;
         }
     }
 }

@@ -137,23 +137,25 @@
         }
     </div>
     <MudCardActions Class="d-flex">
-        <AuthorizeView>
+        <AuthorizeView Roles="Admin, User, Moderator">
             <Authorized>
                 <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color=@(Bulletin.UserVoted ? Color.Secondary : Color.Default) OnClick="Vote" Disabled="@(Bulletin.Expired != null && Bulletin.Expired < DateTime.UtcNow)"></MudIconButton>
                 <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
                 <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default"/>
                 <MudIconButton Icon="@Icons.Filled.Bookmark" Color=@(Bulletin.UserBookmark ? Color.Warning : Color.Default) OnClick="Bookmark" Style="margin-left:auto"></MudIconButton>
+                <MudIconButton Link=@($"bulletin?boardGuid={Bulletin.Board!.Guid}&bulletinGuid={Bulletin.Guid}") Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
             </Authorized>
             <NotAuthorized>
                 <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Favorite" Color="Color.Default" Disabled/>
                 <MudText Class="pl-3">@Bulletin.CommentsCount</MudText>
-                <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default"/>
+                <MudIconButton Icon="@Icons.Filled.Comment" Color="Color.Default" Disabled />
                 <MudIconButton Icon="@Icons.Filled.Bookmark" Color="Color.Default" Style="margin-left:auto" Disabled/>
+                <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" Disabled/>
             </NotAuthorized>
         </AuthorizeView>
-        <MudIconButton Link=@($"bulletin?boardGuid={Bulletin.Board!.Guid}&bulletinGuid={Bulletin.Guid}") Icon="@Icons.Filled.ReadMore" Color="Color.Default"/>
+        
 
     </MudCardActions>
 </MudCard>

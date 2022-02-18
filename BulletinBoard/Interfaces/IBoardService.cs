@@ -21,5 +21,6 @@ namespace BulletinBoard.Services
         Task<List<BoardUser>> GetInvitedUsersAsync(Board board);
         Task<bool> UpdateBoardAsync(Board board);
         Task<bool> AcceptInvitationAsync(Board board, User user);
+        Task<bool> RemoveBoardAsync(Board board);
     }
 }

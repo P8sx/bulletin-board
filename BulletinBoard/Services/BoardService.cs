@@ -206,6 +206,15 @@ namespace BulletinBoard.Services
             }
         }
 
+        public async Task<bool> RemoveBoardAsync(Board board)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var dbBoard = await dbContext.Boards.Where(b => b.Id == board.Id).FirstOrDefaultAsync();
+            if (dbBoard == null) return false;
+            dbContext.Remove(dbBoard);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
 
     }
 }
