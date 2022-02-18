@@ -1,6 +1,6 @@
 ﻿@page "/board/user"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
 @using BulletinBoard.Services
 @using BulletinBoard.Model
 @using GEmojiSharp.Blazor

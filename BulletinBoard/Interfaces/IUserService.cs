@@ -22,5 +22,6 @@ namespace BulletinBoard.Services
         bool IsBoardOwner(Board board);
         bool PendingInvitations(Board board);
         Task UpdateImage(Image image);
+        Task<Ban?> GetBan();
     }
 }

@@ -1,10 +1,9 @@
 ﻿@page "/board/add"
-
 @using BulletinBoard.Model
 
 @using BulletinBoard.Pages.Shared.Components
 
-@attribute [Authorize]
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
 
 @inject IWebHostEnvironment _env
 @inject IBoardService _boardService

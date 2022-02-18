@@ -1,6 +1,6 @@
 ﻿@page "/bulletin/bookmark"
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
 
-@attribute [Authorize]
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Data
@@ -34,16 +34,16 @@
 
     <MudElement Class="d-flex mb-4 justify-end ">
         <MudElement>
-            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
-                @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+            <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
                 {
                     <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
                 }
             </MudSelect>
         </MudElement>
         <MudElement>
-            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
-                @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+            <MudSelect Label="Sort" @bind-Value="_bulletinSortBy" T="BulletinSortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (BulletinSortBy sortByItem in Enum.GetValues(typeof(BulletinSortBy)))
                 {
                     <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
                 }
@@ -96,16 +96,16 @@ else
 
     private State _pageState = State.Loading;
     private IList<Bulletin> _bulletins = default!;
-    private SortBy _sortBy = Services.SortBy.Created;
-    private OrderBy _orderBy = Services.OrderBy.Ascending;
+    private BulletinSortBy _bulletinSortBy = Services.BulletinSortBy.Created;
+    private BulletinOrderBy _bulletinOrderBy = Services.BulletinOrderBy.Ascending;
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
         Page = Page ?? 1;
         
-        _sortBy = (SortBy)((SortBy??1)%4);
-        _orderBy = (OrderBy)((OrderBy??1)%2);    
+        _bulletinSortBy = (BulletinSortBy)((SortBy??1)%4);
+        _bulletinOrderBy = (BulletinOrderBy)((OrderBy??1)%2);    
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();
         _pageState = State.Success;
@@ -120,7 +120,7 @@ else
 
     private async Task<IList<Bulletin>> GetBulletins()
     {
-        return await _bulletinService.GetUserBookmarkBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _userService.User!, new BulletinSort(_sortBy, _orderBy));
+        return await _bulletinService.GetUserBookmarkBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _userService.User!, new BulletinSort(_bulletinSortBy, _bulletinOrderBy));
     }
 
     private async Task<int> GetBulletinsCount()

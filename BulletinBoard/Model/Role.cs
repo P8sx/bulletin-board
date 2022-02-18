@@ -7,8 +7,7 @@ namespace BulletinBoard.Model
         User = 1,
         Moderator = 2,
         Admin = 3,
-        GroupInvited = 4,
-        GroupAwaitingAcceptance = 8,
+        Banned = 4
     }
     public class Role : IdentityRole<ulong>
     {

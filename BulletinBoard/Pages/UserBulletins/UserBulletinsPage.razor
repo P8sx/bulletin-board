@@ -1,6 +1,6 @@
 ﻿@page "/bulletin/mybulletins"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services
 @using BulletinBoard.Data
@@ -11,10 +11,9 @@
 @using static Services.GlobalService
 
 
-@inject IUserService UserService
 @inject IBoardService _boardService
-@inject IBulletinService BulletinService
-@inject NavigationManager NavigationManager
+@inject IBulletinService _bulletinService
+@inject NavigationManager _navigationManager
 
 @if (_pageState == State.Success && _bulletins != null)
 {
@@ -34,16 +33,16 @@
 
     <MudElement Class="d-flex mb-4 justify-end ">
         <MudElement>
-            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
-                @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+            <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
                 {
                     <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
                 }
             </MudSelect>
         </MudElement>
         <MudElement>
-            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
-                @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+            <MudSelect Label="Sort" @bind-Value="_bulletinSortBy" T="BulletinSortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(() => UpdateBulletins())">
+                @foreach (BulletinSortBy sortByItem in Enum.GetValues(typeof(BulletinSortBy)))
                 {
                     <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
                 }
@@ -96,16 +95,16 @@ else
 
     private State _pageState = State.Loading;
     private IList<Bulletin> _bulletins = default!;
-    private SortBy _sortBy = Services.SortBy.Created;
-    private OrderBy _orderBy = Services.OrderBy.Ascending;
+    private BulletinSortBy _bulletinSortBy = Services.BulletinSortBy.Created;
+    private BulletinOrderBy _bulletinOrderBy = Services.BulletinOrderBy.Ascending;
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
         Page = Page ?? 1;
         
-        _sortBy = (SortBy)((SortBy??1)%4);
-        _orderBy = (OrderBy)((OrderBy??1)%2);    
+        _bulletinSortBy = (BulletinSortBy)((SortBy??1)%4);
+        _bulletinOrderBy = (BulletinOrderBy)((OrderBy??1)%2);    
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();
         _pageState = State.Success;
@@ -113,21 +112,22 @@ else
         StateHasChanged();
     }
 
-    protected void PageChanged(int page)
+    private void PageChanged(int page)
     {
-        NavigationManager.NavigateTo($"/bulletin/mybulletins?page={page}");
+        _navigationManager.NavigateTo($"/bulletin/myBulletins?page={page}");
     }
 
-    protected async Task<IList<Bulletin>> GetBulletins()
+    private async Task<IList<Bulletin>> GetBulletins()
     {
-        return await BulletinService.GetUserBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, UserService.User!, new BulletinSort(_sortBy, _orderBy));
-    }
-    protected async Task<int> GetBulletinsCount()
-    {
-        return await BulletinService.GetUserBulletinsCountAsyncCached(UserService.User!);
+        return await _bulletinService.GetUserBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _userService.User!, new BulletinSort(_bulletinSortBy, _bulletinOrderBy));
     }
 
-    protected async Task UpdateBulletins()
+    private async Task<int> GetBulletinsCount()
+    {
+        return await _bulletinService.GetUserBulletinsCountAsyncCached(_userService.User!);
+    }
+
+    private async Task UpdateBulletins()
     {
         _bulletins = await GetBulletins();
         _bulletinsCount = await GetBulletinsCount();

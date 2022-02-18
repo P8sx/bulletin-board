@@ -1,4 +1,6 @@
 ﻿@page "/bulletin"
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
+
 @using static Services.GlobalService
 
 @using BulletinBoard.Model

@@ -37,16 +37,16 @@
 
     <MudElement Class="d-flex mb-4 justify-end ">
         <MudElement>
-            <MudSelect Label="Order" @bind-Value="_orderBy" T="OrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateBulletins)">
-                @foreach (OrderBy orderByItem in Enum.GetValues(typeof(OrderBy)))
+            <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateBulletins)">
+                @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
                 {
                     <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
                 }
             </MudSelect>
         </MudElement>
         <MudElement>
-            <MudSelect Label="Sort" @bind-Value="_sortBy" T="SortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(UpdateBulletins)">
-                @foreach (SortBy sortByItem in Enum.GetValues(typeof(SortBy)))
+            <MudSelect Label="Sort" @bind-Value="_bulletinSortBy" T="BulletinSortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(UpdateBulletins)">
+                @foreach (BulletinSortBy sortByItem in Enum.GetValues(typeof(BulletinSortBy)))
                 {
                     <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
                 }
@@ -111,8 +111,8 @@ else
     
     private IList<Bulletin> _bulletins = default!;
     private State _pageState = State.Loading;
-    private SortBy _sortBy = Services.SortBy.Created;
-    private OrderBy _orderBy = Services.OrderBy.Ascending;
+    private BulletinSortBy _bulletinSortBy = Services.BulletinSortBy.Created;
+    private BulletinOrderBy _bulletinOrderBy = Services.BulletinOrderBy.Ascending;
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
@@ -122,8 +122,8 @@ else
         Page = Page ?? 1;
         if (_board != null && _userService.IsInBoard(_board))
         {
-            _sortBy = (SortBy)((SortBy??1)%4);
-            _orderBy = (OrderBy)((OrderBy??1)%2);
+            _bulletinSortBy = (BulletinSortBy)((SortBy??1)%4);
+            _bulletinOrderBy = (BulletinOrderBy)((OrderBy??1)%2);
             _bulletins = await GetBulletins();
             _bulletinsCount = await GetBulletinsCount();
             _pageState = State.Success;
@@ -136,20 +136,10 @@ else
     }
     
 
-    private void PageChanged(int page)
-    {
-        _navigationManager.NavigateTo($"/bulletins?boardGuid{BoardGuid}&page={page}");
-    }
-
-    private async Task<IList<Bulletin>> GetBulletins()
-    {
-        return await _bulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 30 ? 30 : _bulletinsPerPage, _userService.User!, _board!, new BulletinSort(_sortBy, _orderBy));
-    }
-
-    private async Task<int> GetBulletinsCount()
-    {
-        return await _bulletinService.GetBulletinsCountAsyncCached(_board!);
-    }
+    private void PageChanged(int page) => _navigationManager.NavigateTo($"/bulletins?boardGuid{BoardGuid}&page={page}");
+    private async Task<IList<Bulletin>> GetBulletins() => await _bulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 60 ? 60 : _bulletinsPerPage, _userService.User!, _board!, new BulletinSort(_bulletinSortBy, _bulletinOrderBy));
+    private async Task<int> GetBulletinsCount() => await _bulletinService.GetBulletinsCountAsyncCached(_board!);
+    
 
     private async Task UpdateBulletins()
     {
@@ -158,10 +148,8 @@ else
         StateHasChanged();
     }
 
-    private int NumberOfPages()
-    {
-        return _bulletinsCount == 0 ? 0 : Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
-    }
+    private int NumberOfPages() => _bulletinsCount == 0 ? 0 : Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_bulletinsCount) / Convert.ToDouble(_bulletinsPerPage)));
+
 
     private async Task RemoveBulletin(Bulletin bulletin)
     {

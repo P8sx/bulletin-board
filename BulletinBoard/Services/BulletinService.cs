@@ -7,23 +7,23 @@ namespace BulletinBoard.Services
 {
     public struct BulletinSort
     {
-        public SortBy SortBy { get; set; } = SortBy.Created;
-        public OrderBy OrderBy { get; set; } = OrderBy.Ascending;
+        public BulletinSortBy BulletinSortBy { get; set; } = BulletinSortBy.Created;
+        public BulletinOrderBy BulletinOrderBy { get; set; } = BulletinOrderBy.Ascending;
 
-        public BulletinSort(SortBy sortBy, OrderBy orderBy)
+        public BulletinSort(BulletinSortBy bulletinSortBy, BulletinOrderBy bulletinOrderBy)
         {
-            this.OrderBy = orderBy;
-            this.SortBy = sortBy;
+            this.BulletinOrderBy = bulletinOrderBy;
+            this.BulletinSortBy = bulletinSortBy;
         }
     }
-    public enum SortBy
+    public enum BulletinSortBy
     {
         Created,
         Popular,
         Commented,
         Expiring
     }
-    public enum OrderBy
+    public enum BulletinOrderBy
     {
         Ascending,
         Descending
@@ -39,7 +39,7 @@ namespace BulletinBoard.Services
         public async Task<IList<Bulletin>> GetBulletinsAsyncCached(int page, int limit, User? user, Board board, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{board.Guid}{sort.OrderBy}{sort.SortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"Bulletins{page}{limit}{uId}{board.Guid}{sort.BulletinOrderBy}{sort.BulletinSortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetBulletinsAsync(page, limit, user, board, sort);
@@ -86,26 +86,26 @@ namespace BulletinBoard.Services
                     UserBookmark = user != null &&
                                    a.Bookmarks!.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1
                 });
-            switch (sort.SortBy)
+            switch (sort.BulletinSortBy)
             {
-                case SortBy.Popular:
-                    bulletins = sort.OrderBy == OrderBy.Ascending
+                case BulletinSortBy.Popular:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending
                         ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.VotesCount)
                         : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.VotesCount);
                     break;
-                case SortBy.Expiring:
-                    bulletins = sort.OrderBy == OrderBy.Ascending
+                case BulletinSortBy.Expiring:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending
                         ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.Expired)
                         : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.Expired);
                     break;
-                case SortBy.Commented:
-                    bulletins = sort.OrderBy == OrderBy.Ascending
+                case BulletinSortBy.Commented:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending
                         ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.CommentsCount)
                         : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.CommentsCount);
                     break;
-                case SortBy.Created:
+                case BulletinSortBy.Created:
                 default:
-                    bulletins = sort.OrderBy == OrderBy.Ascending
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending
                         ? bulletins.OrderByDescending(d=>d.Pinned).ThenBy(d => d.Created)
                         : bulletins.OrderByDescending(d=>d.Pinned).ThenByDescending(d => d.Created);
                     break;
@@ -181,7 +181,7 @@ namespace BulletinBoard.Services
         public async Task<IList<Bulletin>> GetUserBulletinsAsyncCached(int page, int limit, User? user, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"UserBulletins{page}{limit}{uId}{sort.OrderBy}{sort.SortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"UserBulletins{page}{limit}{uId}{sort.BulletinOrderBy}{sort.BulletinSortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetUserBulletinsAsync(page, limit, user, sort);
@@ -228,19 +228,19 @@ namespace BulletinBoard.Services
                     UserBookmark = user != null && a.Bookmarks!.Count(v => v.BulletinId == a.Id && v.UserId == user.Id) == 1
                 });
 
-            switch (sort.SortBy)
+            switch (sort.BulletinSortBy)
             {
-                case SortBy.Popular:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
+                case BulletinSortBy.Popular:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
                     break;
-                case SortBy.Expiring:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
+                case BulletinSortBy.Expiring:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
                     break;
-                case SortBy.Commented:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
+                case BulletinSortBy.Commented:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
                     break;
                 default:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
                     break;
             }
 
@@ -273,7 +273,7 @@ namespace BulletinBoard.Services
         public async Task<IList<Bulletin>> GetUserBookmarkBulletinsAsyncCached(int page, int limit, User? user, BulletinSort sort = default)
         {
             var uId = user != null ? user.Id.ToString() : Guid.NewGuid().ToString();
-            var result = await _memoryCache.GetOrCreateAsync($"UserBookmarkBulletins{page}{limit}{uId}{sort.OrderBy}{sort.SortBy}", async p =>
+            var result = await _memoryCache.GetOrCreateAsync($"UserBookmarkBulletins{page}{limit}{uId}{sort.BulletinOrderBy}{sort.BulletinSortBy}", async p =>
             {
                 p.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15);
                 return await GetUserBookmarkBulletinsAsync(page, limit, user, sort);
@@ -318,19 +318,19 @@ namespace BulletinBoard.Services
                 })
                 .Where(a => a.UserBookmark == true);
 
-            switch (sort.SortBy)
+            switch (sort.BulletinSortBy)
             {
-                case SortBy.Popular:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
+                case BulletinSortBy.Popular:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.VotesCount) : bulletins.OrderByDescending(d => d.VotesCount);
                     break;
-                case SortBy.Expiring:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
+                case BulletinSortBy.Expiring:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.Expired) : bulletins.OrderByDescending(d => d.Expired);
                     break;
-                case SortBy.Commented:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
+                case BulletinSortBy.Commented:
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.CommentsCount) : bulletins.OrderByDescending(d => d.CommentsCount);
                     break;
                 default:
-                    bulletins = sort.OrderBy == OrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
+                    bulletins = sort.BulletinOrderBy == BulletinOrderBy.Ascending ? bulletins.OrderBy(d => d.Created) : bulletins.OrderByDescending(d => d.Created);
                     break;
             }
 

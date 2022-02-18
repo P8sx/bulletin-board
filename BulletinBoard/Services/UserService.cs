@@ -163,5 +163,13 @@ namespace BulletinBoard.Services
             await dbContext.SaveChangesAsync();
             User.Image = image;
         }
+
+        public async Task<Ban?> GetBan()
+        {
+            if (User == null) return null;
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var ban = await dbContext.Bans.Where(b => b.UserId == User!.Id).FirstOrDefaultAsync();
+            return ban;
+        }
     }
 }

@@ -13,8 +13,7 @@ namespace BulletinBoard.Data
         public virtual DbSet<Comment> Comments { get; set; } = default!;
         public virtual DbSet<BulletinVote> BulletinsVotes { get; set; } = default!;
         public virtual DbSet<BulletinBookmark> BulletinsBookmarks { get; set; } = default!;
-        
-        
+        public virtual DbSet<Ban> Bans { get; set; } = default!;
         public virtual DbSet<Violation> Violations { get; set; } = default!;
         public virtual DbSet<Image> Images { get; set; } = default!;
 

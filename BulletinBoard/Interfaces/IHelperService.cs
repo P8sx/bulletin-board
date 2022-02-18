@@ -6,6 +6,11 @@ namespace BulletinBoard.Services
     {
         Task AddToDefaultGroupAsync(User user);
         Task Report(Violation violation);
-        Task<List<Violation>> GetViolations(int page = 1, int limit = 20);
+
+        Task<List<Violation>> GetViolations(int page = 1, int limit = 20,
+            ViolationSortBy sortBy = ViolationSortBy.Bulletin);
+
+        Task<int> GetViolationsCount();
+        Task RejectViolation(Violation violation);
     }
 }

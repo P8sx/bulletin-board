@@ -1,6 +1,7 @@
 @using BulletinBoard.Model
 @using BulletinBoard.Pages.Shared.Components
 @using GEmojiSharp.Blazor
+
 @if (Violation != null)
 {
     <MudCard Outlined="true" Class="mb-3 pb-1">
@@ -49,6 +50,8 @@
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
+            <MudText Class="ms-1" Typo="Typo.h5">Report description</MudText>
+            <MudText Class="ms-1 mb-4" Typo="Typo.body1">@Violation.Description</MudText>
             @if (Violation.Bulletin != null)
             {
                 <MudCard Outlined="true" Class="mb-2 pb-4">
@@ -141,11 +144,13 @@
                 <MudCard Outlined="true" Class="mb-2 pb-4">
                     <MudCardHeader>
                         <CardHeaderAvatar>
-                            <MudAvatar Image="@(_globalService.AvatarImage(Violation.Comment.User!.Image))" />
+                            <MudAvatar Image="@(_globalService.AvatarImage(Violation.Comment.User!.Image))"/>
                         </CardHeaderAvatar>
                         <CardHeaderContent>
                             <MudText Typo="Typo.body1">@Violation.Comment.User!.UserName</MudText>
-                            <MudText Typo="Typo.subtitle2"><strong>Posted:</strong> @(((DateTime)Violation.Comment.Created).ToString("dd.MM.yyyy HH:mm")) </MudText>
+                            <MudText Typo="Typo.subtitle2">
+                                <strong>Posted:</strong> @(((DateTime) Violation.Comment.Created).ToString("dd.MM.yyyy HH:mm"))
+                            </MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Class="pt-0">
@@ -155,13 +160,10 @@
                     </MudCardContent>
                 </MudCard>
             }
-            <MudText Class="ms-1" Typo="Typo.h6">Description</MudText>
-            <MudText Class="ms-1">@Violation.Description</MudText>
         </MudCardContent>
         <MudCardActions Class="d-flex justify-end">
-            @if (Violation.Bulletin != null || Violation.Comment != null)
-            {
-                <MudMenu Class="me-2" Label="Ban & Delete" Variant="Variant.Filled" Color="Color.Error">
+            <MudTooltip Text="Bans user/owner and deletes group/bulletin/board">
+                <MudMenu FullWidth="true" Class="me-2" Label="Ban & Delete" Variant="Variant.Filled" Color="Color.Error">
                     <MudMenuItem>12 hours</MudMenuItem>
                     <MudMenuItem>1 day</MudMenuItem>
                     <MudMenuItem>7 days</MudMenuItem>
@@ -169,22 +171,14 @@
                     <MudMenuItem>3 month</MudMenuItem>
                     <MudMenuItem>Forever</MudMenuItem>
                 </MudMenu>
+            </MudTooltip>
+            <MudTooltip Text="Deletes group/bulletin/board">
                 <MudButton Class="me-2" Variant="Variant.Filled" Color="Color.Warning">Delete</MudButton>
-            }
-            else
-            {
-                <MudMenu Class="me-2" Label="Ban Owner & Delete Group" Variant="Variant.Filled" Color="Color.Error">
-                    <MudMenuItem>12 hours</MudMenuItem>
-                    <MudMenuItem>1 day</MudMenuItem>
-                    <MudMenuItem>7 days</MudMenuItem>
-                    <MudMenuItem>1 month</MudMenuItem>
-                    <MudMenuItem>3 month</MudMenuItem>
-                    <MudMenuItem>Forever</MudMenuItem>
-                </MudMenu>
-                <MudButton Class="me-2" Variant="Variant.Filled" Color="Color.Warning">Delete Group</MudButton>
+            </MudTooltip>
+            <MudTooltip Text="Rejects violation">
+                <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await ViolationRejectCallback.InvokeAsync(Violation))">Reject</MudButton>
+            </MudTooltip>
 
-            }
-            <MudButton Variant="Variant.Filled" Color="Color.Info">Reject</MudButton>
         </MudCardActions>
     </MudCard>
 }
@@ -194,6 +188,15 @@
 
     [Parameter]
     public Violation? Violation { get; set; }
+
+    [Parameter]
+    public EventCallback<Violation> ViolationRejectCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<Tuple<Violation, Ban>> ViolationBanCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<Violation> ViolationDeleteCallback { get; set; }
 
     private void OpenDialog(Image image)
     {

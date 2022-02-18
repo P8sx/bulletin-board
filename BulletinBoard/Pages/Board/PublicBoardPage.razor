@@ -1,6 +1,6 @@
 ﻿@page "/board"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles ="User, Moderator, Admin")]
 
 @using BulletinBoard.Pages.Shared.Components
 @using BulletinBoard.Services

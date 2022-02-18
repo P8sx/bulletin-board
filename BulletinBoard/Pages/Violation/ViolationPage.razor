@@ -2,24 +2,78 @@
 @using BulletinBoard.Model
 @inject IHelperService _helperService
 @attribute [Authorize(Roles = "Admin, Moderator")]
- <MudCard Outlined="true" Class="mb-3">
-     <MudCardHeader Class="pb-0">
-            <CardHeaderContent>
-                <MudText Typo="Typo.h4">Violations</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.body2">Here are all reported violations</MudText>
-        </MudCardContent>
- </MudCard>
+
+@inject NavigationManager _navigationManager
+<MudCard Outlined="true" Class="mb-3">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Violations</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body2">Here are all reported violations</MudText>
+    </MudCardContent>
+</MudCard>
+<MudElement Class="d-flex mb-4 justify-end ">
+    <MudElement>
+        <MudSelect Label="Order" @bind-Value="_violationSortBy" T="ViolationSortBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateViolations)">
+            @foreach (ViolationSortBy violationSortBy in Enum.GetValues(typeof(ViolationSortBy)))
+            {
+                <MudSelectItem Value="@violationSortBy">@violationSortBy</MudSelectItem>
+            }
+        </MudSelect>
+    </MudElement>
+    <MudElement>
+        <MudSelect T="int" Label="Show" @bind-Value="_violationsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2" SelectedValuesChanged="@(UpdateViolations)" >
+            <MudSelectItem T="int" Value="10" />
+            <MudSelectItem T="int" Value="30" />
+            <MudSelectItem T="int" Value="60" />
+        </MudSelect>
+    </MudElement>
+</MudElement>
 @foreach (var violation in _violations)
 {
-    <ViolationComponent Violation="violation"></ViolationComponent> 
+    <ViolationComponent ViolationRejectCallback="ViolationReject" ViolationBanCallback="ViolationBan"  ViolationDeleteCallback="ViolationDelete" Violation="violation"></ViolationComponent> 
 }
-
+<MudElement Class="d-flex justify-center">
+        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
+</MudElement>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; } = 1;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? SortBy { get; set; } = 0;
+
+    
+    private int _violationsPerPage = 10;
+    private int _violationsCount;
     private List<Violation> _violations = new();
+    private ViolationSortBy _violationSortBy = ViolationSortBy.Bulletin;
+    
+    private int NumberOfPages() => _violationsCount == 0 ? 0 : Convert.ToInt32(Math.Ceiling(Convert.ToDouble(_violationsCount) / Convert.ToDouble(_violationsPerPage)));
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        Page = Page ?? 1;
+        _violationSortBy = (ViolationSortBy)((SortBy??1)%4);
+        _violations = await GetViolations();
+        _violationsCount = await GetViolationsCount();
+        StateHasChanged();
+    }
+
+    private async Task<int> GetViolationsCount()
+    {
+        return await _helperService.GetViolationsCount();
+    }
+    
+    private async Task<List<Violation>> GetViolations()
+    {
+        return await _helperService.GetViolations(Page ?? 1, _violationsPerPage, _violationSortBy);
+    }
     
     protected override async Task OnParametersSetAsync()
     {
@@ -27,4 +81,25 @@
         StateHasChanged();
     }
 
+    private async Task UpdateViolations()
+    {
+        _violations = await GetViolations();
+        _violationsCount = await GetViolationsCount();
+        StateHasChanged();
+    }
+    private async Task ViolationReject(Violation violation)
+    {
+        
+    }
+    private async Task ViolationDelete(Violation violation)
+    {
+        
+    }
+    private async Task ViolationBan(Tuple<Violation,Ban> violation)
+    {
+        
+    }
+    
+    private void PageChanged(int page) => _navigationManager.NavigateTo($"/violations?page={page}");
+ 
 }

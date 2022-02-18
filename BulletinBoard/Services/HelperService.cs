@@ -6,6 +6,12 @@ using static BulletinBoard.Services.GlobalService;
 
 namespace BulletinBoard.Services
 {
+    public enum ViolationSortBy
+    {
+        Bulletin = 0,
+        Board = 1,
+        Comment = 2
+    }
     public class HelperService : BaseService, IHelperService
     {
         public HelperService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<HelperService> logger, IMemoryCache memoryCache, GlobalService globalService) : base(dbFactory, logger, memoryCache, globalService)
@@ -28,7 +34,7 @@ namespace BulletinBoard.Services
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<Violation>> GetViolations(int page = 1, int limit = 20)
+        public async Task<List<Violation>> GetViolations(int page = 1, int limit = 20, ViolationSortBy sortBy = ViolationSortBy.Bulletin)
         {
             if (page == 0)
                 page = 1;
@@ -39,15 +45,43 @@ namespace BulletinBoard.Services
             var skip = (page - 1) * limit;
             
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
-            return await dbContext.Violations
+            var querry = dbContext.Violations
                 .Include(v => v.Board)
-                .Include(v => v.Comment).ThenInclude(c=>c.User)
-                .Include(v => v.Bulletin).ThenInclude(b=>b!.Images)
-                .Include(v => v.Bulletin).ThenInclude(b=>b!.User)
-                .Include(v=>v.User).ThenInclude(u=>u!.Image)
-                .Skip(skip)
-                .Take(limit)
-                .ToListAsync();
+                .Include(v => v.Comment).ThenInclude(c => c!.User)
+                .Include(v => v.Bulletin).ThenInclude(b => b!.Images)
+                .Include(v => v.Bulletin).ThenInclude(b => b!.User)
+                .Include(v => v.User).ThenInclude(u => u!.Image);
+            return sortBy switch
+            {
+                ViolationSortBy.Board => await querry.OrderByDescending(v => v.BoardId)
+                    .Skip(skip)
+                    .Take(limit)
+                    .ToListAsync(),
+                ViolationSortBy.Bulletin => await querry.OrderByDescending(v => v.BulletinId)
+                    .Skip(skip)
+                    .Take(limit)
+                    .ToListAsync(),
+                ViolationSortBy.Comment => await querry.OrderByDescending(v => v.CommentId)
+                    .Skip(skip)
+                    .Take(limit)
+                    .ToListAsync(),
+                _ => await querry.Skip(skip).Take(limit).ToListAsync()
+            };
+        }
+
+        public async Task<int> GetViolationsCount()
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            return await dbContext.Violations.CountAsync();
+        }
+
+        public async Task RejectViolation(Violation violation)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var result = await dbContext.Violations.Where(v => v.Id == violation.Id).FirstOrDefaultAsync();
+            if(result == null) return;
+            dbContext.Remove(result);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

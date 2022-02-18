@@ -1,10 +1,41 @@
-﻿<CascadingAuthenticationState>
+﻿@using BulletinBoard.Model
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <p>Sorry, you're not authorized to reach this page.</p>
-                    <p>You may need to log in as a different user.</p>
+                    @if (context.User.IsInRole("Banned"))
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.h4">You have been <span style="color:red">BANNED</span></MudText>
+                        @if (_ban != null)
+                        {
+                            <MudCard Style="max-width: 400px" Class="ms-auto me-auto mt-5">
+                                <MudCardContent>
+                                    <MudText Align="Align.Center"  Typo="Typo.h5">Ban reason</MudText>
+                                    <MudDivider Class="my-2"></MudDivider>
+                                    <MudText>@_ban.Reason</MudText>
+                                    <MudGrid>
+                                        <MudItem xs="6">
+                                            <MudText Align="Align.Center" Typo="Typo.h5" Class="mt-5">Date of ban</MudText>
+                                            <MudDivider Class="my-2"></MudDivider>
+                                            <MudText Align="Align.Center" >@_ban.BanDate.ToString("hh:mm MM/dd/yyyy")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="6">
+                                            <MudText Align="Align.Center" Typo="Typo.h5" Class="mt-5">Expiring</MudText>
+                                            <MudDivider Class="my-2"></MudDivider>
+                                            <MudText Align="Align.Center" >@_ban.BanExpiringDate.ToString("hh:mm MM/dd/yyyy")</MudText>
+                                        </MudItem>
+                                    </MudGrid>
+
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    }
+                    else
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.h4">Sorry, you're not authorized to reach this page.</MudText>
+                    }
+
                 </NotAuthorized>
             </AuthorizeRouteView>
         </Found>
@@ -15,3 +46,22 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code{
+    private Ban? _ban;
+
+    private bool GetBan(out Ban ban)
+    {
+        ban = new Ban();
+        var result = _userService.GetBan().Result;
+        if (result == null) return false;
+        ban = result;
+        return true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _ban = await _userService.GetBan();
+    }
+
+}
