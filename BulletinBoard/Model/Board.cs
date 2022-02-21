@@ -15,7 +15,7 @@ namespace BulletinBoard.Model
         public string? Description { get; set; }
         public bool PublicListed { get; set; }
         public bool AcceptAnyone { get; set; }
-
+        public bool ReadOnly { get; set; }
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")] 
         public ulong? ImageId { get; set; }

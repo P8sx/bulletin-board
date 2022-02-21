@@ -105,13 +105,22 @@
         @if (Bulletin.Images.Any())
         {
             <MudHidden Breakpoint="Breakpoint.Md" Invert="false">
-                <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
-                    <ItemTemplate>
-                        <div class="d-flex flex-column flex-column justify-center" @onclick="@(_ => OpenDialog(@context))">
-                            <MudCardMedia Image=@_globalService.BulletinImage(context)></MudCardMedia>
-                        </div>
-                    </ItemTemplate>
-                </MudCarousel>
+                @if (Bulletin.Images.Count == 1)
+                {
+                    <div class="d-flex flex-column flex-column justify-center" @onclick="@(_ => OpenDialog(Bulletin.Images.First()))">
+                        <MudCardMedia Height="300" Image=@_globalService.BulletinImage(Bulletin.Images.First())></MudCardMedia>
+                    </div>
+                }
+                else
+                {
+                    <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                        <ItemTemplate>
+                            <div class="d-flex flex-column flex-column justify-center" @onclick="@(_ => OpenDialog(@context))">
+                                <MudCardMedia Image=@_globalService.BulletinImage(context)></MudCardMedia>
+                            </div>
+                        </ItemTemplate>
+                    </MudCarousel>
+                }
             </MudHidden>
 
             <MudHidden Breakpoint="Breakpoint.Md" Invert="true">

@@ -145,5 +145,19 @@ namespace BulletinBoard.Services
             await _userManager.RemoveFromRolesAsync(usermanagerUser, roles);
             return true;
         }
+
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            return await dbContext.Users.Join(dbContext.UserRoles, user => user.Id, userRole => userRole.UserId,(user,userRole) => new User
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Joined = user.Joined,
+                    RoleName = userRole.RoleId.ToString()
+                })
+                .ToListAsync();
+        }
     }
 }

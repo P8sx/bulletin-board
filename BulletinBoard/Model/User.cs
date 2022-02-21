@@ -8,19 +8,19 @@ namespace BulletinBoard.Model
         public string? Country { get; set; }
         public string? City { get; set; }
         public string? PostCode { get; set; }
-        public DateTime Joined { get; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime Joined { get; set; }
         public virtual IList<BoardUser>? BoardUsers { get; set; }
 
         public virtual Image? Image { get; set; }
         [ForeignKey("Image")]
         public ulong? ImageId { get; set; }
-        public User()
-        {
-            Joined = DateTime.UtcNow;
-        }
 
         public virtual IList<BulletinVote>? Votes { get; set; }
         public virtual IList<BulletinBookmark>? Bookmarks { get; set; }
+        
+        [NotMapped]
+        public string RoleName { get; set; }
 
     }
 }

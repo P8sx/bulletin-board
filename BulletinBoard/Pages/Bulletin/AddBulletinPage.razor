@@ -10,81 +10,86 @@
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
 @inject IBoardService _boardService
-
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
-<MudPaper Class="mud-width-full py-8" Elevation="1">
-    <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
-        <DataAnnotationsValidator/>
-        <MudGrid>
-            <MudItem xs="12" md="12" Class="px-8 d-flex flex-column">
-                <MudText Typo="Typo.h5">Bulletin @(_preview ? "(preview)" : "")</MudText>
-                @if (_preview)
-                {
-                    <MudPaper Class="px-2 mt-2 mb-3" Outlined="true">
-                        <Emoji>
-                            <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
-                                <MudMarkdown OverrideHeaderTypo="delegate(Typo arg) { return arg is Typo.h1 or Typo.h2 ? Typo.h3 : arg; }" Value="@Bulletin.Description"></MudMarkdown>
-                            </MudText>
-                        </Emoji>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)"/>
-                    <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Markdown and Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)"/>
-                }
-                <MudButton Class="ms-auto" Variant="Variant.Filled" OnClick="() => { _preview = !_preview; }" Color="@(_preview ? Color.Primary : Color.Secondary)">@(_preview ? "Text" : "Preview")</MudButton>
-            </MudItem>
-            <MudItem xs="12" md="8" Class="px-8 d-flex">
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h5">Attachments</MudText>
-                    </MudItem>
-
-                    <MudItem xs="12">
-                        <MudGrid>
-                            @foreach (var img in _imageUpload!.Images)
-                            {
-                                <MudItem xs="6" md="6">
-                                    <MudCard>
-                                        <MudCardMedia Image=@img.base64Image Height="200"/>
-                                        <MudCardActions Class="d-flex justify-space-between">
-                                            <MudText Typo="Typo.caption">@img.browserFile.Name</MudText>
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => _imageUpload.RemoveImage(img))"></MudIconButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            }
-                        </MudGrid>
-                    </MudItem>
-
-                    <MudItem xs="12" Class="d-flex flex-column">
-                        <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
-                        <MudText Class="mt-2" Align="Align.Center">Max @(_globalService.MaxFileSize / 1024 / 1024) MB per image.</MudText>
-                    </MudItem>
-
-                </MudGrid>
-            </MudItem>
-            <MudItem xs="12" md="4" Class="px-8">
-                <MudText Typo="Typo.h5">Additional</MudText>
-                <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false"/>
-                <MudSelect T="ulong?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
-                    @foreach (var board in _userService.GetUserBoards())
+@if (_board is {ReadOnly: false } || (_board != null && _userService.IsBoardModerator(_board)))
+{
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
+    <MudPaper Class="mud-width-full py-8" Elevation="1">
+        <EditForm Model="@Bulletin" OnValidSubmit="ValidFormSubmitted">
+            <DataAnnotationsValidator/>
+            <MudGrid>
+                <MudItem xs="12" md="12" Class="px-8 d-flex flex-column">
+                    <MudText Typo="Typo.h5">Bulletin @(_preview ? "(preview)" : "")</MudText>
+                    @if (_preview)
                     {
-                        <MudSelectItem T="ulong?" Value="@board!.Id">@board!.Name</MudSelectItem>
+                        <MudPaper Class="px-2 mt-2 mb-3" Outlined="true">
+                            <Emoji>
+                                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
+                                    <MudMarkdown OverrideHeaderTypo="delegate(Typo arg) { return arg is Typo.h1 or Typo.h2 ? Typo.h3 : arg; }" Value="@Bulletin.Description"></MudMarkdown>
+                                </MudText>
+                            </Emoji>
+                        </MudPaper>
                     }
-                </MudSelect>
-            </MudItem>
+                    else
+                    {
+                        <MudTextField Label="Title" HelperText="Title of your bulletin" Variant="Variant.Outlined" @bind-Value="Bulletin.Title" For="@(() => Bulletin.Title)"/>
+                        <MudTextField T="string" Label="Description" HelperText="Content of your bulletin (Markdown and Github Emoji are supported)" Lines="13" Variant="Variant.Outlined" @bind-Value="Bulletin.Description" For="@(() => Bulletin.Description)"/>
+                    }
+                    <MudButton Class="ms-auto" Variant="Variant.Filled" OnClick="() => { _preview = !_preview; }" Color="@(_preview ? Color.Primary : Color.Secondary)">@(_preview ? "Text" : "Preview")</MudButton>
+                </MudItem>
+                <MudItem xs="12" md="8" Class="px-8 d-flex">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5">Attachments</MudText>
+                        </MudItem>
 
-        </MudGrid>
-        <MudElement Class="d-flex justify-end mr-6">
-            <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
-                <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
-            </MudButton>
-        </MudElement>
-    </EditForm>
-</MudPaper>
+                        <MudItem xs="12">
+                            <MudGrid>
+                                @foreach (var img in _imageUpload!.Images)
+                                {
+                                    <MudItem xs="6" md="6">
+                                        <MudCard>
+                                            <MudCardMedia Image=@img.base64Image Height="200"/>
+                                            <MudCardActions Class="d-flex justify-space-between">
+                                                <MudText Typo="Typo.caption">@img.browserFile.Name</MudText>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => _imageUpload.RemoveImage(img))"></MudIconButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudItem>
 
+                        <MudItem xs="12" Class="d-flex flex-column">
+                            <ImageUploadComponent @ref="_imageUpload" ImageUpdateCallback="UpdateImages"></ImageUploadComponent>
+                            <MudText Class="mt-2" Align="Align.Center">Max @(_globalService.MaxFileSize / 1024 / 1024) MB per image.</MudText>
+                        </MudItem>
+
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" md="4" Class="px-8">
+                    <MudText Typo="Typo.h5">Additional</MudText>
+                    <MudDatePicker Label="Bulletin expire date" HelperText="Date after witch bulletin will be marked as expired (optional)" Variant="Variant.Outlined" @bind-Date="Bulletin.Expired" For="@(() => Bulletin.Expired)" ReadOnly="false"/>
+                    <MudSelect T="ulong?" Label="Board" Variant="Variant.Outlined" HelperText="Board in which the bulletin will be published" @bind-value="Bulletin.BoardId">
+                        @foreach (var board in _userService.GetUserBoards())
+                        {
+                            <MudSelectItem T="ulong?" Value="@board!.Id">@board!.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+            </MudGrid>
+            <MudElement Class="d-flex justify-end mr-6">
+                <MudButton Disabled="_processing" Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" Class="mt-3" EndIcon="@Icons.Filled.Save">
+                    <ProcessingButtonComponent Processing="_processing">Submit</ProcessingButtonComponent>
+                </MudButton>
+            </MudElement>
+        </EditForm>
+    </MudPaper>
+}
+else
+{
+    <AccessBlockedComponent></AccessBlockedComponent>
+}
 @code {
 
     [Parameter]

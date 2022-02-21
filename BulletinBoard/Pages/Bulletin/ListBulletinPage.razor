@@ -25,12 +25,18 @@
         <MudCardContent>
             <MudText Typo="Typo.body2">@_board.Description</MudText>
         </MudCardContent>
+        <MudCardActions Class="d-flex justify-end">
         @if (_userService.IsBoardAdmin(_board))
         {
-        <MudCardActions Class="d-flex justify-end">
+        
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"board/settings?boardGuid={_board.Guid}")>Board panel</MudButton>
-        </MudCardActions>
+        
         }
+        @if (_board is {ReadOnly: true })
+        {
+            <MudButton Variant="Variant.Outlined" Class="ms-3" Color="Color.Error">Readonly</MudButton>
+        }
+        </MudCardActions>
     </MudCard>
 
 
@@ -74,7 +80,10 @@
         <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
     </MudElement>
     <AuthorizeView Roles="Admin, User, Moderator">
-        <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardGuid={BoardGuid??_globalService.DefaultBoardGuid}")></MudFab>
+        @if (_board is {ReadOnly: false } || (_board != null && _userService.IsBoardModerator(_board)))
+        {
+            <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardGuid={BoardGuid ?? _globalService.DefaultBoardGuid}")></MudFab>
+        }
     </AuthorizeView>
 
 }

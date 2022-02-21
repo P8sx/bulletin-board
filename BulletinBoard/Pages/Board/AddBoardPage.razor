@@ -28,6 +28,10 @@
                     <MudSwitch @bind-Checked="@Board.AcceptAnyone" Label="Public" Color="Color.Primary" />
                     <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
                 </MudContainer>
+                <MudContainer Class="px-0">
+                        <MudSwitch @bind-Checked="@Board.ReadOnly" Label="Readonly" Color="Color.Primary" />
+                        <MudText Class="pl-3" Typo="Typo.caption">Users can't post bulletins</MudText>
+                </MudContainer>
                 <MudText Typo="Typo.body2"></MudText>
             </MudItem>
             <MudItem xs="12" Class="d-flex flex-column px-8">

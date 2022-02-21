@@ -22,7 +22,7 @@ else if (_board != null)
 {
     <MudCard Outlined="true" Class="mb-3">
 
-        <MudCardMedia Image="/control-panel.svg" Height="200" Style="background-position:top" />
+        <MudCardMedia Image="/static/control-panel.svg" Height="200" Style="background-position:top" />
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h4"><strong>@_board.Name</strong> - Boad panel</MudText>
@@ -59,6 +59,10 @@ else if (_board != null)
                                 <MudContainer Class="px-0">
                                     <MudSwitch @bind-Checked="@_board.AcceptAnyone" Label="Public" Color="Color.Primary" />
                                     <MudText Class="pl-3" Typo="Typo.caption">No acceptance required</MudText>
+                                </MudContainer>
+                                <MudContainer Class="px-0">
+                                    <MudSwitch @bind-Checked="@_board.ReadOnly" Label="Readonly" Color="Color.Primary" />
+                                    <MudText Class="pl-3" Typo="Typo.caption">Users can't post bulletins</MudText>
                                 </MudContainer>
                                 <MudText Typo="Typo.body2"></MudText>
                             </MudItem>
