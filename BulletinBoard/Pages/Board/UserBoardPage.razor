@@ -14,7 +14,7 @@
 @inject NavigationManager _navigationManager
 @inject IDialogService _dialogService
 
-
+<MudContainer MaxWidth="MaxWidth.Medium" >
 <MudCard Outlined="true" Class="mb-3">
 
     <MudCardMedia Image="/static/board-page.svg" Height="200" />
@@ -226,7 +226,7 @@
     </MudExpansionPanel>
 
 </MudExpansionPanels>
-
+</MudContainer>
 @code {
     private List<Board> _userBoards = new();
     private List<Board> _userPendingAcceptanceBoards = new();

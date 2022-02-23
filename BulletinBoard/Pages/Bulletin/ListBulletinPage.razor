@@ -11,91 +11,103 @@
 @inject IBoardService _boardService
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
+@inject IJSRuntime _js
 
-@if (_pageState == State.Success && _board != null)
-{
-
-    <MudCard Outlined="true" Class="mb-3">
-        <MudCardMedia Image=@(_globalService.BoardImage(_board.Image)) Height="200" />        
-        <MudCardHeader Class="pb-0">
-            <CardHeaderContent>
-                <MudText Typo="Typo.h4">@_board.Name</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.body2">@_board.Description</MudText>
-        </MudCardContent>
-        <MudCardActions Class="d-flex justify-end">
-        @if (_userService.IsBoardAdmin(_board))
+<MudContainer MaxWidth=@(Kiosk ? MaxWidth.False : MaxWidth.Large) >
+    @if (_pageState == State.Success && _board != null)
+    {
+        @if (!Kiosk)
         {
-        
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"board/settings?boardGuid={_board.Guid}")>Board panel</MudButton>
-        
+            <MudCard Outlined="true" Class="mb-3">
+                <MudCardMedia Image=@(_globalService.BoardImage(_board.Image)) Height="200"/>
+                <MudCardHeader Class="pb-0">
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h4">@_board.Name</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2">@_board.Description</MudText>
+                </MudCardContent>
+                <MudCardActions Class="d-flex justify-end">
+                    @if (_userService.IsBoardAdmin(_board))
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Link=@($"board/settings?boardGuid={_board.Guid}")>Board panel</MudButton>
+                    }
+                    @if (_board is {ReadOnly: true })
+                    {
+                        <MudButton Variant="Variant.Outlined" Class="ms-3" Color="Color.Error">Readonly</MudButton>
+                    }
+                </MudCardActions>
+            </MudCard>
+
+            <MudElement Class="d-flex mb-4">
+                <MudElement Style="align-self: center" Class="mr-auto">
+                       <MudIconButton Size="Size.Large" Icon=@(Grid?@Icons.Filled.List:@Icons.Filled.GridView) OnClick="ToggleGrid" aria-label="delete"></MudIconButton>      
+                </MudElement>
+                <MudElement>
+                    <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateBulletins)">
+                        @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
+                        {
+                            <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudElement>
+                <MudElement>
+                    <MudSelect Label="Sort" @bind-Value="_bulletinSortBy" T="BulletinSortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(UpdateBulletins)">
+                        @foreach (BulletinSortBy sortByItem in Enum.GetValues(typeof(BulletinSortBy)))
+                        {
+                            <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudElement>
+                <MudElement>
+                    <MudSelect T="int" Label="Show" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
+                        <MudSelectItem T="int" Value="10"/>
+                        <MudSelectItem T="int" Value="30"/>
+                        <MudSelectItem T="int" Value="60"/>
+                    </MudSelect>
+                </MudElement>
+            </MudElement>
         }
-        @if (_board is {ReadOnly: true })
-        {
-            <MudButton Variant="Variant.Outlined" Class="ms-3" Color="Color.Error">Readonly</MudButton>
-        }
-        </MudCardActions>
-    </MudCard>
 
-
-
-    <MudElement Class="d-flex mb-4 justify-end ">
         <MudElement>
-            <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateBulletins)">
-                @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
+            <div id="macy-container">
+                @foreach (var bulletin in _bulletins)
                 {
-                    <MudSelectItem Value="@orderByItem">@orderByItem</MudSelectItem>
+                    <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin" BulletinPinnedCallback="PinBulletin" Kiosk="Kiosk"></CardComponent>
                 }
-            </MudSelect>
+            </div>
         </MudElement>
-        <MudElement>
-            <MudSelect Label="Sort" @bind-Value="_bulletinSortBy" T="BulletinSortBy" Variant="Variant.Outlined" Style="width:130px" Class="ml-2" SelectedValuesChanged="@(UpdateBulletins)">
-                @foreach (BulletinSortBy sortByItem in Enum.GetValues(typeof(BulletinSortBy)))
+        @if (!Kiosk)
+        {
+            <div>
+
+                <MudElement Class="d-flex justify-center">
+                    <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged"/>
+                </MudElement>
+            </div>
+
+
+            <AuthorizeView Roles="Admin, User, Moderator">
+                @if (_board is {ReadOnly: false } || (_board != null && _userService.IsBoardModerator(_board)))
                 {
-                    <MudSelectItem Value="@sortByItem">@sortByItem</MudSelectItem>
+                    <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardGuid={BoardGuid ?? _globalService.DefaultBoardGuid}")></MudFab>
                 }
-            </MudSelect>
-        </MudElement>
-        <MudElement>
-            <MudSelect T="int" Label="Show" @bind-Value="_bulletinsPerPage" Variant="Variant.Outlined" Style="max-width:80px" Class="ml-2">
-                <MudSelectItem T="int" Value="10" />
-                <MudSelectItem T="int" Value="30" />
-                <MudSelectItem T="int" Value="60" />
-            </MudSelect>
-        </MudElement>
-    </MudElement>
-
-
-
-    <MudElement>
-        @foreach (var bulletin in _bulletins)
-        {
-            <CardComponent Bulletin="bulletin" BulletinRemovedCallback="RemoveBulletin" BulletinPinnedCallback="PinBulletin"></CardComponent>
+            </AuthorizeView>
         }
-    </MudElement>
+    }
+    else if (_pageState == State.AccessBlocked)
+    {
+        <AccessBlockedComponent></AccessBlockedComponent>
+    }
+    else
+    {
+        <LoadingComponent></LoadingComponent>
+    }
+</MudContainer>
 
-    <MudElement Class="d-flex justify-center">
-        <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
-    </MudElement>
-    <AuthorizeView Roles="Admin, User, Moderator">
-        @if (_board is {ReadOnly: false } || (_board != null && _userService.IsBoardModerator(_board)))
-        {
-            <MudFab Color="Color.Secondary" Style="position:fixed; bottom: 2rem; right: 2rem" StartIcon="@Icons.Material.Filled.Add" Size="Size.Large" IconSize="Size.Large" Class="ma-2" Link=@($"/bulletin/add?boardGuid={BoardGuid ?? _globalService.DefaultBoardGuid}")></MudFab>
-        }
-    </AuthorizeView>
-
-}
-else if (_pageState == State.AccessBlocked)
-{
-    <AccessBlockedComponent></AccessBlockedComponent>
-}
-else
-{
-    <LoadingComponent></LoadingComponent>
-}
 @code {
+
     [Parameter]
     [SupplyParameterFromQuery]
     public Guid? BoardGuid { get; set; }
@@ -112,15 +124,19 @@ else
     [SupplyParameterFromQuery]
     public int? OrderBy { get; set; } = 0;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Kiosk { get; set; }
 
-
-
-
-    private Board? _board;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Grid { get; set; }
     
+    private Board? _board;
+
     private int _bulletinsPerPage = 10;
     private int _bulletinsCount;
-    
+
     private IList<Bulletin> _bulletins = default!;
     private State _pageState = State.Loading;
     private BulletinSortBy _bulletinSortBy = Services.BulletinSortBy.Created;
@@ -130,12 +146,12 @@ else
     {
         await base.SetParametersAsync(parameters);
         _board = await _boardService.GetBoardAsync(new Board(BoardGuid ?? _globalService.DefaultBoardGuid));
-        
+
         Page = Page ?? 1;
         if (_board != null && _userService.IsInBoard(_board))
         {
-            _bulletinSortBy = (BulletinSortBy)((SortBy??1)%4);
-            _bulletinOrderBy = (BulletinOrderBy)((OrderBy??1)%2);
+            _bulletinSortBy = (BulletinSortBy) ((SortBy ?? 1) % 4);
+            _bulletinOrderBy = (BulletinOrderBy) ((OrderBy ?? 1) % 2);
             _bulletins = await GetBulletins();
             _bulletinsCount = await GetBulletinsCount();
             _pageState = State.Success;
@@ -144,14 +160,43 @@ else
         {
             _pageState = State.AccessBlocked;
         }
+        if (Kiosk)
+        {
+            var timer = new Timer(new TimerCallback(_ =>
+            {
+                InvokeAsync(async () => { _bulletins = await GetBulletins(); });
+                InvokeAsync(StateHasChanged);
+            }), null, 5000, 5*60*1000);
+        }
         StateHasChanged();
     }
+
+    private async Task ToggleGrid()
+    {
+        if (Grid)
+            await _js.InvokeVoidAsync("macyGrid");
+        else
+            await _js.InvokeVoidAsync("macyDefault");
+        Grid = !Grid;
+    }
     
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await Task.Delay(300);
+            if(Kiosk) await _js.InvokeVoidAsync("macyKiosk");
+            else if (Grid)
+                await _js.InvokeVoidAsync("macyGrid");
+            else
+                await _js.InvokeVoidAsync("macyDefault");
+        }
+    }
 
     private void PageChanged(int page) => _navigationManager.NavigateTo($"/bulletins?boardGuid{BoardGuid}&page={page}");
     private async Task<IList<Bulletin>> GetBulletins() => await _bulletinService.GetBulletinsAsyncCached(Page ?? 1, _bulletinsPerPage >= 60 ? 60 : _bulletinsPerPage, _userService.User!, _board!, new BulletinSort(_bulletinSortBy, _bulletinOrderBy));
     private async Task<int> GetBulletinsCount() => await _bulletinService.GetBulletinsCountAsyncCached(_board!);
-    
+
 
     private async Task UpdateBulletins()
     {
@@ -186,4 +231,5 @@ else
             StateHasChanged();
         }
     }
+
 }

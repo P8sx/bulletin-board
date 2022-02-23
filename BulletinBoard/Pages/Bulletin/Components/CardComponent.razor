@@ -49,7 +49,7 @@
                 }
                 @if (BoardInfo)
                 {
-                    <MudText Typo="Typo.body2" Style="overflow-wrap: break-word;">
+                    <MudText Typo="Typo.body2">
                         <strong>Post from board:</strong> @Bulletin.Board!.Name
                     </MudText>
                 }
@@ -87,7 +87,7 @@
         <MudCardContent Class="pt-0">
             @if (Bulletin.Title != "")
             {
-                <MudText Typo="Typo.h4">@Bulletin.Title</MudText>
+                <MudText Typo="Typo.h4" Style="overflow-wrap: anywhere;">@Bulletin.Title</MudText>
             }
             <Emoji>
                 <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: break-word;">
@@ -97,7 +97,7 @@
 
             @if (Bulletin.Modified != null)
             {
-                <MudText Typo="Typo.body2" Class="mt-2">
+                <MudText Typo="Typo.body2" Class="mt-2" Style="overflow-wrap: anywhere;">
                     <strong>Last modified:</strong> @(((DateTime) Bulletin.Modified).ToString("dd.MM.yyyy"))
                 </MudText>
             }
@@ -145,7 +145,9 @@
             </MudOverlay>
         }
     </div>
-    <MudCardActions Class="d-flex">
+    @if (!Kiosk)
+    {
+        <MudCardActions Class="d-flex">
         <AuthorizeView Roles="Admin, User, Moderator">
             <Authorized>
                 <MudText Class="pl-3">@Bulletin.VotesCount</MudText>
@@ -164,9 +166,8 @@
                 <MudIconButton Icon="@Icons.Filled.ReadMore" Color="Color.Default" Disabled/>
             </NotAuthorized>
         </AuthorizeView>
-        
-
-    </MudCardActions>
+        </MudCardActions>
+    }
 </MudCard>
 
 
@@ -177,12 +178,15 @@
 
     [Parameter]
     public bool BoardInfo { get; set; }
-
+    
     [Parameter]
     public EventCallback<Bulletin> BulletinRemovedCallback { get; set; }
     
     [Parameter]
     public EventCallback<Bulletin> BulletinPinnedCallback { get; set; }
+
+    [Parameter]
+    public bool Kiosk { get; set; } = false;
     
     private MudCarousel<Image>? _carousel;
 

@@ -4,6 +4,7 @@
 @attribute [Authorize(Roles = "Admin, Moderator")]
 
 @inject NavigationManager _navigationManager
+<MudContainer MaxWidth="MaxWidth.Medium" >
 <MudCard Outlined="true" Class="mb-3">
     <MudCardHeader Class="pb-0">
         <CardHeaderContent>
@@ -39,6 +40,7 @@
         <MudPagination Size="Size.Large" BoundaryCount="2" MiddleCount="3" Count="NumberOfPages()" SelectedChanged="PageChanged" />
 </MudElement>
 
+</MudContainer>
 @code {
     [Parameter]
     [SupplyParameterFromQuery]

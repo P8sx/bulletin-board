@@ -9,6 +9,8 @@
 @inject IBoardService _boardService
 @inject NavigationManager _navigationManager
 
+<MudContainer MaxWidth="MaxWidth.Medium" >
+    
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new board</MudText>
 <MudPaper Class="mud-width-full py-8" Elevation="1">
     <EditForm Model="@Board" OnValidSubmit="ValidFormSubmitted">
@@ -57,7 +59,7 @@
         </MudElement>
     </EditForm>
 </MudPaper>
-
+</MudContainer>
 
 @code {
     private Board Board { get; set; } = new();

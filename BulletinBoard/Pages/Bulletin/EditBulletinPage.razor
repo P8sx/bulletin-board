@@ -13,7 +13,7 @@
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
 
-
+<MudContainer MaxWidth="MaxWidth.Medium" >
 @if (Bulletin is {Board: { } } && _userService.IsBulletinOwner(Bulletin))
 {
     <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Edit</b> bulletin</MudText>
@@ -110,6 +110,7 @@ else
 }
 
 
+</MudContainer>
 @code {
     [Parameter]
     [SupplyParameterFromQuery]

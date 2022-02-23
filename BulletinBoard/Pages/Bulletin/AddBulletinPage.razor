@@ -10,6 +10,7 @@
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
 @inject IBoardService _boardService
+<MudContainer MaxWidth="MaxWidth.Medium" >
 @if (_board is {ReadOnly: false } || (_board != null && _userService.IsBoardModerator(_board)))
 {
     <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4"><b>Add</b> new bulletin</MudText>
@@ -90,6 +91,7 @@ else
 {
     <AccessBlockedComponent></AccessBlockedComponent>
 }
+</MudContainer>
 @code {
 
     [Parameter]

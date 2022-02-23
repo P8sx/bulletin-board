@@ -15,7 +15,7 @@
 @inject IBoardService _boardService
 @inject IBulletinService _bulletinService
 @inject NavigationManager _navigationManager
-
+<MudContainer MaxWidth="MaxWidth.Medium" >
 @if (_pageState == State.Success)
 {
 
@@ -76,6 +76,7 @@ else
 {
     <LoadingComponent></LoadingComponent>
 }
+</MudContainer>
 @code {
     [Parameter]
     [SupplyParameterFromQuery]

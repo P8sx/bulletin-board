@@ -1,11 +1,13 @@
 ﻿@inherits LayoutComponentBase
-
+@inject NavigationManager _navigationManager
 <MudThemeProvider Theme="_currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0">
+    @if (!_navigationManager.Uri.Contains("kiosk=true"))
+    {
+        <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
         <MudSpacer/>
         <MudIconButton OnClick="@((e) => DarkMode())" Icon="@(_darkMode ? @Icons.Filled.DarkMode : @Icons.Filled.LightMode)" aria-label="darkMode" Color="Color.Warning" Class="mr-3"></MudIconButton>
@@ -48,24 +50,25 @@
             </NotAuthorized>
         </AuthorizeView>
     </MudAppBar>
-
+    
+    
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Width="16rem">
         <MudDrawerHeader>
             <img src="static/logo.svg" width=300 height=80 class="rounded" style=@_logoColor alt=""/>
         </MudDrawerHeader>
         <NavMenu/>
     </MudDrawer>
-
+    }
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Medium" Class="my-6 pt-6">
+        <MudContainer MaxWidth="MaxWidth.False" Class=@(_navigationManager.Uri.Contains("kiosk=true")?"":"my-6 pt-6")>
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
+ 
     bool _drawerOpen = true;
-
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
@@ -74,6 +77,7 @@
     {
         _currentTheme = _defaultTheme;
     }
+    
     private string _logoColor = "";
     bool _darkMode = false;
     void DarkMode()

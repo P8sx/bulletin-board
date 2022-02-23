@@ -12,7 +12,7 @@
 
 @inject IBoardService _boardService
 @inject NavigationManager _navigationManager
-
+<MudContainer MaxWidth="MaxWidth.Medium" >
 <MudCard Outlined="true" Class="mb-3">
 
     <MudCardMedia Image="/static/board-page.svg" Height="200"/>
@@ -119,6 +119,7 @@ else
 </MudCard>
     
 }
+</MudContainer>
 @code {
     private List<Board> _publicBoards = new();
     private State _pageState = State.Loading;
