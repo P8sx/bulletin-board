@@ -44,7 +44,7 @@ builder.Services.AddSingleton<GlobalService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMudServices();
 builder.Services.AddMudMarkdownServices();
-builder.Services.RunAppSetup();
+//builder.Services.RunAppSetup();
 
 builder.Services.AddMinio(options =>
 {

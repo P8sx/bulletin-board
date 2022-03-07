@@ -18,9 +18,8 @@ namespace BulletinBoard.Model
 
         public virtual IList<BulletinVote>? Votes { get; set; }
         public virtual IList<BulletinBookmark>? Bookmarks { get; set; }
-        public virtual IList<Role>? Roles { get; set; }
+        public virtual IList<Role> Roles { get; set; }
         [NotMapped]
-        public string RoleName { get; set; }
-
+        public IEnumerable<string> RolesName { get; set; } 
     }
 }

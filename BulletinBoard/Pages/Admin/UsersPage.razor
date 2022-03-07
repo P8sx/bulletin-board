@@ -1,6 +1,9 @@
 @page "/users"
 @using BulletinBoard.Model
+@using Microsoft.AspNetCore.Identity
+@using System.Linq
 @inject IHelperService _helperService
+@inject UserManager<User> _userManager
 <MudCard Outlined="true" Class="mb-3">
     <MudCardHeader Class="pb-3">
         <CardHeaderContent>
@@ -8,53 +11,68 @@
         </CardHeaderContent>
     </MudCardHeader>
 </MudCard>
- <MudTable ServerData="@(new Func<TableState, Task<TableData<User>>>(ServerReload))"
-           Hover="true" @ref="_table">
-     <ToolBarContent>
-         <MudText Typo="Typo.h6">Users</MudText>
-         <MudSpacer />
-         <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
-                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-     </ToolBarContent>
-     <HeaderContent>
-         <MudTh><MudTableSortLabel SortLabel="id_field" T="User">Id</MudTableSortLabel></MudTh>
-         <MudTh><MudTableSortLabel SortLabel="username_field" T="User">User Name</MudTableSortLabel></MudTh>
-         <MudTh><MudTableSortLabel SortLabel="joined_field" T="User">Joined</MudTableSortLabel></MudTh>
-         <MudTh><MudTableSortLabel SortLabel="email_field" T="User">Email</MudTableSortLabel></MudTh>
-         <MudTh>Action</MudTh>
-     </HeaderContent>
-     <RowTemplate>
-         <MudTd DataLabel="Id">@context.Id</MudTd>
-         <MudTd DataLabel="UserName">@context.UserName</MudTd>
-         <MudTd DataLabel="Joined">@context.Joined</MudTd>
-         <MudTd DataLabel="Email">@context.Email</MudTd>
-         <MudTd DataLabel="Email">@context.RoleName</MudTd>
-         <MudTd>
-         @* <MudSelect Class="mt-0" T="" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))"> *@
-         @*     <MudSelectItem Value="@(BoardRole.User)" /> *@
-         @*     <MudSelectItem Value="@(BoardRole.Moderator)" /> *@
-         @*     <MudSelectItem Value="@(BoardRole.Admin)" /> *@
-         @* </MudSelect> *@
-         </MudTd>
-     </RowTemplate>
-     <NoRecordsContent>
-         <MudText>No matching records found</MudText>
-     </NoRecordsContent>
-     <LoadingContent>
-         <MudText>Loading...</MudText>
-     </LoadingContent>
-     <PagerContent>
-         <MudTablePager />
-     </PagerContent>
- </MudTable>
+<MudTable ServerData="@(new Func<TableState, Task<TableData<User>>>(ServerReload))"
+          Hover="true" @ref="_table">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Users</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0">
+        </MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortLabel="id_field" T="User">Id</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="username_field" T="User">User Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="joined_field" T="User">Joined</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="email_field" T="User">Email</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Role</MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="UserName">@context.UserName</MudTd>
+        <MudTd DataLabel="Joined">@context.Joined</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd>
+            <MudSelect Style="max-width: 200px" 
+                       Class="mt-0" T="string"
+                       Variant="Variant.Outlined" 
+                       AnchorOrigin="Origin.BottomCenter" 
+                       Value="@context.RolesName.First()"
+                       SelectedValuesChanged="@((IEnumerable<string> newRoles)=>RoleChanged(@context, newRoles))">
+                <MudSelectItem T="string" Value="@("User")">User</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Moderator")">Moderator</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Admin")">Admin</MudSelectItem>
+            </MudSelect>
+        </MudTd>
+        <MudTh><MudButton OnClick="@(()=>RemoveUser(context))" Variant="Variant.Filled" Color="Color.Error">Remove</MudButton></MudTh>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>a
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager/>
+    </PagerContent>
+</MudTable>
 
 @code {
-    private IEnumerable<User> _pagedData;
-    private MudTable<User> _table;
+    private IEnumerable<User> _pagedData = null!;
+    private MudTable<User> _table = null!;
 
     private int _totalItems;
-    private string _searchString = null;
-    
+    private string _searchString = "";
+
     private async Task<TableData<User>> ServerReload(TableState state)
     {
         IEnumerable<User> data = await _helperService.GetUsers();
@@ -90,9 +108,25 @@
         _pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         return new TableData<User>() {TotalItems = _totalItems, Items = _pagedData};
     }
+
     private void OnSearch(string text)
     {
         _searchString = text;
         _table.ReloadServerData();
     }
+
+    private async Task RoleChanged(User user, IEnumerable<string> newRoles)
+    {
+        var roles = newRoles.ToList();
+        var umUser = await _userManager.FindByIdAsync(user.Id.ToString());
+        await _userManager.RemoveFromRoleAsync(umUser, user.RolesName.First());
+        await _userManager.AddToRoleAsync(umUser, roles.First());
+        _snackbar.Add($"User role has been added", Severity.Success);
+    }
+
+    private async Task RemoveUser(User user)
+    {
+        await _helperService.RemoveUser(user);
+    }
+
 }

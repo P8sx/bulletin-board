@@ -1,0 +1,43 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout))
+    {
+        Layout = (string) parentLayout!;
+    }
+    else
+    {
+        Layout = "/Areas/Identity/Pages/Shared/_Layout.cshtml";
+    }
+}
+<div class="container">
+    <div class="mt-5 row justify-content-md-center">
+        <div class="col-lg-10 card px-5" style="min-height: 600px">
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="/">
+                        <img src="/static/logo.svg" width="200" alt=""/>
+                    </a> 
+                </div>
+                <div class="col">
+                    <h2>Manage your account</h2>
+                    <h3>Change your account settings</h3>
+                </div>
+            </div>
+            
+            <div class="row mt-4 pb-4">
+                <div class="col-md-4">
+                    <partial name="_ManageNav"/>
+                </div>
+                <div class="col">
+                    @RenderBody()
+                </div>
+            </div>
+            
+            
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

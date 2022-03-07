@@ -43,6 +43,18 @@ namespace BulletinBoard.Data
             builder.Entity<BulletinBookmark>()
                 .HasKey(sc => new { sc.UserId, sc.BulletinId });
             builder.Entity<User>().Navigation(e => e.Image).AutoInclude();
+            builder.Entity<User>()
+                .HasMany(u => u.Roles)
+                .WithMany("Users")
+                .UsingEntity<IdentityUserRole<ulong>>(
+                    userRole => userRole.HasOne<Role>()
+                        .WithMany()
+                        .HasForeignKey(ur => ur.RoleId)
+                        .IsRequired(),
+                    userRole => userRole.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey(ur => ur.UserId)
+                        .IsRequired());
         }
     }
 }

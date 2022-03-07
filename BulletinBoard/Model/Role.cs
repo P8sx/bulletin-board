@@ -11,8 +11,8 @@ namespace BulletinBoard.Model
     }
     public class Role : IdentityRole<ulong>
     {
+        public virtual IList<User> Users { get; set; }
         public RoleValue RoleValue { get; set; }
-
         public Role(string name) : base(name)
         {
             if (Enum.TryParse(name, out RoleValue roleValue))

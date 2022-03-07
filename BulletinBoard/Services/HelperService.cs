@@ -149,15 +149,25 @@ namespace BulletinBoard.Services
         public async Task<IEnumerable<User>> GetUsers()
         {
             await using var dbContext = await _dbFactory.CreateDbContextAsync();
-            return await dbContext.Users.Join(dbContext.UserRoles, user => user.Id, userRole => userRole.UserId,(user,userRole) => new User
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    Email = user.Email,
-                    Joined = user.Joined,
-                    RoleName = userRole.RoleId.ToString(),
-                })
-                .ToListAsync();
+            return await dbContext.Users.Include(z => z.Roles).Select(user => new User()
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Joined = user.Joined,
+                Roles = user.Roles,
+                RolesName = user.Roles.Select(z=>z.Name).ToArray()
+            }).ToListAsync();
+        }
+
+        public async Task<bool> RemoveUser(User user)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var dbUser = await dbContext.Users.Where(z => z.Id == user.Id).FirstOrDefaultAsync();
+            if (dbUser == null) return false;
+            dbContext.Users.Remove(dbUser);
+            await dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

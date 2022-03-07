@@ -15,5 +15,6 @@ namespace BulletinBoard.Services
         Task<bool> DeleteViolation(Violation violation);
         Task<bool> BanUser(Ban ban, Violation violation);
         Task<IEnumerable<User>> GetUsers();
+        Task<bool> RemoveUser(User user);
     }
 }
