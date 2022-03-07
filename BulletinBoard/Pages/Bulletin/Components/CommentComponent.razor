@@ -15,9 +15,12 @@
     </CardHeaderContent>
     <CardHeaderActions>
         <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
-            <MudMenuItem OnClick="@(()=>Report(Comment))"><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Report</span></MudMenuItem>
-            <MudMenuItem><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Delete</span></MudMenuItem>
-            <MudMenuItem><MudIcon Icon="@Icons.Filled.Edit" Style="vertical-align:middle;" Title="Edit" Class="mr-2" /><span style="vertical-align:middle;">Edit</span></MudMenuItem>
+            
+            <MudMenuItem OnClick="@(() => Report(Comment))"><MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span></MudMenuItem>
+             @if (_userService.IsBoardModerator(new Board() {Guid = BoardId}) || (_userService.User != null && Comment.UserId==_userService.User.Id) )
+             {
+                 <MudMenuItem OnClick="@(async ()=> await CommentRemoveCallback.InvokeAsync(Comment))"><MudIcon Icon="@Icons.Filled.Delete" Style="vertical-align:middle;" Title="Delete" Class="mr-2"/><span style="vertical-align:middle;">Delete</span></MudMenuItem>
+             }
         </MudMenu>
     </CardHeaderActions>
 </MudCardHeader>
@@ -31,7 +34,11 @@
 @code {
     [Parameter]
     public Comment Comment { get; set; } = default!;
-    
+
+    [Parameter]
+    public Guid BoardId { get; set; } = default!;
+    [Parameter]
+    public EventCallback<Comment> CommentRemoveCallback { get; set; }
     private void Report(Comment comment)
     {
         var parameters = new DialogParameters {{"Comment", comment}};

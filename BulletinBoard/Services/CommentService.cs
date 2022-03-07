@@ -48,11 +48,22 @@ namespace BulletinBoard.Services
                 .Select(c => new Comment
                 {
                     Id = c.Id,
+                    UserId = c.UserId,
                     Created = c.Created,
                     Text = c.Text,
                     User = c.User
                 }).ToListAsync();
             return await comments;
+        }
+
+        public async Task<bool> RemoveComment(Comment comment)
+        {
+            await using var dbContext = await _dbFactory.CreateDbContextAsync();
+            var dbComment = await dbContext.Comments.Where(c => c.Id == comment.Id).FirstOrDefaultAsync();
+            if (dbComment == null) return false;
+            dbContext.Remove(dbComment);
+            await dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

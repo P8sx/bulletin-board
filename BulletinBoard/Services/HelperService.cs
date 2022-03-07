@@ -155,7 +155,7 @@ namespace BulletinBoard.Services
                     UserName = user.UserName,
                     Email = user.Email,
                     Joined = user.Joined,
-                    RoleName = userRole.RoleId.ToString()
+                    RoleName = userRole.RoleId.ToString(),
                 })
                 .ToListAsync();
         }

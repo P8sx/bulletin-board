@@ -33,7 +33,7 @@
 
         @foreach (var comment in _comments)
         {
-            <CommentComponent Comment=comment></CommentComponent>
+            <CommentComponent Comment=comment BoardId="BoardGuid" CommentRemoveCallback="RemoveComment"></CommentComponent>
         }
 
     }
@@ -93,12 +93,19 @@ else
     {
         _commentState = State.Loading;
         StateHasChanged();
+        _comments.Clear();
         _comments = await _commentService.GetCommentsAsyncCached(new Bulletin(_bulletin!.Id), true);
         _commentState = State.Success;
         _bulletin!.CommentsCount++;
         StateHasChanged();
     }
 
+    private async Task RemoveComment(Comment comment)
+    {
+        var result = await _commentService.RemoveComment(comment);
+        if (!result) return;
+        await UpdateComments(true);
+    }
     private async Task RemoveBulletin(Bulletin bulletin)
     {
         var result = await _bulletinService.RemoveBulletinAsync(bulletin);

@@ -4,7 +4,8 @@ namespace BulletinBoard.Services
 {
     public interface ICommentService
     {
-        Task<bool> AddCommentAsync(Comment Comment);
+        Task<bool> RemoveComment(Comment comment);
+        Task<bool> AddCommentAsync(Comment comment);
         Task<IList<Comment>> GetCommentsAsyncCached(Bulletin bulletin, bool forceReload = false);
     }
 }

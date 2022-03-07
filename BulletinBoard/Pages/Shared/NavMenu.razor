@@ -60,13 +60,17 @@
             </NotAuthorized>
         </AuthorizeView>
 
-        <AuthorizeView Roles="Admin">
+        <AuthorizeView Roles="Admin, Moderator">
             <Authorized>
                 <MudText Typo="Typo.h4" Class="mx-3 mt-3">Admin</MudText>
                 <MudDivider Class="mt-3 mb-1"></MudDivider>
                 <MudNavLink Href="/violations" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Warning">Violations</MudNavLink>
-                <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Groups">Users</MudNavLink>
             </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Groups">Users</MudNavLink>
+                    </Authorized>
         </AuthorizeView>
     </MudNavMenu>
 @code{

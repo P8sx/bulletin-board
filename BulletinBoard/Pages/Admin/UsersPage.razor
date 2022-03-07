@@ -1,10 +1,17 @@
 @page "/users"
 @using BulletinBoard.Model
 @inject IHelperService _helperService
+<MudCard Outlined="true" Class="mb-3">
+    <MudCardHeader Class="pb-3">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h4">Admin panel</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+</MudCard>
  <MudTable ServerData="@(new Func<TableState, Task<TableData<User>>>(ServerReload))"
            Hover="true" @ref="_table">
      <ToolBarContent>
-         <MudText Typo="Typo.h6">Periodic Users</MudText>
+         <MudText Typo="Typo.h6">Users</MudText>
          <MudSpacer />
          <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
                        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
@@ -21,6 +28,7 @@
          <MudTd DataLabel="UserName">@context.UserName</MudTd>
          <MudTd DataLabel="Joined">@context.Joined</MudTd>
          <MudTd DataLabel="Email">@context.Email</MudTd>
+         <MudTd DataLabel="Email">@context.RoleName</MudTd>
          <MudTd>
          @* <MudSelect Class="mt-0" T="" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@context.Role" SelectedValuesChanged="@(()=>RoleChanged(@context))"> *@
          @*     <MudSelectItem Value="@(BoardRole.User)" /> *@
