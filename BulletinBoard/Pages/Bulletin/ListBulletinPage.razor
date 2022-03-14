@@ -13,7 +13,7 @@
 @inject NavigationManager _navigationManager
 @inject IJSRuntime _js
 
-<MudContainer MaxWidth=@(Kiosk ? MaxWidth.False : MaxWidth.Large) >
+<MudContainer MaxWidth=@(Kiosk ? MaxWidth.False : MaxWidth.Large)>
     @if (_pageState == State.Success && _board != null)
     {
         @if (!Kiosk)
@@ -41,9 +41,12 @@
             </MudCard>
 
             <MudElement Class="d-flex mb-4">
-                <MudElement Style="align-self: center" Class="mr-auto">
-                       <MudIconButton Size="Size.Large" Icon=@(Grid?@Icons.Filled.List:@Icons.Filled.GridView) OnClick="ToggleGrid" aria-label="delete"></MudIconButton>      
-                </MudElement>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+                    <MudElement Style="align-self: center" Class="mr-auto">
+                        <MudIconButton Size="Size.Large" Icon=@(Grid ? @Icons.Filled.List : @Icons.Filled.GridView) OnClick="ToggleGrid" aria-label="delete"></MudIconButton>
+                    </MudElement>
+                </MudHidden>
+
                 <MudElement>
                     <MudSelect Label="Order" @bind-Value="_bulletinOrderBy" T="BulletinOrderBy" Variant="Variant.Outlined" Style="max-width:280px" SelectedValuesChanged="@(UpdateBulletins)">
                         @foreach (BulletinOrderBy orderByItem in Enum.GetValues(typeof(BulletinOrderBy)))
@@ -131,6 +134,11 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Grid { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Columns { get; set; } = 4;
+    
     
     private Board? _board;
 
@@ -166,7 +174,7 @@
             {
                 InvokeAsync(async () => { _bulletins = await GetBulletins(); });
                 InvokeAsync(StateHasChanged);
-            }), null, 5000, 5*60*1000);
+            }), null, 5000, 5 * 60 * 1000);
         }
         StateHasChanged();
     }
@@ -179,13 +187,13 @@
             await _js.InvokeVoidAsync("macyDefault");
         Grid = !Grid;
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
         {
             await Task.Delay(300);
-            if(Kiosk) await _js.InvokeVoidAsync("macyKiosk");
+            if (Kiosk) await _js.InvokeVoidAsync("macyKiosk",Columns==0?4:Columns);
             else if (Grid)
                 await _js.InvokeVoidAsync("macyGrid");
             else

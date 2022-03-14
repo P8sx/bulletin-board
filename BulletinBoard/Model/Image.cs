@@ -16,8 +16,9 @@ namespace BulletinBoard.Model
         public string Name { get; set; } = "";
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         
-        private DateTime Created { get; set; }
+        public DateTime Created { get; set; }
 
+        public long FileSize { get; set; } = 0;
         [ForeignKey("Bulletin")] 
         public ulong? BulletinId { get; set; }
         

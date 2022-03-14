@@ -45,7 +45,7 @@
             var buffer = new byte[resizedImageFile.Size];
             await resizedImageFile.OpenReadStream().ReadAsync(buffer);
 
-            Images.Add(new ValueTuple<IBrowserFile, Image, string>(file, new Image(file.Name), $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
+            Images.Add(new ValueTuple<IBrowserFile, Image, string>(file, new Image(file.Name){FileSize = file.Size}, $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}"));
         }
         await ImageUpdateCallback.InvokeAsync(true);
     }

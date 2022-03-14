@@ -30,6 +30,10 @@ namespace BulletinBoard.Data
                 relationship.DeleteBehavior = DeleteBehavior.Cascade;
             }
             builder.Entity<User>().ToTable("Users");
+            builder.Entity<User>().Ignore(c => c.City);
+            builder.Entity<User>().Ignore(c => c.Country);
+            builder.Entity<User>().Ignore(c => c.PostCode);
+            
             builder.Entity<IdentityUserRole<ulong>>().ToTable("UserRoles");
             builder.Entity<IdentityUserLogin<ulong>>().ToTable("UserLogins");
             builder.Entity<IdentityUserClaim<ulong>>().ToTable("UserClaims");

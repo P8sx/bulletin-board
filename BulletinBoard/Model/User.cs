@@ -21,5 +21,7 @@ namespace BulletinBoard.Model
         public virtual IList<Role> Roles { get; set; }
         [NotMapped]
         public IEnumerable<string> RolesName { get; set; } 
+
+        
     }
 }

@@ -43,7 +43,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bans", (string)null);
+                    b.ToTable("Bans");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Board", b =>
@@ -81,7 +81,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.ToTable("Boards", (string)null);
+                    b.ToTable("Boards");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.BoardUser", b =>
@@ -108,7 +108,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("BoardUsers", (string)null);
+                    b.ToTable("BoardUsers");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Bulletin", b =>
@@ -157,7 +157,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bulletins", (string)null);
+                    b.ToTable("Bulletins");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.BulletinBookmark", b =>
@@ -172,7 +172,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("BulletinsBookmarks", (string)null);
+                    b.ToTable("BulletinsBookmarks");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.BulletinVote", b =>
@@ -187,7 +187,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("BulletinsVotes", (string)null);
+                    b.ToTable("BulletinsVotes");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Comment", b =>
@@ -217,7 +217,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Image", b =>
@@ -229,10 +229,17 @@ namespace BulletinBoard.Migrations
                     b.Property<ulong?>("BulletinId")
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("FileExtension")
                         .IsRequired()
                         .HasMaxLength(5)
                         .HasColumnType("varchar(5)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("Guid")
                         .HasColumnType("char(36)");
@@ -245,7 +252,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("BulletinId");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("BulletinBoard.Model.Role", b =>
@@ -287,14 +294,8 @@ namespace BulletinBoard.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Country")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Email")
@@ -333,9 +334,6 @@ namespace BulletinBoard.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("PostCode")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
@@ -397,7 +395,7 @@ namespace BulletinBoard.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Violations", (string)null);
+                    b.ToTable("Violations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>

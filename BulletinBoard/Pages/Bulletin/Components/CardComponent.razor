@@ -59,7 +59,9 @@
                 {
                     <MudChip Class="mb-5" Icon="@Icons.Material.Filled.PushPin" Color="Color.Primary" IconColor="Color.Default">Pinned</MudChip>
                 }
-                <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
+                @if (!Kiosk)
+                {
+                    <MudMenu Class="mt-2" Icon="@Icons.Material.Filled.Settings" Color="Color.Default" AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.TopRight">
                     <MudMenuItem OnClick="@(() => Report(Bulletin))">
                         <MudIcon Icon="@Icons.Filled.Report" Color="Color.Error" Style="vertical-align:middle;" Title="Edit" Class="mr-2"/><span style="vertical-align:middle;">Report</span>
                     </MudMenuItem>
@@ -82,6 +84,7 @@
                         </MudMenuItem>
                     }
                 </MudMenu>
+                }
             </CardHeaderActions>
         </MudCardHeader>
         <MudCardContent Class="pt-0">
@@ -113,7 +116,7 @@
                 }
                 else
                 {
-                    <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle="false">
+                    <MudCarousel @ref="_carousel" ItemsSource="@Bulletin.Images" Style="height:200px; width:100%" ShowArrows="true" ShowDelimiters="true" AutoCycle=@Kiosk>
                         <ItemTemplate>
                             <div class="d-flex flex-column flex-column justify-center" @onclick="@(_ => OpenDialog(@context))">
                                 <MudCardMedia Image=@_globalService.BulletinImage(context)></MudCardMedia>
